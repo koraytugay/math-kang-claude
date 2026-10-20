@@ -149,3 +149,20 @@ def covers(region, pieces) -> bool:
             return used == region
         return any(go(i + 1, used | pl) for pl in options[i] if not used & pl)
     return go(0, frozenset())
+
+
+def makes_rectangle(a, b) -> bool:
+    """Can piece b (turned or flipped) be put next to piece a (as it is) so they fill a rectangle?"""
+    a = normalize(a)
+    area = len(a) + len(b)
+    aw, ah = max(x for x, _ in a) + 1, max(y for _, y in a) + 1
+    for w in range(aw, area + 1):
+        if area % w or area // w < ah:
+            continue
+        h = area // w
+        box = frozenset((x, y) for x in range(w) for y in range(h))
+        for dx in range(w - aw + 1):
+            for dy in range(h - ah + 1):
+                if covers(box - {(x + dx, y + dy) for x, y in a}, [b]):
+                    return True
+    return False

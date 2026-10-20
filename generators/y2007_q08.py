@@ -10,10 +10,10 @@ square too many or in the wrong place.
 """
 from itertools import combinations
 
-from kangaroo import Question, numeric_choices, text_choices, variant
+from kangaroo import Question, numeric_choices, text_choices, value_check, variant
 from kangaroo.figures import GREY, row
-from kangaroo.polyomino import (can_tile, draw_shape, neighbours, normalize, orientations,
-                                random_shape, same_shape)
+from kangaroo.polyomino import (can_tile, draw_shape, makes_rectangle, neighbours, normalize,
+                                orientations, random_shape, same_shape)
 
 META = {
     "source": "2007 Q8",
@@ -135,9 +135,11 @@ def complete_rectangle(rng, harder):
            f"{w * h} − {len(given)} = {len(good)} squares, in exactly the shape of the gap. "
            f"Piece {'ABCDE'[k_ans]} (turned) fills it; the others have a square too many, too few, "
            f"or in the wrong place.")
+    shown = [_show(o, rng) for o in opts]
     return Question(text=text, figure=draw_shape(normalize(given), scale=11, fill=GREY),
                     choices=[f"piece {c}" for c in "ABCDE"], answer=k_ans,
-                    choice_figures=[draw_shape(_show(o, rng), scale=9) for o in opts], solution=sol)
+                    choice_figures=[draw_shape(o, scale=9) for o in shown], solution=sol,
+                    check=lambda i: makes_rectangle(given, shown[i]))
 
 
 @variant(difficulty=1)
@@ -157,8 +159,11 @@ def squares_missing(rng, harder):
     sol = f"The smallest rectangle around the grey piece is {w} × {h} = {w * h} squares. {w * h} − {len(given)} = {ans}."
     mistakes = [len(given), w * h, (w + 1) * h - len(given), ans + 1, ans - 1, 2 * (w + h)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
+    g = normalize(given)
+    smallest = min(W * H for W in range(1, 3 * w) for H in range(1, 3 * h)
+                   if all(x < W and y < H for x, y in g))          # every rectangle the piece fits in
     return Question(text=text, figure=draw_shape(normalize(given), scale=12, fill=GREY), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol, check=value_check(choices, smallest - len(g)))
 
 
 @variant(difficulty=2)
@@ -184,11 +189,14 @@ def two_make_rectangle(rng, harder):
     good = good[0]
     labels = [f"{i + 1} and {j + 1}" for i, j in pairs if (i, j) != good]
     choices, ai = text_choices(f"{good[0] + 1} and {good[1] + 1}", labels, rng)
-    figs = [draw_shape(_show(p, rng), scale=10, label=str(i + 1)) for i, p in enumerate(pieces)]
+    shown = [_show(p, rng) for p in pieces]
+    figs = [draw_shape(p, scale=10, label=str(i + 1)) for i, p in enumerate(shown)]
     text = f"Which two of these pieces fit together to make a rectangle? {NOTE}"
     sol = (f"Pieces {good[0] + 1} and {good[1] + 1} have {len(pieces[good[0]]) + len(pieces[good[1]])} squares "
            f"together and fit into a {w} × {h} rectangle. No other pair does.")
-    return Question(text=text, figure=row(figs, gap=18), choices=choices, answer=ai, solution=sol)
+    pair = lambda lab: [shown[int(x) - 1] for x in lab.split(" and ")]
+    return Question(text=text, figure=row(figs, gap=18), choices=choices, answer=ai, solution=sol,
+                    check=lambda i: makes_rectangle(*pair(choices[i])))
 
 
 def _two_copies_ok(p):
@@ -222,5 +230,7 @@ def two_copies(rng, harder):
     text = f"Mia has two copies of the same piece. With which piece can she make a rectangle? {NOTE}"
     sol = (f"Two copies have {2 * n} squares, so the rectangle is " + " or ".join(f"{a} × {b}" for a, b in sizes)
            + f". Only two copies of piece {'ABCDE'[k]} fit together like that.")
+    shown = [_show(o, rng) for o in opts]
     return Question(text=text, choices=[f"piece {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[draw_shape(_show(o, rng), scale=9) for o in opts], solution=sol)
+                    choice_figures=[draw_shape(o, scale=9) for o in shown], solution=sol,
+                    check=lambda i: makes_rectangle(shown[i], shown[i]))
