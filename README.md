@@ -127,5 +127,9 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2002 Q18 — who has which pet (logic) | `y2002_q18.py` | who_has, which_true, which_not_true |
 | 2002 Q20 — tunnel of cubes rebuilt as a pyramid | `y2002_q20.py` | count_tunnel, tunnel_to_pyramid, count_pyramid, fill_the_hole, not_enough, longer_tunnel |
 | 2002 Q21 — who cannot make 20 from three cards | `y2002_q21.py` | who_cannot, which_can, which_cannot, hidden_card, biggest |
+| 2002 Q22 — ways to sit at a table, one seat fixed | `y2002_q22.py` | fixed_seat, photo_line, ends_fixed, outfits, side_by_side, stripes |
+| 2002 Q24 — odometer: next number with all different digits | `y2002_q24.py` | all_different, next_palindrome, last_time, same_digits, going_up |
+| 2003 Q9 — blue cubes inside a red brick | `y2003_q09.py` | blue_inside, red_outside, painted, how_deep, thick_wall |
+| 2003 Q10 — 50 dm 50 cm 50 mm + 123 cm | `y2003_q10.py` | jump, longest, how_much_longer, pieces, not_equal |
 
 Run `python3 check.py` for the full, current list.
