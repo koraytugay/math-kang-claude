@@ -12,7 +12,10 @@ chain forwards on the end number, or undo the steps in the wrong order.
 from reportlab.graphics.shapes import Ellipse
 from reportlab.lib import colors
 
-from kangaroo import Fig, Question, numeric_choices, text_choices, variant
+from fractions import Fraction
+
+from kangaroo import Fig, Question, numeric_choices, text_choices, value_check, variant
+from kangaroo.choices import number_in
 
 META = {
     "source": "2007 Q5",
@@ -33,6 +36,17 @@ def apply(x, op):
 def undo(x, op):
     o, k = op
     return {"+": x - k, "-": x + k, "*": x // k, "/": x * k}[o]
+
+
+def run_exact(x, ops):
+    """Answer checks: do the arrows forwards with exact fractions; None if a step is not a whole
+    number of at least 0 (a child could not do that step)."""
+    x = Fraction(x)
+    for o, k in ops:
+        x = {"+": x + k, "-": x - k, "*": x * k, "/": x / k}[o]
+        if x < 0 or x.denominator != 1:
+            return None
+    return x
 
 
 def label(op):
@@ -137,7 +151,8 @@ def favourite_number(rng, harder):
     mistakes = [_forward_on_end(ops, end), _wrong_order(ops, end), start + 1, start - 1, end]
     choices, ai = numeric_choices(start, [m for m in mistakes if m >= 0], rng, lo=0)
     return Question(text=text, figure=chain_pic(ops, last=str(end)), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol,
+                    check=lambda i: run_exact(number_in(choices[i]), ops) == end)
 
 
 @variant(difficulty=1)
@@ -156,7 +171,8 @@ def forwards(rng, harder):
     mistakes = [_wrong_order(ops, start), end + 1, end - 1, start]
     choices, ai = numeric_choices(end, [m for m in mistakes if m >= 0], rng, lo=0)
     return Question(text=text, figure=chain_pic(ops, first=str(start), dark_first=False),
-                    after_figure=after, choices=choices, answer=ai, solution=sol)
+                    after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, run_exact(start, ops)))
 
 
 @variant(difficulty=2)
@@ -172,7 +188,8 @@ def think_of_a_number(rng, harder):
     sol = "Go backwards: " + ", ".join(_back_steps(ops, end)) + "."
     mistakes = [_forward_on_end(ops, end), _wrong_order(ops, end), start + 2, end]
     choices, ai = numeric_choices(start, [m for m in mistakes if m >= 0], rng, lo=0)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: run_exact(number_in(choices[i]), ops) == end)
 
 
 @variant(difficulty=2)
@@ -199,7 +216,8 @@ def missing_number(rng, harder):
     choices, ai = numeric_choices(k, [m for m in mistakes if m > 0], rng, lo=1)
     return Question(text=text, figure=chain_pic(ops, first=str(start), last=str(end), dark_first=False,
                                                 hide=h, hide_number=True),
-                    after_figure=after, choices=choices, answer=ai, solution=sol)
+                    after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: run_exact(start, ops[:h] + [(o, number_in(choices[i]))] + ops[h + 1:]) == end)
 
 
 def _run(x, ops):
@@ -236,4 +254,5 @@ def which_operation(rng, harder):
     sol = (f"Before that arrow we have {before}; working back from {end}, after it we need "
            f"{apply(before, ops[h])}. Only {label(ops[h])} turns {before} into {apply(before, ops[h])}.")
     return Question(text=text, figure=chain_pic(ops, first=str(start), last=str(end), dark_first=False, hide=h),
-                    after_figure=after, choices=choices, answer=ai, solution=sol)
+                    after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: run_exact(start, ops[:h] + [{label(c): c for c in cands}[choices[i]]] + ops[h + 1:]) == end)
