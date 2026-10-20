@@ -9,8 +9,10 @@ order - so a valid list has one number from each fork, never two from the same
 fork, and none missing. Counting routes multiplies the choices.
 """
 import math
+import re
+from itertools import product
 
-from kangaroo import Fig, Question, numeric_choices, text_choices, variant
+from kangaroo import Fig, Question, numeric_choices, text_choices, value_check, variant
 
 META = {
     "source": "2007 Q1",
@@ -63,6 +65,15 @@ def _forks(rng, k, three=False, numbers=False):
     return out
 
 
+def all_ways(forks):
+    """Answer checks: every way along the road, one branch per fork (itertools, not _all_routes)."""
+    return list(product(*forks))
+
+
+def numbers_in(label):
+    return sorted(int(x) for x in re.findall(r"\d+", label))
+
+
 def _fmt(group):
     return ", ".join(map(str, group[:-1])) + " and " + str(group[-1])
 
@@ -87,8 +98,9 @@ def which_group(rng, harder):
     sol = (f"At every fork {name} takes exactly one branch, so there must be one number from each fork: "
            f"{_fmt(list(good_t))} works. Each of the others has two numbers from the same fork.")
     choices, ai = text_choices(_fmt(list(good_t)), opts, rng)
+    walks = {tuple(sorted(r)) for r in all_ways(forks)}
     return Question(text=text, figure=road_pic(forks, name), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol, check=lambda i: tuple(numbers_in(choices[i])) in walks)
 
 
 @variant(difficulty=1)
@@ -106,7 +118,8 @@ def how_many_routes(rng, harder):
     mistakes = [sum(sizes), k, 2 * k, ans + 2, ans // 2]     # added the choices, or counted forks
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=road_pic(forks, name), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, len(all_ways(forks))))
 
 
 @variant(difficulty=2)
@@ -126,7 +139,8 @@ def largest_sum(rng, harder):
                 sum(min(f) for f in forks), ans - 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=road_pic(forks, name), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, max(sum(r) for r in all_ways(forks))))
 
 
 def _all_routes(forks):
@@ -159,7 +173,8 @@ def impossible_total(rng, harder):
                      for s in sorted(good))
     sol = f"{ways}. No route gives {bad}."
     return Question(text=text, figure=road_pic(forks, name), after_figure=after,
-                    choices=[str(v) for v in vals], answer=vals.index(bad), solution=sol)
+                    choices=[str(v) for v in vals], answer=vals.index(bad), solution=sol,
+                    check=lambda i: vals[i] not in {sum(r) for r in all_ways(forks)})
 
 
 @variant(difficulty=3)
@@ -189,4 +204,5 @@ def which_branch(rng, harder):
     after = f"Which number did {name} see at the second fork?"
     sol = f"Only one route gives {t}: {' + '.join(map(str, route))} = {t}. At the second fork: {ans}."
     return Question(text=text, figure=road_pic(forks, name), after_figure=after,
-                    choices=[str(v) for v in vals], answer=vals.index(ans), solution=sol)
+                    choices=[str(v) for v in vals], answer=vals.index(ans), solution=sol,
+                    check=lambda i: {r[1] for r in all_ways(forks) if sum(r) == t} == {vals[i]})

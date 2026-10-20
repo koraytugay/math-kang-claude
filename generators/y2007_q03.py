@@ -7,7 +7,7 @@ Core skill: comparing two collections carefully - check each different letter
 once (KANGAROO has two O's and two A's, but O counts once), and do not stop
 after the first match. Children count repeated letters twice or miss a letter.
 """
-from kangaroo import Question, numeric_choices, text_choices, variant
+from kangaroo import Question, numeric_choices, text_choices, value_check, variant
 
 META = {
     "source": "2007 Q3",
@@ -20,6 +20,11 @@ WORDS = ["KANGAROO", "PROBLEM", "MATHEMATICS", "ELEPHANT", "GIRAFFE", "BANANA", 
          "SCHOOL", "PENCIL", "RAINBOW", "DINOSAUR", "CHOCOLATE", "BUTTERFLY", "PUZZLE",
          "TRIANGLE", "NUMBER", "SQUARE", "CASTLE", "DRAGON", "ROCKET", "PIRATE", "COMPUTER",
          "WINDOW", "GARDEN", "SANDWICH", "MONKEY", "TURTLE", "PLANET", "SPIDER", "LEMONADE"]
+
+
+def tally(test):
+    """Answer checks: go through the alphabet A to Z and count the letters that pass the test."""
+    return sum(1 for ch in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if test(ch))
 
 
 def common(a, b):
@@ -58,7 +63,8 @@ def common_letters(rng, harder):
            f"A letter that appears twice still counts once.")
     mistakes = [repeats_counted(a, b), repeats_counted(b, a), ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0)
-    return Question(text=text, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, tally(lambda ch: ch in a and ch in b)))
 
 
 @variant(difficulty=1)
@@ -73,7 +79,8 @@ def different_letters(rng, harder):
     sol = f"The letters are {_letters(sorted(set(w)))}: {ans} different letters ({w} has {len(w)} letters in all)."
     mistakes = [len(w), len(w) - 1, ans - 1, ans + 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, tally(lambda ch: ch in w)))
 
 
 @variant(difficulty=2)
@@ -93,7 +100,8 @@ def only_in_first(rng, harder):
                 len(set(b) - set(a)),       # did it the other way round
                 len(common(a, b)), ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, tally(lambda ch: ch in a and ch not in b)))
 
 
 @variant(difficulty=2)
@@ -115,7 +123,8 @@ def which_word(rng, harder):
     sol = (f"{w} shares {_letters(common(base, w))} with {base}. "
            + "; ".join(f"{x} shares {len(common(base, x))}" for x in wrong) + ".")
     choices, ai = text_choices(w, wrong, rng)
-    return Question(text=text, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: tally(lambda ch: ch in base and ch in choices[i]) == k)
 
 
 @variant(difficulty=3)
@@ -131,4 +140,5 @@ def letter_cards(rng, harder):
            f"{len(common(a, b))} = {ans}.")
     mistakes = [len(set(a)) + len(set(b)), len(a) + len(b), len(a) + len(b) - len(common(a, b)), ans - 1, ans + 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, tally(lambda ch: ch in a or ch in b)))
