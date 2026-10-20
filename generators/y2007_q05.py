@@ -18,7 +18,7 @@ META = {
     "source": "2007 Q5",
     "skill": "Working backwards: undo each operation, last one first",
     "topics": ["arithmetic", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Emma", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -229,8 +229,9 @@ def which_operation(rng, harder):
         raise RuntimeError("no chain found")
     near = sorted(wrong, key=lambda c: (c[1] != ops[h][1], c[0] == ops[h][0], rng.random()))[:4]
     choices, ai = text_choices(label(ops[h]), [label(c) for c in near], rng)
-    text = "One arrow has lost its calculation. The others are done one after the other."
-    after = "Which calculation belongs on the arrow with the ?"
+    text = ("The arrows show calculations done one after the other, but one arrow has lost its "
+            "calculation: it shows a question mark.")
+    after = "Which calculation belongs on that arrow?"
     before = _run(start, ops[:h])
     sol = (f"Before that arrow we have {before}; working back from {end}, after it we need "
            f"{apply(before, ops[h])}. Only {label(ops[h])} turns {before} into {apply(before, ops[h])}.")

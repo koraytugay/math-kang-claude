@@ -21,7 +21,7 @@ META = {
     "source": "2007 Q24",
     "skill": "Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric)",
     "topics": ["spatial", "geometry"],
-    "version": 1,
+    "version": 2,
 }
 
 Q = 4.0                     # the folded square is [0, Q] x [0, Q]; the paper is [-Q, Q] x [-Q, Q]
@@ -228,9 +228,8 @@ def count_pieces(rng, harder):
     kind = rng.choice(["triangle", "square"])
     cut = cut_shape(corner, kind, 1.5)
     ans = {"centre": 1, "corner": 4, "side_lr": 2, "side_tb": 2}[corner]
-    text = (INTRO + " The dark part is cut off. Before unfolding, it is one small piece, but it is made "
-            "of several layers.")
-    after = "When the cut-off piece is unfolded too, how many separate pieces of paper is it?"
+    text = INTRO + " The dark part is cut off and falls on the table. It is four layers of paper."
+    after = "How many separate pieces of paper are on the table?"
     sol = {1: "The cut is at the centre of the paper, where all four layers are joined: the four copies "
               "make one piece (the hole in the middle).",
            2: "The cut is at the middle of a paper side: the layers are joined in pairs along one fold, "

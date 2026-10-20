@@ -13,7 +13,7 @@ META = {
     "source": "2007 Q3",
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
-    "version": 2,
+    "version": 3,
 }
 
 WORDS = ["KANGAROO", "PROBLEM", "MATHEMATICS", "ELEPHANT", "GIRAFFE", "BANANA", "TEACHER",
@@ -120,13 +120,11 @@ def which_word(rng, harder):
 
 @variant(difficulty=3)
 def letter_cards(rng, harder):
-    """Union: letter cards needed to lay out both words, one card per different letter."""
+    """Union: different letters used in the two words together."""
     a, b = _pair(rng, 2, 4)
     ans = len(set(a) | set(b))
-    name = rng.choice(["Mia", "Leo", "Sara", "Tom"])
-    text = (f"{name} has letter cards and wants to show which letters are used in the words {a} and {b}. "
-            f"{name} puts down one card for each different letter used in either word.")
-    after = f"How many cards does {name} put down?"
+    text = f"How many different letters are used to write the two words {a} and {b}?"
+    after = ""
     sol = (f"{a} uses {len(set(a))} different letters and {b} uses {len(set(b))}. "
            f"{_letters(common(a, b))} {'is' if len(common(a, b)) == 1 else 'are'} in both, so count "
            f"{'it' if len(common(a, b)) == 1 else 'them'} once: {len(set(a))} + {len(set(b))} − "
