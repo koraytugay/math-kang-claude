@@ -159,6 +159,24 @@ def build_puzzle(rng, n, allow_direct):
     raise RuntimeError("could not build a puzzle")
 
 
+def solve(people, items, clues):
+    """Answer check: every matching that the shown clues allow (brute force)."""
+    return [a for a in (dict(zip(people, perm)) for perm in permutations(items))
+            if all(test(a) for _, test in clues)]
+
+
+def statement_check(th, people, items, clues, choices, want_true):
+    """check(i): the statement in option i is certainly true (or certainly false)."""
+    meaning = {th["has"](p, it): (p, it) for p in people for it in items}
+    sols = solve(people, items, clues)
+
+    def check(i):
+        p, it = meaning[choices[i]]
+        holds = [a[p] == it for a in sols]
+        return all(holds) if want_true else not any(holds)
+    return check
+
+
 def _intro(th, people, items, clues):
     return (f"{join_and(people)} {th['intro']} {join_and([th['article'](i) for i in items])}. "
             + ". ".join(c[0] for c in clues) + ".")
@@ -194,8 +212,11 @@ def who_has(rng, harder):
     rng.shuffle(opts)
     choices = opts + ["Impossible to determine"]
     ans = choices.index(owner) if owner else 4
+    def check(i):
+        owners = {p for a in solve(people, items, clues) for p in people if a[p] == target}
+        return len(owners) > 1 if i == 4 else owners == {choices[i]}
     return Question(text=_intro(th, people, items, clues), after_figure=q, choices=choices,
-                    answer=ans, solution=sol)
+                    answer=ans, solution=sol, check=check)
 
 
 @variant(difficulty=2)
@@ -207,7 +228,8 @@ def which_true(rng, harder):
     wrong = [th["has"](x, it) for x in people for it in items if truth[x] != it]
     choices, ai = text_choices(correct, wrong, rng)
     return Question(text=_intro(th, people, items, clues), after_figure="Which statement is true?",
-                    choices=choices, answer=ai, solution=_solution(th, truth))
+                    choices=choices, answer=ai, solution=_solution(th, truth),
+                    check=statement_check(th, people, items, clues, choices, want_true=True))
 
 
 @variant(difficulty=3)
@@ -224,4 +246,5 @@ def which_not_true(rng, harder):
     rng.shuffle(opts)
     return Question(text=_intro(th, people, items, clues),
                     after_figure="Which statement is <b>not</b> true?", choices=opts,
-                    answer=opts.index(false), solution=_solution(th, truth))
+                    answer=opts.index(false), solution=_solution(th, truth),
+                    check=statement_check(th, people, items, clues, opts, want_true=False))

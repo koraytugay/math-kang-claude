@@ -14,7 +14,9 @@ from fractions import Fraction
 from functools import lru_cache
 from itertools import combinations
 
-from kangaroo import Question, numeric_choices, text_choices, variant
+from kangaroo import Question, numeric_choices, text_choices, value_check, variant
+from kangaroo.choices import number_in
+from kangaroo.solve import expression_values
 
 META = {
     "source": "2002 Q21",
@@ -154,8 +156,10 @@ def who_cannot(rng, harder):
     can = "; ".join(f"{names[i]}: {expr(hands[i], t)} = {t}" for i in others)
     cannot = "; ".join(f"{names[i]}: {_no_way(hands[i], t)}" for i in fail)
     sol = ". ".join(s for s in (can, cannot) if s) + "."
+    stuck = {names[i] for i, h in enumerate(hands) if t not in expression_values(h)}
+    meaning = {n: {n} for n in names} | {all_opt: set(), pair_opt: {names[pair[0]], names[pair[1]]}}
     return Question(text=text, after_figure=after, choices=choices, answer=choices.index(correct),
-                    solution=sol)
+                    solution=sol, check=lambda i: meaning[choices[i]] == stuck)
 
 
 def _hand(rng, harder):
@@ -185,7 +189,8 @@ def which_can(rng, harder):
             f"with +, −, ×, ÷ and brackets.")
     after = f"Which of these numbers can {name} get?"
     sol = f"{expr(cards, v)} = {v}. None of the other numbers can be made."
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: number_in(choices[i]) in expression_values(cards))
 
 
 @variant(difficulty=2)
@@ -211,7 +216,8 @@ def which_cannot(rng, harder):
             f"with +, −, ×, ÷ and brackets.")
     after = f"Which number can {name} <b>not</b> get?"
     sol = ("; ".join(f"{expr(cards, w)} = {w}" for w in sorted(wrong)) + f". But {_no_way(cards, u)}.")
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: number_in(choices[i]) not in expression_values(cards))
 
 
 @variant(difficulty=2)
@@ -236,7 +242,8 @@ def hidden_card(rng, harder):
             f"{name} gets {t}.")
     after = "Which of these digits can be on the hidden card?"
     sol = f"{expr([a, b, c], t)} = {t}. The other digits do not work with {a} and {b}."
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: t in expression_values([a, b, number_in(choices[i])]))
 
 
 @variant(difficulty=3)
@@ -257,4 +264,5 @@ def biggest(rng, harder):
            f"add the 1 to the smallest other card first.")
     mistakes = [prod, prod + 1, sum(cards), prod - 1, (rest[-1] + 1) * prod // rest[-1]]
     choices, ai = numeric_choices(best, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, max(expression_values(cards))))

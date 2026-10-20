@@ -11,7 +11,7 @@ count one slice (a face or a layer), then multiply by how many slices there are.
 Children count only the visible faces, forget the hidden middle of a layer, or
 miscount the depth.
 """
-from kangaroo import Question, numeric_choices, variant
+from kangaroo import Question, numeric_choices, value_check, variant
 from kangaroo.cubes import draw_cubes, step_pyramid, tunnel
 from kangaroo.figures import Fig, column, row
 
@@ -23,6 +23,14 @@ META = {
 }
 
 NAMES = ["Robert", "Mia", "Leo", "Sara", "Tom", "Nina"]
+
+
+def _box_volume(cells):
+    """Cubes in the smallest solid block around the drawn cells."""
+    vol = 1
+    for k in range(3):
+        vol *= max(c[k] for c in cells) - min(c[k] for c in cells) + 1
+    return vol
 
 
 def _label(drawing, text):
@@ -85,7 +93,8 @@ def count_tunnel(rng, harder):
     mistakes = [n * n * depth, front, front * (depth - 1), front * (depth + 1),
                 _visible(n, depth, front), n * 4 * depth]
     choices, ai = numeric_choices(total, mistakes, rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(set(cells))))
 
 
 @variant(difficulty=1)
@@ -111,7 +120,8 @@ def tunnel_to_pyramid(rng, harder):
            f"Pyramid: {_pyr_sum(layers)} = {p}. Left over: {t} − {p} = {ans}.")
     mistakes = [t - m for m in _pyr_mistakes(layers)] + [ans + front, ans - front, p - front * (depth - 1)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(set(cells)) - len(set(step_pyramid(layers)))))
 
 
 @variant(difficulty=2)
@@ -126,7 +136,8 @@ def count_pyramid(rng, harder):
     after = "How many cubes are in the pyramid?"
     sol = (f"Count layer by layer, from the bottom: {_pyr_sum(layers)} = {total}.")
     choices, ai = numeric_choices(total, _pyr_mistakes(layers) + [total - 1, total + layers[0][0]], rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(set(step_pyramid(layers)))))
 
 
 @variant(difficulty=2)
@@ -146,7 +157,8 @@ def fill_the_hole(rng, harder):
     mistakes = [hole, hole * (depth - 1), hole * (depth + 1), n * n * depth, front * depth,
                 (n - 2) * depth, n * n * depth - ans + hole]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, _box_volume(cells) - len(set(cells))))
 
 
 @variant(difficulty=3)
@@ -172,7 +184,8 @@ def not_enough(rng, harder):
            f"Missing: {p} − {t} = {ans}.")
     mistakes = [m - t for m in _pyr_mistakes(layers)] + [ans + front, ans - front, p - front]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(set(step_pyramid(layers))) - len(set(cells))))
 
 
 @variant(difficulty=3)
@@ -197,4 +210,6 @@ def longer_tunnel(rng, harder):
                 if ask_more else
                 [n * n * new, front * depth, front * extra, front * depth + extra, front * (new + 1)])
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    long_cells = len(set(tunnel(n, new)))
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, long_cells - len(set(cells)) if ask_more else long_cells))

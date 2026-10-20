@@ -206,9 +206,12 @@ def build(rng, n_feat, n_real, n_fake, subtle, n_features):
             return sky, real, fakes
 
 
-def _on_polyline(q, pts, eps=1e-6):
+def _on_line(q, segs, eps=1e-6):
+    """Is point q on one of the segments? segs: [((x1, y1), (x2, y2)), ...]."""
     qx, qy = q
-    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+    for (x1, y1), (x2, y2) in segs:
+        if qx < min(x1, x2) - 1e-3 or qx > max(x1, x2) + 1e-3:
+            continue
         dx, dy = x2 - x1, y2 - y1
         L = dx * dx + dy * dy
         t = 0 if L == 0 else max(0.0, min(1.0, ((qx - x1) * dx + (qy - y1) * dy) / L))
@@ -222,13 +225,13 @@ def drawn_fits(mid, sky):
     piece = trace(with_stubs(mid))
     dense = piece + [((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) for a, b in zip(piece, piece[1:])]
     line = trace(sky)
+    segs = list(zip(line, line[1:]))
     x_end = max(p[0] for p in line)
     for k in range(int(2 * x_end) + 1):
         x0 = k / 2
-        starts = {round(y1, 6) for (xa, y1), (xb, y2) in zip(line, line[1:])
-                  if abs(y1 - y2) < 1e-9 and xa <= x0 <= xb}
+        starts = {round(y1, 6) for (xa, y1), (xb, y2) in segs if abs(y1 - y2) < 1e-9 and xa <= x0 <= xb}
         for y0 in starts:
-            if all(_on_polyline((x0 + px, y0 + py), line) for px, py in dense):
+            if all(_on_line((x0 + px, y0 + py), segs) for px, py in dense):
                 return True
     return False
 
