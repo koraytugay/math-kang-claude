@@ -205,7 +205,7 @@ def which_cannot(rng, harder):
     rng.shuffle(pics)
     k = pics.index(bad)
     text = INTRO + " One corner of the small square is cut off, and the paper is unfolded."
-    after = "Which design <i>cannot</i> be made this way?"
+    after = "Which design <b>cannot</b> be made this way?"
     sol = (f"The cut goes through four layers, so it appears four times, mirrored over both folds. "
            f"Design {'ABCDE'[k]} is impossible: {why}.")
     return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
@@ -253,7 +253,7 @@ def which_can(rng, harder):
     rng.shuffle(pics)
     k = pics.index(good)
     text = INTRO + " One corner of the small square is cut off, and the paper is unfolded."
-    after = "Which design <i>can</i> be made this way?"
+    after = "Which design <b>can</b> be made this way?"
     sol = (f"A single cut appears four times, the same on the left and right and on the top and bottom. "
            f"Only design {'ABCDE'[k]} looks like that ({WHAT[spec[0]]}).")
     return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,

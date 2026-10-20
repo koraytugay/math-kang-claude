@@ -20,7 +20,7 @@ META = {
     "source": "2002 Q21",
     "skill": "Reach a target with + − × ÷ using each card once; know when it is impossible",
     "topics": ["arithmetic", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Alex", "Martha", "Fred", "Mia", "Leo", "Sara", "Tom", "Nina", "Omar", "Lily"]
@@ -150,7 +150,7 @@ def who_cannot(rng, harder):
             + "; ".join(f"{n} has {cards_str(h)}" for n, h in zip(names, hands)) + ". "
             f"Each of them uses some of +, −, ×, ÷ (and brackets) and each of their own cards "
             f"exactly once.")
-    after = f"Who <i>cannot</i> get {t} as the result?"
+    after = f"Who <b>cannot</b> get {t} as the result?"
     can = "; ".join(f"{names[i]}: {expr(hands[i], t)} = {t}" for i in others)
     cannot = "; ".join(f"{names[i]}: {_no_way(hands[i], t)}" for i in fail)
     sol = ". ".join(s for s in (can, cannot) if s) + "."
@@ -209,7 +209,7 @@ def which_cannot(rng, harder):
     choices, ai = _sorted_choices(u, wrong, rng)
     text = (f"{name} has the cards {cards_str(cards)}. {name} must use every card exactly once, "
             f"with +, −, ×, ÷ and brackets.")
-    after = f"Which number can {name} <i>not</i> get?"
+    after = f"Which number can {name} <b>not</b> get?"
     sol = ("; ".join(f"{expr(cards, w)} = {w}" for w in sorted(wrong)) + f". But {_no_way(cards, u)}.")
     return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
 

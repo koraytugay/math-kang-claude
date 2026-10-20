@@ -22,7 +22,7 @@ META = {
     "source": "2002 Q15",
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
-    "version": 2,
+    "version": 3,
 }
 
 NAMES = ["Karla", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -167,7 +167,7 @@ def torn_flag(rng, harder):
     pics.insert(k, bad)
     figs = [flag_pic(p, w, h) for p in pics]
     text = _intro(name)
-    after = "Which picture cannot be right unless the flag is torn?"
+    after = "Which picture <b>cannot</b> be right unless the flag is torn?"
     sol = (f"The side sewn to the pole always shows at its full length. In picture {'ABCDE'[k]} part "
            f"of the pole is bare, so a piece of the flag is missing.")
     return Question(text=text, after_figure=after, choices=[f"picture {c}" for c in "ABCDE"],
@@ -207,7 +207,7 @@ def door(rng, harder):
     text = (f"A cupboard door is {w} squares wide and {h} squares tall. Its hinges are on the left "
             f"side (thick line). {name} looks at it straight from the front while it slowly opens, "
             f"and draws what the door looks like at five moments.")
-    after = "Which picture cannot be right?"
+    after = "Which picture <b>cannot</b> be right?"
     sol = (f"When a door opens it looks narrower, but it keeps the same height and is never wider "
            f"than {w} squares. Picture {'ABCDE'[k]} is wrong: {why}.")
     return Question(text=text, after_figure=after, choices=[f"picture {c}" for c in "ABCDE"],
@@ -224,7 +224,7 @@ def too_wide(rng, harder):
     pics.insert(k, wide_shape(rng, w, h))
     text = (_intro(name) + f" Spread out flat, the flag is {w} squares wide and {h} squares tall "
             f"(see the picture).")
-    after = "Which shadow cannot be right?"
+    after = "Which shadow <b>cannot</b> be right?"
     sol = (f"Turning or folding can only make the flag look narrower. Picture {'ABCDE'[k]} reaches more "
            f"than {w} squares away from the pole, which is wider than the flag.")
     return Question(text=text, figure=flat_flag(w, h, "the flag, flat"), after_figure=after,

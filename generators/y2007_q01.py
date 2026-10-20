@@ -16,7 +16,7 @@ META = {
     "source": "2007 Q1",
     "skill": "Routes through forks: one branch from every fork; number of routes = product of choices",
     "topics": ["logic", "counting"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Zita", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -154,7 +154,7 @@ def impossible_total(rng, harder):
     vals = sorted(good + [bad])
     name = rng.choice(NAMES)
     text = f"{name} walks along the road from left to right and adds up the numbers along the way."
-    after = f"Which total can {name} <i>not</i> get?"
+    after = f"Which total can {name} <b>not</b> get?"
     ways = "; ".join(f"{s} = " + " + ".join(map(str, next(r for r in _all_routes(forks) if sum(r) == s)))
                      for s in sorted(good))
     sol = f"{ways}. No route gives {bad}."

@@ -13,7 +13,7 @@ META = {
     "source": "2007 Q3",
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
-    "version": 3,
+    "version": 4,
 }
 
 WORDS = ["KANGAROO", "PROBLEM", "MATHEMATICS", "ELEPHANT", "GIRAFFE", "BANANA", "TEACHER",
@@ -86,7 +86,7 @@ def only_in_first(rng, harder):
     left = sum(1 for ch in a if ch not in b)
     text = (f"{name} writes the word {a}. Then {name} crosses out every letter that also appears "
             f"in the word {b}.")
-    after = "How many different letters are not crossed out?"
+    after = "How many different letters are <b>not</b> crossed out?"
     sol = (f"Crossed out: {_letters(common(a, b))} (they are in {b}). Left: {_letters(only)}, "
            f"so {ans} different letters" + (f" (a letter that is left twice counts once)." if left != ans else "."))
     mistakes = [left,                       # counted repeated letters

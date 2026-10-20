@@ -19,7 +19,7 @@ META = {
     "source": "2002 Q20",
     "skill": "Counting cubes in a 3-D building, hidden ones included (slice x number of slices)",
     "topics": ["counting", "spatial", "geometry"],
-    "version": 2,
+    "version": 3,
 }
 
 NAMES = ["Robert", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -106,7 +106,7 @@ def tunnel_to_pyramid(rng, harder):
     ans = t - p
     text = (f"{name} made a tunnel out of identical cubes (fig. 1). Then {name} took it apart and "
             f"built a complete pyramid (fig. 2) with some of the cubes. Nothing is hollow inside.")
-    after = f"How many cubes from the tunnel were <i>not</i> used for the pyramid?"
+    after = f"How many cubes from the tunnel were <b>not</b> used for the pyramid?"
     sol = (f"Tunnel: {front} cubes in the front, {depth} long: {front} × {depth} = {t}. "
            f"Pyramid: {_pyr_sum(layers)} = {p}. Left over: {t} − {p} = {ans}.")
     mistakes = [t - m for m in _pyr_mistakes(layers)] + [ans + front, ans - front, p - front * (depth - 1)]

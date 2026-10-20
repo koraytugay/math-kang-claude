@@ -18,7 +18,7 @@ META = {
     "source": "2007 Q12",
     "skill": "Dates: older = born earlier; adding days across month and year ends",
     "topics": ["time", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
@@ -70,7 +70,7 @@ def younger_birthday(rng, harder):
     gap = f"{yrs} year{'s' if yrs > 1 else ''} and {dd} day{'s' if dd > 1 else ''}"
     text = f"{old}, who is older than {young} by {gap}, was born on {fmt(born)}."
     after = f"When was {young} born?"
-    sol = (f"Older means born earlier, so {young} was born {gap} <i>after</i> {fmt(born)}: "
+    sol = (f"Older means born earlier, so {young} was born {gap} <b>after</b> {fmt(born)}: "
            f"{yrs} year{'s' if yrs > 1 else ''} later is {fmt(shift(born, yrs))}, then {dd} more "
            f"day{'s' if dd > 1 else ''}: {fmt(ans)}.")
     wrong = [shift(born, -yrs, -dd),        # went back in time
