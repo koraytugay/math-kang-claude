@@ -10,7 +10,7 @@ Core skill: the space in a box is length x width x height cubes; the cubes
 already inside must be counted including the hidden ones (every cube stands on
 the floor or on another cube), then subtract.
 """
-from kangaroo import Question, numeric_choices, variant
+from kangaroo import Question, numeric_choices, value_check, variant
 from kangaroo.cubes import draw_cubes
 
 META = {
@@ -46,6 +46,13 @@ def cells_of(h):
     return {(x, y, z) for x, col in enumerate(h) for y, n in enumerate(col) for z in range(n)}
 
 
+def empty_places(h, a, b, c, levels=None):
+    """Answer checks: go through every place in the box (only the lowest `levels` layers if given)
+    and count the ones without a cube."""
+    cells = cells_of(h)
+    return sum((x, y, z) not in cells for x in range(a) for y in range(b) for z in range(levels or c))
+
+
 def _pic(h, box):
     s = 22 if max(box) <= 3 else 17
     return draw_cubes(cells_of(h), scale=s, box=box)
@@ -77,7 +84,8 @@ def how_many_more(rng, harder):
                 placed, n ** 3, ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0], rng, lo=1)
     return Question(text=text, figure=_pic(h, (n, n, n)), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, empty_places(h, n, n, n)))
 
 
 @variant(difficulty=1)
@@ -96,7 +104,8 @@ def count_inside(rng, harder):
     mistakes = [seen, len(cols), placed + 1, placed - 1, placed + 2]
     choices, ai = numeric_choices(placed, [m for m in mistakes if m != placed], rng, lo=1)
     return Question(text=text, figure=_pic(h, (n, n, n)), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, len(cells_of(h))))
 
 
 @variant(difficulty=2)
@@ -117,7 +126,8 @@ def long_box(rng, harder):
                 vol, a * b - placed if a * b > placed else -1, ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0 and m != ans], rng, lo=1)
     return Question(text=text, figure=_pic(h, (a, b, c)), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, empty_places(h, a, b, c)))
 
 
 @variant(difficulty=2)
@@ -137,7 +147,8 @@ def bottom_layer(rng, harder):
     mistakes = [n * n - placed if n * n > placed else -1, n ** 3 - placed, on_floor, ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m >= 0 and m != ans], rng, lo=0)
     return Question(text=text, figure=_pic(h, (n, n, n)), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, empty_places(h, n, n, n, levels=1)))
 
 
 @variant(difficulty=3)
@@ -158,4 +169,5 @@ def two_layers(rng, harder):
                 ans + 1, ans - 1, n ** 3 - placed]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0 and m != ans], rng, lo=1)
     return Question(text=text, figure=_pic(h, (n, n, n)), after_figure=after, choices=choices,
-                    answer=ai, solution=sol)
+                    answer=ai, solution=sol,
+                    check=value_check(choices, empty_places(h, n, n, n, levels=2)))

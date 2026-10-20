@@ -9,8 +9,9 @@ Core skill: sorting the small cubes by where they sit - corners (3 painted
 faces), edges without corners (2), middles of faces (1), inside (0) - and
 counting each group with the cube's 8 corners, 12 edges and 6 faces.
 """
-from kangaroo import Question, numeric_choices, variant
-from kangaroo.cubes import draw_cubes, painted_counts
+from kangaroo import Question, numeric_choices, value_check, variant
+from kangaroo.cubes import SIX, draw_cubes, painted_counts
+from kangaroo.solve import only
 
 META = {
     "source": "2007 Q17",
@@ -26,6 +27,12 @@ WHERE = {3: "at the corners", 2: "on the edges, but not at the corners",
 
 def block(a, b, c):
     return {(x, y, z) for x in range(a) for y in range(b) for z in range(c)}
+
+
+def with_paint(cells, k, skip=()):
+    """Answer checks: small cubes with exactly k faces on the outside (not counting directions in skip)."""
+    return sum(sum((x + dx, y + dy, z + dz) not in cells for dx, dy, dz in SIX if (dx, dy, dz) not in skip) == k
+               for x, y, z in cells)
 
 
 def _pic(a, b, c):
@@ -52,7 +59,8 @@ def two_faces(rng, harder):
     mistakes = [others[3], others[1], 4 * (n - 2), 6 * (n - 2), 12 * n, 8 * (n - 2)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=_pic(n, n, n), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, with_paint(block(n, n, n), 2)))
 
 
 @variant(difficulty=1)
@@ -66,7 +74,8 @@ def always_eight(rng, harder):
     mistakes = [12, 6, 24, 4 * n, 3 * n]      # edges, faces, or "grows with the cube"
     choices, ai = numeric_choices(8, mistakes, rng, lo=1)
     return Question(text=text, figure=_pic(n, n, n) if n <= 5 else None, after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, with_paint(block(n, n, n), 3)))
 
 
 @variant(difficulty=2)
@@ -90,7 +99,8 @@ def painted_brick(rng, harder):
                 ans + 4, ans - 4]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m >= 0 and m != ans], rng, lo=0)
     return Question(text=text, figure=_pic(a, b, c), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, with_paint(block(a, b, c), k)))
 
 
 def _no_bottom_counts(n):
@@ -125,7 +135,8 @@ def not_underneath(rng, harder):
     mistakes = [full[k], full[k] - 4, ans + 4, ans - 2, 8]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0 and m != ans], rng, lo=1)
     return Question(text=text, figure=_pic(n, n, n), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, with_paint(block(n, n, n), k, skip=[(0, 0, -1)])))
 
 
 @variant(difficulty=3)
@@ -145,4 +156,5 @@ def how_big(rng, harder):
     mistakes = ([(n - 1) ** 3, (n + 1) ** 3, (n - 2) ** 3, two * 2, n * n * 6] if ask_total
                 else [n - 2, n - 1, n + 1, two // 6, two // 4])
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0 and m != ans], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, (lambda m: m ** 3 if ask_total else m)(only(m for m in range(2, 12) if with_paint(block(m, m, m), 2) == two))))
