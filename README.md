@@ -136,5 +136,8 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2003 Q17 — bar code with wide and narrow bars | `y2003_q17.py` | narrow_bars, fence, wide_bars, necklace, ends_differ |
 | 2003 Q18 — which two pieces cover the empty area | `y2003_q18.py` | one_piece, two_pieces, two_copies, three_pieces |
 | 2007 Q1 — numbers along a forking road | `y2007_q01.py` | which_group, how_many_routes, largest_sum, impossible_total, which_branch |
+| 2007 Q3 — common letters of KANGAROO and PROBLEM | `y2007_q03.py` | common_letters, different_letters, only_in_first, which_word, letter_cards |
+| 2007 Q4 — next number after 2007 with the same digit sum | `y2007_q04.py` | next_same_sum, which_same_sum, smallest_with_sum, before_same_sum, count_with_sum |
+| 2007 Q5 — work backwards through a chain of calculations | `y2007_q05.py` | favourite_number, forwards, think_of_a_number, missing_number, which_operation |
 
 Run `python3 check.py` for the full, current list.
