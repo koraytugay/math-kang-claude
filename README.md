@@ -142,5 +142,6 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2007 Q12 — older by one year and one day | `y2007_q12.py` | younger_birthday, older_birthday, days_between, age_on_day, new_year_twins |
 | 2007 Q14 — how many more cubes fit in the aquarium | `y2007_q14.py` | how_many_more, count_inside, long_box, bottom_layer, two_layers |
 | 2007 Q17 — painted cube: small cubes with 2 painted faces | `y2007_q17.py` | two_faces, always_eight, painted_brick, not_underneath, how_big |
+| 2007 Q21 — growing grids: white cells in the next diagram | `y2007_q21.py` | next_white, border_next, far_diagram, black_and_total, which_diagram |
 
 Run `python3 check.py` for the full, current list.
