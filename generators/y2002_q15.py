@@ -106,6 +106,19 @@ def wide_shape(rng, w, h):
     return [(0, 0), (0, h), (w + extra, h), (w - 1, 0)]
 
 
+def can_be_right(pts, w, h):
+    """Answer check, read off the drawn outline: the pole edge (x = 0, from 0 to h) is covered
+    all the way, and no point is further than w from the pole."""
+    on_pole = sorted((min(a[1], b[1]), max(a[1], b[1])) for a, b in zip(pts, pts[1:] + pts[:1])
+                     if a[0] == 0 and b[0] == 0)
+    reach = 0
+    for lo, hi in on_pole:
+        if lo > reach:
+            break
+        reach = max(reach, hi)
+    return reach >= h and min(y for x, y in pts if x == 0) <= 0 and max(x for x, _ in pts) <= w
+
+
 # ------------------------------------------------------------------ drawing
 def _scale(w):
     """Points per unit: as big as fits in one answer column (all five share it, so sizes compare)."""
@@ -171,7 +184,8 @@ def torn_flag(rng, harder):
     sol = (f"The side sewn to the pole always shows at its full length. In picture {'ABCDE'[k]} part "
            f"of the pole is bare, so a piece of the flag is missing.")
     return Question(text=text, after_figure=after, choices=[f"picture {c}" for c in "ABCDE"],
-                    answer=k, choice_figures=figs, solution=sol)
+                    answer=k, choice_figures=figs, solution=sol,
+                    check=lambda i: not can_be_right(pics[i], w, h))
 
 
 @variant(difficulty=1)
@@ -210,8 +224,11 @@ def door(rng, harder):
     after = "Which picture <b>cannot</b> be right?"
     sol = (f"When a door opens it looks narrower, but it keeps the same height and is never wider "
            f"than {w} squares. Picture {'ABCDE'[k]} is wrong: {why}.")
+    door_ok = lambda pts: (max(x for x, _ in pts) <= w and min(y for _, y in pts) == 0
+                           and max(y for _, y in pts) == h)
     return Question(text=text, after_figure=after, choices=[f"picture {c}" for c in "ABCDE"],
-                    answer=k, choice_figures=[pic(p) for p in pics], solution=sol)
+                    answer=k, choice_figures=[pic(p) for p in pics], solution=sol,
+                    check=lambda i: not door_ok(pics[i]))
 
 
 @variant(difficulty=2)
@@ -229,7 +246,8 @@ def too_wide(rng, harder):
            f"than {w} squares away from the pole, which is wider than the flag.")
     return Question(text=text, figure=flat_flag(w, h, "the flag, flat"), after_figure=after,
                     choices=[f"picture {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[flag_pic(p, w, h, grid=True) for p in pics], solution=sol)
+                    choice_figures=[flag_pic(p, w, h, grid=True) for p in pics], solution=sol,
+                    check=lambda i: not can_be_right(pics[i], w, h))
 
 
 def _mixed(rng, w, h, n_bad):
@@ -260,7 +278,8 @@ def count_possible(rng, harder):
     fig = column([flat_flag(w, h, "the flag, flat"), row(figs, gap=10)], gap=6)
     start = rng.choice([s for s in (0, 1) if s <= ans <= s + 4])   # five of 0..5, never more than 5
     choices, ai = [str(v) for v in range(start, start + 5)], ans - start
-    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: int(choices[i]) == sum(can_be_right(p, w, h) for p, _ in items))
 
 
 @variant(difficulty=3)
@@ -277,4 +296,5 @@ def only_one_right(rng, harder):
            f"than {w} squares from the pole. Only picture {'ABCDE'[k]} passes both checks.")
     return Question(text=text, figure=flat_flag(w, h, "the flag, flat"), after_figure=after,
                     choices=[f"picture {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[flag_pic(p, w, h, grid=True) for p, _ in items], solution=sol)
+                    choice_figures=[flag_pic(p, w, h, grid=True) for p, _ in items], solution=sol,
+                    check=lambda i: can_be_right(items[i][0], w, h))

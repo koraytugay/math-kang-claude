@@ -8,9 +8,10 @@ Core skill: reasoning with a balance - taking the same thing off both sides,
 substituting one kind of object for another, and turning a balance into a
 "1 X = n Y" fact.
 """
-from kangaroo import Question, numeric_choices, variant
+from kangaroo import Question, numeric_choices, value_check, variant
 from kangaroo.figures import column, row
 from kangaroo.pictures import balance, legend
+from kangaroo.solve import balance_weights, only
 
 META = {
     "source": "2002 Q9",
@@ -62,8 +63,9 @@ def one_more_balances(rng, harder):
     mistakes = [a, a // q if a % q == 0 else -1, a // (q + r) if a % (q + r) == 0 else -1,
                 a + r, m + 1, m - 1, q, a - r, 2 * m]
     choices, ai = numeric_choices(m, mistakes, rng, unit=sm, lo=1)
+    w = only(balance_weights([(["dot"] * a + ["ball"] * r, ["ball"] * q)], ["dot", "ball"], {"dot": 1}, 100))
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, w["ball"]))
 
 
 @variant(difficulty=2)
@@ -93,8 +95,9 @@ def both_sides(rng, harder):
     mistakes = [b2, b2 - b1, b1 + b2, m + 1, (b2 - b1) // a1 if (b2 - b1) % a1 == 0 else -1,
                 b2 // a1 if b2 % a1 == 0 else -1, m * 2, m - 1]
     choices, ai = numeric_choices(m, mistakes, rng, unit=sm, lo=1)
+    w = only(balance_weights([(L, R)], ["dot", "ball"], {"dot": 1}, 100))
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, w["ball"]))
 
 
 @variant(difficulty=2)
@@ -115,8 +118,10 @@ def chain(rng, harder):
            + (f"; {c} {big[1]} = {c} × {n*k} = {ans} {sml[1]}." if c > 1 else "."))
     mistakes = [n + k, c * (n + k), c * n, c * k, n * k, ans + c, n * k + 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
+    w = only(balance_weights([(["ball"], ["box"] * n), (["box"], ["dot"] * k)], ["dot", "box", "ball"],
+                             {"dot": 1}, 20))
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, c * w["ball"]))
 
 
 @variant(difficulty=3)
@@ -142,8 +147,9 @@ def grams(rng, harder):
              w * (k - 1) if ask_big else w * 2, w * (k + 1) if ask_big else w // 2 if w % 2 == 0 else -1,
              W - k * w, W // 2 if ask_big else -1]
     choices, ai = numeric_choices(ans, wrong, rng, unit="g", lo=10, step=25 if w % 25 == 0 else 5)
+    small = only(g for g in range(1, W + 1) if a * (k * g) + b * g == W)
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, k * small if ask_big else small))
 
 
 @variant(difficulty=3)
@@ -167,5 +173,7 @@ def what_to_add(rng, harder):
            f"The right plate has {c}, so add {a*k + b} − {c} = {ans}.")
     mistakes = [a * k + b, a * k - c, a + b - c, a * k + b + c, ans + k, k - c]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
+    big = only(balance_weights([(["ball"], ["dot"] * k)], ["dot", "ball"], {"dot": 1}, 20))["ball"]
+    add = only(x for x in range(0, 100) if a * big + b == c + x)
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, add))

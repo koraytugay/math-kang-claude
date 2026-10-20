@@ -16,7 +16,9 @@ NO way to get 4 consecutive sums with runs of neighbours, but exactly one for
 from functools import lru_cache
 from itertools import combinations
 
-from kangaroo import Question, numeric_choices, text_choices, variant
+from kangaroo import Question, numeric_choices, text_choices, value_check, variant
+from kangaroo.choices import number_in
+from kangaroo.solve import only
 from kangaroo.pictures import number_wheel
 
 META = {
@@ -76,6 +78,22 @@ def gap_name(nums, i):
     return f"{nums[i - 1]} and {nums[i]}"
 
 
+def _piece_of(cuts, j):
+    """For the answer checks (done differently from pieces()): which piece position j is in."""
+    return sum(1 for c in cuts if c <= j) % len(cuts)
+
+
+def run_sums(nums, cuts):
+    """The sums of the pieces, one per piece."""
+    return [sum(x for j, x in enumerate(nums) if _piece_of(cuts, j) == m) for m in range(len(cuts))]
+
+
+def piece_sums(nums, cuts):
+    """{number: sum of the piece it is in}."""
+    sums = run_sums(nums, cuts)
+    return {x: sums[_piece_of(cuts, j)] for j, x in enumerate(nums)}
+
+
 # ------------------------------------------------------------------ variants
 @variant(difficulty=1)
 def biggest_piece(rng, harder):
@@ -99,8 +117,11 @@ def biggest_piece(rng, harder):
     after = f"Which piece has the {'largest' if want_big else 'smallest'} sum of numbers?"
     detail = ", ".join(f"{'+'.join(map(str, p))} = {s}" for p, s in zip(ps, sums))
     sol = f"The sums are: {detail}."
+    ps_of = piece_sums(nums, cuts)
+    best = (max if want_big else min)(ps_of.values())
     return Question(text=text, figure=fig, after_figure=after, choices=choices,
-                    answer=order.index(target), solution=sol)
+                    answer=order.index(target), solution=sol,
+                    check=lambda i: ps_of[number_in(choices[i])] == best)
 
 
 @lru_cache(maxsize=None)
@@ -154,8 +175,10 @@ def which_picture(rng, harder):
     sol = (f"All numbers add up to {total}, so the pieces must be "
            + " + ".join(map(str, sums)) + f" = {total}. Only this picture gives "
            + ", ".join(map(str, sums)) + ".")
+    ok = lambda c: (consecutive if cond == "consecutive" else equal)(run_sums(nums, c))
     return Question(text=text, after_figure=after, choices=[f"picture {c}" for c in "ABCDE"],
-                    answer=cutsets.index(good), choice_figures=figs, solution=sol)
+                    answer=cutsets.index(good), choice_figures=figs, solution=sol,
+                    check=lambda i: ok(cutsets[i]))
 
 
 @variant(difficulty=2)
@@ -184,8 +207,11 @@ def largest_sum(rng, harder):
            f"The {'smallest' if ask_small else 'largest'} is {ans}.")
     mistakes = [total // k, a + k, a - 1, a + k - 2, a + 1, total // (k + 1), a if not ask_small else a + k - 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
+    # every cracking into k runs whose sums are consecutive must give the same smallest/largest sum
+    ends = {(min if ask_small else max)(run_sums(nums, c)) for c in all_cuts(nums, k)
+            if consecutive(run_sums(nums, c))}
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=value_check(choices, only(ends)))
 
 
 @variant(difficulty=3)
@@ -205,6 +231,7 @@ def straight_crack(rng, harder):
     wrong = sorted(wrong)
     rng.shuffle(wrong)
     choices, ai = text_choices(name(good), [name(c) for c in wrong[:8]], rng)
+    crack = {name(c): c for c in wrong + [good]}
     fig = number_wheel(nums, (), scale=9)
     total = sum(nums)
     p1, p2 = pieces(nums, good)
@@ -214,7 +241,7 @@ def straight_crack(rng, harder):
     sol = (f"Total {total}, so each piece has {total // 2}: "
            f"{'+'.join(map(str, p1))} = {sum(p1)} and {'+'.join(map(str, p2))} = {sum(p2)}.")
     return Question(text=text, figure=fig, after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol, check=lambda i: sum(nums[crack[choices[i]][0]:crack[choices[i]][1]]) * 2 == total)
 
 
 @variant(difficulty=3)
@@ -238,5 +265,6 @@ def count_ways(rng, harder):
     counts = [c for c in range(0, 6) if c != ans]
     counts.remove(rng.choice(counts))
     counts = sorted(counts + [ans])
+    ways = sum(1 for i in range(n) for j in range(i + 1, n) if 2 * sum(nums[i:j]) == sum(nums))
     return Question(text=text, figure=fig, after_figure=after, choices=[str(c) for c in counts],
-                    answer=counts.index(ans), solution=sol)
+                    answer=counts.index(ans), solution=sol, check=value_check([str(c) for c in counts], ways))
