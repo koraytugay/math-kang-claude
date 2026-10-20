@@ -140,5 +140,6 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2007 Q5 — work backwards through a chain of calculations | `y2007_q05.py` | favourite_number, forwards, think_of_a_number, missing_number, which_operation |
 | 2007 Q8 — which piece completes the rectangle | `y2007_q08.py` | complete_rectangle, squares_missing, two_make_rectangle, two_copies |
 | 2007 Q12 — older by one year and one day | `y2007_q12.py` | younger_birthday, older_birthday, days_between, age_on_day, new_year_twins |
+| 2007 Q14 — how many more cubes fit in the aquarium | `y2007_q14.py` | how_many_more, count_inside, long_box, bottom_layer, two_layers |
 
 Run `python3 check.py` for the full, current list.

@@ -14,11 +14,14 @@ SIDE = colors.Color(0.86, 0.84, 0.80)   # shaded right-hand faces
 DX, DY = 0.45, 0.38                     # how far one step of depth moves on paper
 
 
-def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7):
+def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7, box=None):
+    """box=(a, b, c): also draw a glass box a wide, b deep, c tall around the cubes
+    (corner at 0, 0, 0): back edges dashed before the cubes, front edges after."""
     cells = set(cells)
-    if not cells:
+    if not cells and not box:
         raise ValueError("no cubes to draw")
-    xs = [c[0] for c in cells]; ys = [c[1] for c in cells]; zs = [c[2] for c in cells]
+    pts = list(cells) + ([(0, 0, 0), (box[0] - 1, box[1] - 1, box[2] - 1)] if box else [])
+    xs = [c[0] for c in pts]; ys = [c[1] for c in pts]; zs = [c[2] for c in pts]
     x0, y0, z0 = min(xs), min(ys), min(zs)
     W = max(xs) - x0 + 1 + DX * (max(ys) - y0 + 1)
     H = max(zs) - z0 + 1 + DY * (max(ys) - y0 + 1)
@@ -26,6 +29,11 @@ def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7):
 
     def P(x, y, z):
         return (x - x0 + DX * (y - y0), z - z0 + DY * (y - y0))
+
+    if box:
+        a, b, c = box
+        for e in ((P(0, b, 0), P(a, b, 0)), (P(0, b, 0), P(0, b, c)), (P(0, 0, 0), P(0, b, 0))):
+            f.line(*e, dash=True, width=0.8)
 
     # painter's order: far rows first, then left to right, then bottom to top
     for (x, y, z) in sorted(cells, key=lambda c: (-c[1], c[0], c[2])):
@@ -38,7 +46,27 @@ def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7):
         if (x, y - 1, z) not in cells:
             f.poly([P(x, y, z), P(x + 1, y, z), P(x + 1, y, z + 1), P(x, y, z + 1)],
                    fill=colors.white, width=width)
+    if box:
+        a, b, c = box
+        front = [((0, 0, 0), (a, 0, 0)), ((a, 0, 0), (a, 0, c)), ((a, 0, c), (0, 0, c)), ((0, 0, c), (0, 0, 0)),
+                 ((a, 0, 0), (a, b, 0)), ((a, b, 0), (a, b, c)), ((a, 0, c), (a, b, c)),
+                 ((0, 0, c), (0, b, c)), ((0, b, c), (a, b, c))]
+        for p, q in front:
+            f.line(P(*p), P(*q), width=1.1)
     return f.drawing()
+
+
+def painted_counts(a: int, b: int, c: int) -> dict:
+    """A block a x b x c (each at least 2), painted all over and cut into unit cubes:
+    {number of painted faces: number of small cubes}."""
+    if min(a, b, c) < 2:
+        raise ValueError("every side must be at least 2 cubes")
+    out = {0: 0, 1: 0, 2: 0, 3: 0}
+    for x in range(a):
+        for y in range(b):
+            for z in range(c):
+                out[(x in (0, a - 1)) + (y in (0, b - 1)) + (z in (0, c - 1))] += 1
+    return out
 
 
 def tunnel(n: int, depth: int, wall: int = 1, height: int | None = None):
