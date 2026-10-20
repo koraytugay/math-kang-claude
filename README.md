@@ -1,0 +1,89 @@
+# Math Kangaroo practice exams
+
+Generates printable Math Kangaroo-style practice exams (Grade 3–4) built from the
+questions the kids struggled with. Each missed question gets its own **generator**: a
+small Python file that makes endless new questions that test the same skill,
+with new numbers, new stories and new twists. Making an exam is a plain script with no
+AI involved; a strong AI model is only needed to write or improve generators.
+
+## Setup (once)
+
+```
+cd ~/mathkang-claude
+python3 -m pip install -r requirements.txt
+```
+
+## 1. Make an exam (no AI needed)
+
+```
+python3 make_exam.py                  # 20 questions
+python3 make_exam.py -n 24 --harder   # more Part C questions, bigger numbers
+python3 make_exam.py --from 2002      # only questions based on the 2002 test
+python3 make_exam.py --topic perimeter
+python3 make_exam.py --seed 2026      # re-create an exact exam (seed is printed under the title)
+python3 make_exam.py --hide-sources   # answer key without the [2002 Q7 · ...] tags
+```
+
+The PDF goes to `output/`. Each run produces a different exam unless you pass `--seed`.
+It contains:
+
+- the questions, ordered into Part A (3 points), Part B (4 points) and Part C (5 points), each with 5 options (A–E);
+- an **answer key** with a short solution for every question.
+
+Each solution ends with a tag such as `[2002 Q6 · notch]`, which names the generator and
+the variant that made it. If the kids keep missing the same tag, that skill needs more
+practice.
+
+## 2. Check / review generators
+
+```
+python3 check.py                       # coverage: which pool questions have generators; runs self-tests
+python3 check.py --preview y2002_q07   # PDF showing every variant of one generator, for review
+```
+
+## 3. Report a bad question
+
+Add a line to `feedback.md` using the tag from the answer key:
+
+```
+- [ ] y2002_q07 · how_many_fit — too hard to compare, make the pieces bigger
+```
+
+The next time the AI agent works on the project, it applies the feedback and ticks the item.
+
+## 4. Grow it (with a strong model, e.g. Claude Code in this folder)
+
+1. Drop the new contest PDF into `sample-tests/` (e.g. `2008.pdf`).
+2. Add the missed questions to `question-pool.txt`, e.g. `2008: 3, 7, 15`.
+3. Ask the agent things like:
+   - "sync generators, next 3"
+   - "add a generator for 2002 Q9"
+   - "apply feedback.md"
+   - "improve y2002_q06: add a variant about area"
+
+The agent follows the rules in `CLAUDE.md`: one generator per pool question, 4–6
+variants across Parts A–C, answers computed in code, wrong options based on likely
+mistakes, a self-test, and a visual review of the preview PDF.
+
+## Project layout
+
+| Path | What it is |
+|---|---|
+| `sample-tests/` | Original contest PDFs |
+| `question-pool.txt` | The questions the kids struggled with (`YEAR: n, n, n`) |
+| `generators/yYEAR_qNN.py` | One generator per pool question |
+| `kangaroo/` | Shared library: question format, answer options, drawing, PDF layout |
+| `make_exam.py` | Makes an exam |
+| `check.py` | Coverage report, self-tests, previews |
+| `feedback.md` | Notes on generated questions, for the agent to act on |
+| `CLAUDE.md` | Instructions for the AI agent that writes generators |
+| `output/` | Generated PDFs (not committed) |
+
+## Status
+
+| Pool question | Generator | Variants |
+|---|---|---|
+| 2002 Q6 — perimeter of a rectangle cut from a square | `y2002_q06.py` | square_minus_strip, pieces_total, corner_cut, notch, strips_to_square, two_perimeters |
+| 2002 Q7 — which piece cannot belong to the skyline | `y2002_q07.py` | cannot_belong, can_belong, how_many_fit |
+
+Run `python3 check.py` for the full, current list.
