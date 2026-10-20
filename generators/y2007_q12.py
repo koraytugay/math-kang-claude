@@ -10,15 +10,15 @@ Core skill: "older" means "born earlier" - so the younger person's date is
 later. Then add (or subtract) days across the end of a month or year carefully.
 Children go the wrong way in time, or change only the year.
 """
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
-from kangaroo import Question, numeric_choices, text_choices, variant
+from kangaroo import Question, numeric_choices, text_choices, value_check, variant
 
 META = {
     "source": "2007 Q12",
     "skill": "Dates: older = born earlier; adding days across month and year ends",
     "topics": ["time", "logic"],
-    "version": 2,
+    "version": 3,
 }
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
@@ -40,6 +40,40 @@ def shift(d, years=0, days=0):
     return d2 + timedelta(days=days)
 
 
+# ---------------------------------------------------------------- answer checks
+def read_date(s):
+    return datetime.strptime(s, "%B %d, %Y").date()
+
+
+def month_days(y, m):
+    """Days in a month, by the rhyme and the leap-year rule (not by the datetime module)."""
+    if m == 2:
+        return 29 if (y % 4 == 0 and y % 100 != 0) or y % 400 == 0 else 28
+    return 30 if m in (4, 6, 9, 11) else 31
+
+
+def count_days(a, b):
+    """Days from date a to date b, counted one day at a time on the calendar (None if b is earlier)."""
+    y, m, d, n = a.year, a.month, a.day, 0
+    if (b.year, b.month, b.day) < (y, m, d):
+        return None
+    while (y, m, d) != (b.year, b.month, b.day):
+        d += 1
+        if d > month_days(y, m):
+            d, m = 1, m + 1
+            if m > 12:
+                m, y = 1, y + 1
+        n += 1
+    return n
+
+
+def years_and_days_apart(older, younger, yrs, dd):
+    """Same day and month yrs years later, then dd more days on the calendar."""
+    if (older.month, older.day) == (2, 29):
+        return False                    # "the same day a year later" is unclear; never used as an answer
+    return count_days(date(older.year + yrs, older.month, older.day), younger) == dd
+
+
 def _near_end(rng):
     """A date close to the end/start of a month or year, where children slip."""
     y = rng.randint(1998, 2015)
@@ -49,8 +83,15 @@ def _near_end(rng):
     if kind == "month":
         m = rng.randint(1, 11)
         last = (date(y, m + 1, 1) - timedelta(days=1))
-        return rng.choice([last, date(y, m + 1, 1)])
+        return rng.choice([last if (last.month, last.day) != (2, 29) else last - timedelta(days=1),
+                           date(y, m + 1, 1)])
     return date(y, rng.randint(1, 12), rng.randint(2, 27))
+
+
+def unambiguous(older, younger, yrs, dd):
+    """Counting forwards from the older child and backwards from the younger one agree
+    (they don't when the gap crosses February 29)."""
+    return shift(older, yrs, dd) == younger and shift(younger, -yrs, -dd) == older
 
 
 def _date_options(correct, wrong, rng):
@@ -63,10 +104,13 @@ def _date_options(correct, wrong, rng):
 def younger_birthday(rng, harder):
     """The original: the older child's birthday is known."""
     old, young = rng.choice(PAIRS)
-    born = _near_end(rng) if harder or rng.random() < 0.6 else date(2002, 1, 1)
-    yrs = rng.choice([1, 2, 3]) if harder else 1
-    dd = rng.choice([1, 2, 3]) if harder else 1
-    ans = shift(born, yrs, dd)
+    while True:
+        born = _near_end(rng) if harder or rng.random() < 0.6 else date(2002, 1, 1)
+        yrs = rng.choice([1, 2, 3]) if harder else 1
+        dd = rng.choice([1, 2, 3]) if harder else 1
+        ans = shift(born, yrs, dd)
+        if unambiguous(born, ans, yrs, dd):
+            break
     gap = f"{yrs} year{'s' if yrs > 1 else ''} and {dd} day{'s' if dd > 1 else ''}"
     text = f"{old}, who is older than {young} by {gap}, was born on {fmt(born)}."
     after = f"When was {young} born?"
@@ -77,17 +121,21 @@ def younger_birthday(rng, harder):
              shift(born, yrs, -dd), shift(born, -yrs, dd), shift(born, yrs + 1, dd), shift(born, yrs, dd + 1),
              shift(born, yrs, 0)]
     choices, ai = _date_options(ans, wrong, rng)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: read_date(choices[i]) > born and years_and_days_apart(born, read_date(choices[i]), yrs, dd))
 
 
 @variant(difficulty=1)
 def older_birthday(rng, harder):
     """Reverse: the younger child's birthday is known."""
     old, young = rng.choice(PAIRS)
-    born = _near_end(rng)
-    yrs = rng.choice([1, 2]) if harder else 1
-    dd = rng.choice([1, 2, 3]) if harder else 1
-    ans = shift(born, -yrs, -dd)
+    while True:
+        born = _near_end(rng)
+        yrs = rng.choice([1, 2]) if harder else 1
+        dd = rng.choice([1, 2, 3]) if harder else 1
+        ans = shift(born, -yrs, -dd)
+        if (ans.month, ans.day) != (2, 29) and unambiguous(ans, born, yrs, dd):
+            break
     gap = f"{yrs} year{'s' if yrs > 1 else ''} and {dd} day{'s' if dd > 1 else ''}"
     text = f"{young} was born on {fmt(born)}. {old} is {gap} older than {young}."
     after = f"When was {old} born?"
@@ -96,7 +144,8 @@ def older_birthday(rng, harder):
     wrong = [shift(born, yrs, dd), shift(born, -yrs, dd), shift(born, yrs, -dd), shift(born, -yrs, 0),
              shift(born, -yrs - 1, -dd)]
     choices, ai = _date_options(ans, wrong, rng)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: read_date(choices[i]) < born and years_and_days_apart(read_date(choices[i]), born, yrs, dd))
 
 
 @variant(difficulty=2)
@@ -118,7 +167,8 @@ def days_between(rng, harder):
     naive = (d2.day + 30 - d1.day) if d2.month != d1.month else gap
     mistakes = [naive, gap + 1, gap - 1, abs(d2.day - d1.day), naive + 1]
     choices, ai = numeric_choices(gap, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count_days(d1, d2)))
 
 
 @variant(difficulty=2)
@@ -142,7 +192,8 @@ def age_on_day(rng, harder):
            + f"{b} is {age_b}.")
     mistakes = [today.year - db.year, age_b + 1, age_b - 1, age_a]
     choices, ai = numeric_choices(age_b, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, today.year - db.year - ((today.month, today.day) < (db.month, db.day))))
 
 
 @variant(difficulty=3)
@@ -162,4 +213,5 @@ def new_year_twins(rng, harder):
            f"So {a} is older, but they have different birthdays and were even born in different years.")
     wrong = [date(y, 12, 31), date(y, 1, 1), date(y + 1, 12, 31), date(y - 1, 1, 1), date(y + 1, 1, 2)]
     choices, ai = _date_options(ans, wrong, rng)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: read_date(choices[i]) == (datetime(y, 12, 31, 23, 60 - mins_before) + timedelta(minutes=later)).date())
