@@ -10,8 +10,14 @@ AI involved; a strong AI model is only needed to write or improve generators.
 
 ```
 cd ~/mathkang-claude
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 ```
+
+This creates a private Python environment in `.venv/` (not committed), so nothing is
+installed system-wide. Optional: run `source .venv/bin/activate` once per Terminal
+window, and then `python3 make_exam.py` uses it. Without activating, write
+`.venv/bin/python make_exam.py` instead of `python3 make_exam.py`.
 
 ## 1. Make an exam (no AI needed)
 

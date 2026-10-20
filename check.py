@@ -15,6 +15,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+try:
+    import reportlab  # noqa: F401
+except ImportError:
+    sys.exit("reportlab is not installed. One-time setup (in this folder):\n"
+             "    python3 -m venv .venv\n"
+             "    .venv/bin/pip install -r requirements.txt\n"
+             "then run:  .venv/bin/python " + Path(sys.argv[0]).name + " ...")
+
 from kangaroo.registry import load_generators, read_pool  # noqa: E402
 from kangaroo.render import build_pdf  # noqa: E402
 
