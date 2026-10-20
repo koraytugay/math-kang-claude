@@ -139,5 +139,6 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2007 Q3 — common letters of KANGAROO and PROBLEM | `y2007_q03.py` | common_letters, different_letters, only_in_first, which_word, letter_cards |
 | 2007 Q4 — next number after 2007 with the same digit sum | `y2007_q04.py` | next_same_sum, which_same_sum, smallest_with_sum, before_same_sum, count_with_sum |
 | 2007 Q5 — work backwards through a chain of calculations | `y2007_q05.py` | favourite_number, forwards, think_of_a_number, missing_number, which_operation |
+| 2007 Q8 — which piece completes the rectangle | `y2007_q08.py` | complete_rectangle, squares_missing, two_make_rectangle, two_copies |
 
 Run `python3 check.py` for the full, current list.
