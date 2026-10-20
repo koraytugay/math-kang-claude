@@ -25,7 +25,7 @@ META = {
     "source": "2002 Q1",
     "skill": "Find the missing square by its edges: lines must continue at the same places, not turned",
     "topics": ["spatial", "visual"],
-    "version": 1,
+    "version": 2,
 }
 
 CELL = 32          # points per square, in the picture and in the options
@@ -78,7 +78,7 @@ def make_picture(rng, C, R, n_curves):
             curves.append(_loop(rng, rng.uniform(r + 0.1, C - r - 0.1), rng.uniform(r + 0.1, R - r - 0.1), r))
         else:
             curves.append(_spline(_walk(rng, C, R)))
-    return None if hugs_grid(curves) else curves
+    return None if hugs_grid(curves, C, R) else curves
 
 
 def _walk(rng, C, R):
@@ -103,7 +103,7 @@ def _walk(rng, C, R):
             return pts
 
 
-def hugs_grid(curves, near=0.08, run=3):
+def hugs_grid(curves, C, R, near=0.08, run=6):
     """A curve that runs along a grid line for a while (hard to see which square it is in):
     several steps in a row close to a grid line and moving almost parallel to it."""
     for c in curves:
@@ -112,7 +112,7 @@ def hugs_grid(curves, near=0.08, run=3):
             for p, q in zip(c, c[1:]):
                 across = abs(q[coord] - p[coord])
                 along = abs(q[1 - coord] - p[1 - coord])
-                close = abs(p[coord] - round(p[coord])) < near
+                close = abs(p[coord] - round(p[coord])) < near and 0 <= p[0] <= C and 0 <= p[1] <= R
                 streak = streak + 1 if close and across < 0.4 * along else 0
                 if streak >= run:
                     return True
@@ -203,7 +203,9 @@ def picture_edges(curves, cell):
     return {s: sorted(p) for s, p in out.items()}
 
 
-def same_edges(e1, e2, tol=0.02):
+def same_edges(e1, e2, tol=0.2):
+    """Do the lines reach the edges at the same places, as far as an eye can tell? Places closer
+    than a fifth of a side count as the same, so every wrong option differs clearly."""
     return all(len(e1[s]) == len(e2[s]) and all(abs(a - b) < tol for a, b in zip(e1[s], e2[s])) for s in SIDES)
 
 
@@ -418,15 +420,16 @@ def which_gap(rng, harder):
                 break
         if len(gaps) < 5:
             continue
+        gaps.sort(key=lambda g: (-g[1], g[0]))       # letters in reading order
         edges = [picture_edges(curves, g) for g in gaps]
-        if any(same_edges(edges[a], edges[b]) for a in range(5) for b in range(a + 1, 5)):
-            continue
-        break
+        # the cut-out square must clearly fit only one gap (the other gaps may look alike)
+        unique = [a for a in range(5) if not any(same_edges(edges[a], edges[b]) for b in range(5) if b != a)]
+        if unique:
+            break
     else:
         raise RuntimeError("no picture found")
-    gaps.sort(key=lambda g: (-g[1], g[0]))           # letters in reading order
     names = {g: "ABCDE"[i] for i, g in enumerate(gaps)}
-    k = rng.randrange(5)
+    k = rng.choice(unique)
     piece = tile(curves, gaps[k])
     fig = row([picture_pic(curves, C, R, blanks=gaps, labels=names), tile_pic(piece, scale=CELL + 4)], gap=28)
     text = (rng.choice(STORIES).split(".")[0] + ". Five squares are missing, marked A to E. "
