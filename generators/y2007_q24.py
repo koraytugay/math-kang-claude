@@ -15,13 +15,13 @@ from reportlab.graphics.shapes import Polygon
 from reportlab.lib import colors
 
 from kangaroo import Fig, Question, variant
-from kangaroo.figures import GREY, row
+from kangaroo.figures import GREY, column, row
 
 META = {
     "source": "2007 Q24",
     "skill": "Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric)",
     "topics": ["spatial", "geometry"],
-    "version": 2,
+    "version": 3,
 }
 
 Q = 4.0                     # the folded square is [0, Q] x [0, Q]; the paper is [-Q, Q] x [-Q, Q]
@@ -100,9 +100,9 @@ def design_pic(polys, scale=8.5):
     return f.drawing()
 
 
-def folded_pic(cuts, labels=False, scale=13):
+def folded_pic(cuts, labels=False, scale=13, margin=None):
     """The folded square: folds dashed (left and bottom), paper edges solid, cut parts dark."""
-    f = Fig(Q, Q, scale=scale, margin=14 if labels else 6)
+    f = Fig(Q, Q, scale=scale, margin=margin if margin is not None else (14 if labels else 6))
     f.rect(0, 0, Q, Q, fill=colors.white, width=0.1)
     for poly in cuts:
         f.poly(poly, fill=colors.Color(0.35, 0.35, 0.35), width=0.6)
@@ -117,8 +117,47 @@ def folded_pic(cuts, labels=False, scale=13):
     return f.drawing()
 
 
+def _arrowhead(f, tip, d, size=0.55):
+    """Two short strokes at `tip`, for an arrow travelling in direction d = (dx, dy)."""
+    dx, dy = d
+    n = (dx * dx + dy * dy) ** 0.5
+    dx, dy = dx / n, dy / n
+    for s in (1, -1):
+        f.line(tip, (tip[0] - size * (dx + s * 0.6 * dy), tip[1] - size * (dy - s * 0.6 * dx)), width=1)
+
+
+def _arrow_pic(scale=8):
+    f = Fig(1.6, Q, scale=scale, margin=12)
+    f.line((0, 0.8 * Q), (1.6, 0.8 * Q), width=1)
+    _arrowhead(f, (1.6, 0.8 * Q), (1, 0))
+    return f.drawing()
+
+
+def fold_strip(scale=8):
+    """How the paper is folded: the square, folded left onto right, then bottom onto top."""
+    a = Fig(2 * Q, 2 * Q, scale=scale, margin=12)
+    a.rect(0, 0, 2 * Q, 2 * Q, fill=colors.white, width=1.1)
+    a.line((Q, 0), (Q, 2 * Q), dash=True, width=1)
+    a.arc(Q, 2 * Q + 0.3, Q * 0.55, 175, 5, width=1, ry=1.0)          # left half over to the right
+    _arrowhead(a, (Q + Q * 0.55, 2 * Q + 0.3), (0.3, -1))
+    b = Fig(Q, 2 * Q, scale=scale, margin=12)
+    b.rect(0, 0, Q, 2 * Q, fill=colors.white, width=1.1)
+    b.line((0, Q), (Q, Q), dash=True, width=1)
+    b.arc(Q + 0.3, Q, 1.0, -85, 85, width=1, ry=Q * 0.55)             # bottom half up onto the top
+    _arrowhead(b, (Q + 0.3, Q + Q * 0.55), (-1, 0.3))
+    return row([a.drawing(), _arrow_pic(scale), b.drawing(), _arrow_pic(scale), folded_pic([], scale=scale, margin=12)],
+               gap=2)
+
+
+def folding_figure(cuts=None, labels=False):
+    """The fold strip, then (bigger) the small square with its cut or its corner names."""
+    if cuts is None and not labels:
+        return fold_strip()
+    return row([fold_strip(), _arrow_pic(), folded_pic(cuts or [], labels=labels)], gap=2)
+
+
 INTRO = ("A square piece of paper is folded in half, and in half again, so that it is a small square "
-         "(the dashed sides are the folds).")
+         "(see the picture: the dashed sides of the small square are the folds).")
 
 
 def _possible(rng):
@@ -169,7 +208,7 @@ def which_cannot(rng, harder):
     after = "Which design <i>cannot</i> be made this way?"
     sol = (f"The cut goes through four layers, so it appears four times, mirrored over both folds. "
            f"Design {'ABCDE'[k]} is impossible: {why}.")
-    return Question(text=text, after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
+    return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
                     choice_figures=[design_pic(p) for p in pics], solution=sol)
 
 
@@ -195,7 +234,7 @@ def which_result(rng, harder):
     after = "What does the paper look like?"
     sol = (f"The cut corner is {'the centre of the paper' if corner == 'centre' else 'a real corner of the paper' if corner == 'corner' else 'the middle of a side of the paper'} "
            f"(look where the folds are). Mirrored four times it gives {WHAT[corner]}: design {'ABCDE'[k]}.")
-    return Question(text=text, figure=folded_pic([cut]), after_figure=after,
+    return Question(text=text, figure=folding_figure([cut]), after_figure=after,
                     choices=[f"design {c}" for c in "ABCDE"], answer=k,
                     choice_figures=[design_pic(p) for p in pics], solution=sol)
 
@@ -217,7 +256,7 @@ def which_can(rng, harder):
     after = "Which design <i>can</i> be made this way?"
     sol = (f"A single cut appears four times, the same on the left and right and on the top and bottom. "
            f"Only design {'ABCDE'[k]} looks like that ({WHAT[spec[0]]}).")
-    return Question(text=text, after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
+    return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
                     choice_figures=[design_pic(p) for p in pics], solution=sol)
 
 
@@ -237,7 +276,7 @@ def count_pieces(rng, harder):
            4: "The cut is at a real corner of the paper: the four layers are not joined there, so it "
               "gives 4 separate pieces (the four corners)."}[ans]
     choices = ["1", "2", "3", "4", "8"]
-    return Question(text=text, figure=folded_pic([cut]), after_figure=after, choices=choices,
+    return Question(text=text, figure=folding_figure([cut]), after_figure=after, choices=choices,
                     answer=choices.index(str(ans)), solution=sol)
 
 
@@ -248,9 +287,9 @@ def which_corner(rng, harder):
     kind = rng.choice(["triangle", "square"])
     design = unfold(cut_shape(corner, kind, 1.5))
     names = dict(zip(["side_tb", "corner", "side_lr", "centre"], "ABCD"))
-    fig = row([folded_pic([], labels=True), design_pic(design, scale=9)], gap=30)
-    text = (INTRO + " One corner of the small square (left picture) was cut off, and after unfolding the "
-            "paper looks like the right picture.")
+    fig = column([folding_figure(labels=True), design_pic(design, scale=9)], gap=8)
+    text = (INTRO + " One corner of the small square was cut off, and after unfolding the "
+            "paper looks like the bottom picture.")
     after = "Which corner was cut off?"
     choices = ["corner A", "corner B", "corner C", "corner D", "it cannot be made with one cut"]
     sol = (f"The design shows {WHAT[corner]}. That comes from cutting corner {names[corner]} "
