@@ -13,7 +13,7 @@ META = {
     "source": "2007 Q3",
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
-    "version": 1,
+    "version": 2,
 }
 
 WORDS = ["KANGAROO", "PROBLEM", "MATHEMATICS", "ELEPHANT", "GIRAFFE", "BANANA", "TEACHER",
@@ -82,10 +82,16 @@ def only_in_first(rng, harder):
     a, b = _pair(rng, 1, 4, need_only=True)
     only = sorted(set(a) - set(b))
     ans = len(only)
-    text = f"Which letters of the word {a} do <i>not</i> appear in the word {b}?"
-    after = "How many different letters are there like that?"
-    sol = f"{a} uses {len(set(a))} different letters; {_letters(common(a, b))} are also in {b}. The others, {_letters(only)}, make {ans}."
-    mistakes = [len(a) - len(common(a, b)), len(set(b) - set(a)), ans + 1, ans - 1, len(set(a))]
+    name = rng.choice(["Mia", "Leo", "Sara", "Tom"])
+    left = sum(1 for ch in a if ch not in b)
+    text = (f"{name} writes the word {a}. Then {name} crosses out every letter that also appears "
+            f"in the word {b}.")
+    after = "How many different letters are not crossed out?"
+    sol = (f"Crossed out: {_letters(common(a, b))} (they are in {b}). Left: {_letters(only)}, "
+           f"so {ans} different letters" + (f" (a letter that is left twice counts once)." if left != ans else "."))
+    mistakes = [left,                       # counted repeated letters
+                len(set(b) - set(a)),       # did it the other way round
+                len(common(a, b)), ans + 1, ans - 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0)
     return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
 
