@@ -11,8 +11,9 @@ is fixed so they do not count. Children list a few by hand and miss some, or
 add instead of multiply.
 """
 import math
+from itertools import permutations, product
 
-from kangaroo import Fig, Question, numeric_choices, variant
+from kangaroo import Fig, Question, numeric_choices, value_check, variant
 
 META = {
     "source": "2002 Q22",
@@ -50,6 +51,11 @@ def table_pic(n, fixed_letter, round_table=True):
     return f.drawing()
 
 
+def count(things, places, ok=lambda arr: True):
+    """Answer check: list every arrangement of `things` in `places` seats and count the good ones."""
+    return sum(1 for arr in permutations(things, places) if ok(arr))
+
+
 @variant(difficulty=1)
 def fixed_seat(rng, harder):
     """The original: one friend always takes the same chair."""
@@ -66,7 +72,8 @@ def fixed_seat(rng, harder):
     mistakes = [_fact(n), n - 1, n, _fact(n) + 1, (n - 1) * (n - 1), 2 * (n - 1)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=table_pic(n, fixed[0]), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count(names, n, lambda arr: arr[0] == fixed)))
 
 
 @variant(difficulty=1)
@@ -82,7 +89,8 @@ def photo_line(rng, harder):
            f"{_chain(n)} = {ans}.")
     mistakes = [n, n * n, n + (n - 1) + (n - 2), _fact(n - 1), 2 * n, ans + 1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count(names, n)))
 
 
 @variant(difficulty=2)
@@ -98,7 +106,8 @@ def ends_fixed(rng, harder):
     sol = (f"Only the {n - 2} children in the middle can change places: {_chain(n - 2)} = {ans} ways.")
     mistakes = [_fact(n), _fact(n - 1), n - 2, 2 * _fact(n - 2), n, (n - 2) * (n - 2)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count(names, n, lambda arr: arr[0] == a and arr[-1] == b)))
 
 
 @variant(difficulty=2)
@@ -119,7 +128,8 @@ def outfits(rng, harder):
            + f": {t} × {b}" + (f" × {s}" if s > 1 else "") + f" = {ans}.")
     mistakes = [t + b + s if s > 1 else t + b, t * b, t * b + s, t + b * s, ans + 1, ans * 2]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(list(product(range(t), range(b), range(s))))))
 
 
 @variant(difficulty=3)
@@ -138,7 +148,8 @@ def side_by_side(rng, harder):
            f"2 × {_fact(n - 1)} = {ans}.")
     mistakes = [_fact(n - 1), _fact(n), _fact(n) - ans, n - 1, 2 * (n - 1), ans + 2]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count(names, n, lambda arr: abs(arr.index(a) - arr.index(b)) == 1)))
 
 
 @variant(difficulty=3)
@@ -155,4 +166,5 @@ def stripes(rng, harder):
            f"{k} × {k - 1} × {k - 2} = {ans}.")
     mistakes = [k * k * k, 3 * k, k + (k - 1) + (k - 2), k * (k - 1), _fact(k), ans // 6 if ans % 6 == 0 else -1]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, count(cols, 3)))

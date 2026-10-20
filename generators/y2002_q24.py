@@ -9,7 +9,9 @@ Core skill: finding the next number with a property by thinking about place valu
 keep the left digits if you can and change as few digits on the right as
 possible, checking each candidate instead of guessing.
 """
-from kangaroo import Question, numeric_choices, variant
+from itertools import combinations, permutations
+
+from kangaroo import Question, numeric_choices, value_check, variant
 
 META = {
     "source": "2002 Q24",
@@ -76,6 +78,28 @@ def _mistakes(n, ok, ans):
     return out
 
 
+# Answer checks: build every number with the property directly (not by counting up).
+def built_distinct(d):
+    return {int("".join(p)) for p in permutations("0123456789", d) if p[0] != "0"}
+
+
+def built_palindromes(d):
+    half = (d + 1) // 2
+    return {int(str(h) + str(h)[:d - half][::-1]) for h in range(10 ** (half - 1), 10 ** half)}
+
+
+def built_increasing(d):
+    return {int("".join(c)) for c in combinations("123456789", d)}
+
+
+def built_same(d):
+    return {int(str(k) * d) for k in range(1, 10)}
+
+
+def gap_after(n, built):
+    return min(m for m in built if m > n) - n
+
+
 @variant(difficulty=1)
 def all_different(rng, harder):
     """The original."""
@@ -87,7 +111,8 @@ def all_different(rng, harder):
     sol = (f"Counting up, every number before {nx} repeats a digit. {nx} has all different digits: "
            f"{nx} − {n} = {ans}.")
     choices, ai = numeric_choices(ans, _mistakes(n, distinct, ans), rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, gap_after(n, built_distinct(digits))))
 
 
 @variant(difficulty=1)
@@ -100,7 +125,8 @@ def next_palindrome(rng, harder):
     after = "After how many more kilometres will this happen again?"
     sol = f"The next such number is {nx}, so {nx} − {n} = {ans}."
     choices, ai = numeric_choices(ans, _mistakes(n, palindrome, ans) + [100, 10, 11, 110], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, gap_after(n, built_palindromes(digits))))
 
 
 @variant(difficulty=2)
@@ -126,7 +152,8 @@ def last_time(rng, harder):
     if nx:
         mistakes.append(nx - n)
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, n - max(m for m in built_distinct(digits) if m < n)))
 
 
 @variant(difficulty=2)
@@ -146,7 +173,8 @@ def same_digits(rng, harder):
     mistakes = [last_only, ans + 1, ans - 1, int(str(d + 2) * digits) - n if d + 2 <= 9 else -1,
                 n - rep]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, gap_after(n, built_same(digits))))
 
 
 @variant(difficulty=3)
@@ -160,4 +188,5 @@ def going_up(rng, harder):
     sol = (f"Keep as many digits on the left as possible. The next such number is {nx}: "
            f"{nx} − {n} = {ans}.")
     choices, ai = numeric_choices(ans, _mistakes(n, increasing, ans), rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, gap_after(n, built_increasing(digits))))
