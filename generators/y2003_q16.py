@@ -10,6 +10,7 @@ numbers use different amounts, so split the count at 9 and 99. Children treat
 every page as one digit, or every page as two.
 """
 from kangaroo import Question, numeric_choices, variant
+from kangaroo.numbers import digits_upto
 
 META = {
     "source": "2003 Q16",
@@ -20,10 +21,6 @@ META = {
 
 THINGS = [("book", "pages", "page numbers"), ("street", "houses", "house numbers"),
           ("theatre", "seats", "seat numbers"), ("hotel", "rooms", "room numbers")]
-
-
-def digits_upto(n):
-    return sum(len(str(k)) for k in range(1, n + 1))
 
 
 def _split(n):
