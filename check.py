@@ -28,17 +28,21 @@ from kangaroo.render import build_pdf  # noqa: E402
 
 
 def stress(gen, runs: int) -> list[str]:
+    """Generate every variant `runs` times (normal and harder); validate() runs each answer check."""
     errors = []
     for v in gen.variants:
         for harder in (False, True):
             for i in range(runs):
                 rng = random.Random(i * 7919 + harder)
                 try:
-                    gen.generate(rng, harder=harder, only_variant=v.__name__)
+                    q = gen.generate(rng, harder=harder, only_variant=v.__name__)
+                    if q.check is None:
+                        raise ValueError("no answer check (set Question.check)")
                 except Exception as e:  # noqa: BLE001
                     errors.append(f"{v.__name__} harder={harder} seed={i}: {e!r}")
                     if len(errors) > 5:
                         return errors
+                    break
     return errors
 
 

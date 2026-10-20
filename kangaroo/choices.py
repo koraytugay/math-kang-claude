@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import random
+import re
 
 
 def numeric_choices(correct: int, mistakes: list[int], rng: random.Random,
@@ -62,3 +63,20 @@ def text_choices(correct: str, wrong: list[str], rng: random.Random) -> tuple[li
     opts = rng.sample(wrong, 4) + [correct]
     rng.shuffle(opts)
     return opts, opts.index(correct)
+
+
+def number_in(label: str) -> int:
+    """The (first) whole number written in an option label, e.g. "18 cubes" -> 18."""
+    m = re.search(r"-?\d+", label)
+    if not m:
+        raise ValueError(f"no number in option {label!r}")
+    return int(m.group())
+
+
+def value_check(choices: list[str], value: int):
+    """A Question.check for numeric options: option i is correct iff it shows `value`.
+
+    Pass a value worked out independently (brute force, counting, simulation), not the
+    same expression the generator used to build the options.
+    """
+    return lambda i: number_in(choices[i]) == value

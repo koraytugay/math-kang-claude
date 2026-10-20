@@ -20,7 +20,7 @@ META = {
     "source": "2002 Q7",
     "skill": "Visual matching: find which piece of a line drawing fits / does not fit",
     "topics": ["spatial", "visual"],
-    "version": 1,
+    "version": 2,
 }
 
 YMAX = 3          # highest level of the skyline (in units)
@@ -180,7 +180,8 @@ def make_fake(sky, real_mids, rng, subtle, n_feat):
     for _ in range(400):
         base = rng.choice(piece_mids(sky, n_feat))
         r = mutate(base, rng, subtle)
-        if r and not fits(r[0], sky) and r[0] not in real_mids and width(r[0]) <= MAX_PIECE_W:
+        if (r and not fits(r[0], sky) and r[0] not in real_mids and width(r[0]) <= MAX_PIECE_W
+                and not drawn_fits(r[0], sky)):   # token matching misses e.g. a short step inside a tall one
             return r
     return None
 
@@ -203,6 +204,33 @@ def build(rng, n_feat, n_real, n_fake, subtle, n_features):
             fakes.append(r)
         if ok:
             return sky, real, fakes
+
+
+def _on_polyline(q, pts, eps=1e-6):
+    qx, qy = q
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        dx, dy = x2 - x1, y2 - y1
+        L = dx * dx + dy * dy
+        t = 0 if L == 0 else max(0.0, min(1.0, ((qx - x1) * dx + (qy - y1) * dy) / L))
+        if (x1 + t * dx - qx) ** 2 + (y1 + t * dy - qy) ** 2 < eps:
+            return True
+    return False
+
+
+def drawn_fits(mid, sky):
+    """Answer check by geometry, not tokens: can the drawn piece be slid onto the drawn line?"""
+    piece = trace(with_stubs(mid))
+    dense = piece + [((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) for a, b in zip(piece, piece[1:])]
+    line = trace(sky)
+    x_end = max(p[0] for p in line)
+    for k in range(int(2 * x_end) + 1):
+        x0 = k / 2
+        starts = {round(y1, 6) for (xa, y1), (xb, y2) in zip(line, line[1:])
+                  if abs(y1 - y2) < 1e-9 and xa <= x0 <= xb}
+        for y0 in starts:
+            if all(_on_polyline((x0 + px, y0 + py), line) for px, py in dense):
+                return True
+    return False
 
 
 def scale_for(sky):
@@ -242,7 +270,8 @@ def _letters_question(rng, harder, want_real):
         sol = f"All the other pieces can be found in the line, but this one cannot: {items[answer][1]}."
     return Question(text=intro, figure=draw(sky, s), after_figure=ask,
                     choices=[f"piece {c}" for c in "ABCDE"], answer=answer,
-                    choice_figures=[draw(with_stubs(m), s) for m, _ in items], solution=sol)
+                    choice_figures=[draw(with_stubs(m), s) for m, _ in items], solution=sol,
+                    check=lambda i: drawn_fits(items[i][0], sky) == want_real)
 
 
 @variant(difficulty=1)
@@ -292,7 +321,8 @@ def how_many_fit(rng, harder):
           "Not: " + "; ".join(wrong) + "."
     sky_fig = draw(sky, s)
     return Question(text=text, figure=_stack(sky_fig, f.drawing()), after_figure=after,
-                    choices=[str(c) for c in counts], answer=counts.index(n_real), solution=sol)
+                    choices=[str(c) for c in counts], answer=counts.index(n_real), solution=sol,
+                    check=lambda i: counts[i] == sum(drawn_fits(m, sky) for m, _ in items))
 
 
 def _stack(top, bottom, gap=10):

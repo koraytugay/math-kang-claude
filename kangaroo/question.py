@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 LETTERS = "ABCDE"
 
@@ -20,6 +20,10 @@ class Question:
     source: str = ""               # filled in by the registry, e.g. "2002 Q6"
     variant: str = ""              # filled in by the registry, name of the variant used
     meta: dict = field(default_factory=dict)
+    # Independent re-check, separate from how the answer was built: check(i) says whether
+    # option i is correct (re-solve from the shown data: brute force, simulation, a solver).
+    # validate() demands that exactly one option passes, and that it is `answer`.
+    check: Optional[Callable[[int], bool]] = field(default=None, repr=False)
 
     @property
     def answer_letter(self) -> str:
@@ -39,3 +43,8 @@ class Question:
             raise ValueError("choice_figures needs exactly 5 drawings")
         if self.difficulty not in (1, 2, 3):
             raise ValueError(f"difficulty must be 1..3, got {self.difficulty}")
+        if self.check is not None:
+            ok = [i for i in range(5) if self.check(i)]
+            if ok != [self.answer]:
+                raise ValueError(f"check: correct options are {[LETTERS[i] for i in ok]}, "
+                                 f"answer says {LETTERS[self.answer]} (choices {self.choices})")

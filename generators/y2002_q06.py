@@ -9,7 +9,10 @@ already know; cutting adds the cut line twice and removes outer edges.
 Variants approach this idea from different angles, from a direct rerun
 (Part A) to working backwards from the pieces (Part C).
 """
-from kangaroo import Fig, Question, numeric_choices, variant
+from fractions import Fraction
+
+from kangaroo import Fig, Question, numeric_choices, value_check, variant
+from kangaroo.geometry import perimeter, rect_pts
 from kangaroo.figures import GREY
 
 META = {
@@ -56,6 +59,7 @@ def square_minus_strip(rng, harder):
         sol = (f"Square: 4 × {s} = {4*s} cm. Rectangle: {w} + {s} + {w} + {s} = {p_rect} cm. "
                f"Difference {4*s} − {p_rect} = {ans} cm.")
         mistakes = [s - w, 2 * w, 2 * s, p_rect, 4 * (s - w), 4 * s - s - w]
+        piece = rect_pts(0, 0, w, s)
     else:
         rect = top + tr + br + bot
         text = (f"<i>{sq}</i> is a square. Its side is {s} cm. The line <i>{top}{bot}</i> cuts it "
@@ -65,11 +69,13 @@ def square_minus_strip(rng, harder):
         sol = (f"<i>{rect}</i> has sides {s - w} and {s} cm, perimeter {p_rect} cm. "
                f"Square: {4*s} cm. Difference {ans} cm (= 2 × {w}).")
         mistakes = [2 * (s - w), w, s - w, 2 * s, p_rect, 4 * w]
+        piece = rect_pts(w, 0, s - w, s)
     after = (f"How many centimetres is the perimeter of the square <i>{sq}</i> larger "
              f"than that of the rectangle <i>{rect}</i>?")
     choices, a = numeric_choices(ans, mistakes, rng, unit="cm", lo=1)
     return Question(text=text, figure=_square_with_cut(s, w, names), after_figure=after,
-                    choices=choices, answer=a, solution=sol)
+                    choices=choices, answer=a, solution=sol,
+                    check=value_check(choices, perimeter(rect_pts(0, 0, s, s)) - perimeter(piece)))
 
 
 CONTEXTS = [
@@ -109,8 +115,12 @@ def pieces_total(rng, harder):
            f"The widths of the pieces don't matter!")
     mistakes = [P, k * P, P + (k - 1) * s, 2 * P, P + 2 * s, P + k * s]
     choices, a = numeric_choices(ans, mistakes, rng, unit=u, lo=1)
+    unit = Fraction(s, 12)        # drawing units -> real length
+    edges = [0] + cuts + [12]
+    total = sum(perimeter(rect_pts(x0 * unit, 0, (x1 - x0) * unit, 12 * unit)) for x0, x1 in zip(edges, edges[1:]))
     return Question(text=intro.format(P=P, u=u, k=k), figure=f.drawing(),
-                    after_figure=ask.format(k=k), choices=choices, answer=a, solution=sol)
+                    after_figure=ask.format(k=k), choices=choices, answer=a, solution=sol,
+                    check=value_check(choices, total))
 
 
 @variant(difficulty=2)
@@ -136,7 +146,7 @@ def corner_cut(rng, harder):
     mistakes = [P - 4 * c, P - 2 * c, P + 2 * c, P - c, a + b, P + 4 * c]
     choices, ai = numeric_choices(P, mistakes, rng, unit="cm", lo=1)
     return Question(text=text, figure=f.drawing(), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol, check=value_check(choices, perimeter(pts)))
 
 
 @variant(difficulty=3)
@@ -165,7 +175,7 @@ def notch(rng, harder):
     mistakes = [base, base - n, base + d, base + 2 * n, base + 2 * d + 2 * n, base - n + 2 * d]
     choices, ai = numeric_choices(P, mistakes, rng, unit="cm", lo=1)
     return Question(text=text, figure=f.drawing(), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol, check=value_check(choices, perimeter(pts)))
 
 
 @variant(difficulty=3)
@@ -195,8 +205,11 @@ def strips_to_square(rng, harder):
            f"{p} ÷ {2*k+2} = {m}, so the side is {k} × {m} = {s} cm"
            + ("." if ask_side else f" and the perimeter is {4*s} cm."))
     choices, ai = numeric_choices(ans, mistakes, rng, unit="cm", lo=1)
+    sides = [S for S in range(1, 10 * p) if perimeter(rect_pts(0, 0, Fraction(S, k), S)) == p]
+    assert len(sides) == 1
     return Question(text=text, figure=f.drawing(), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, sides[0] if ask_side else 4 * sides[0]))
 
 
 @variant(difficulty=3)
@@ -224,5 +237,9 @@ def two_perimeters(rng, harder):
     tot = p1 + p2
     mistakes = [tot, tot // 2, tot // 4, abs(p2 - p1), s, 4 * s, 2 * s, tot - s]
     choices, ai = numeric_choices(ans, mistakes, rng, unit="cm", lo=1)
+    fits = {S for S in range(1, p1 + p2) for W in range(1, S)
+            if perimeter(rect_pts(0, 0, W, S)) == p1 and perimeter(rect_pts(W, 0, S - W, S)) == p2}
+    assert len(fits) == 1
+    S = fits.pop()
     return Question(text=text, figure=_square_with_cut(s, w, names), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol, check=value_check(choices, 4 * S if ask_perim else S))
