@@ -33,4 +33,4 @@ an exam is just `python make_exam.py`.
 ## Conventions
 - One file per pool question, even if two questions share a skill (share code via `kangaroo/`).
 - Don't change `kangaroo/` APIs in ways that break existing generators; run `check.py` after any library change.
-- Exams and previews go to `output/` (not committed).
+- Exams and previews go to `output/`, which is committed to git (keep generated PDFs there).

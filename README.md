@@ -86,7 +86,7 @@ git commit -m "Describe what changed"
 git push
 ```
 
-Generated exams (`output/`) and the Python environment (`.venv/`) are ignored by git.
+Generated exams in `output/` are committed too; only the Python environment (`.venv/`) is ignored by git.
 
 ## Troubleshooting
 
@@ -113,7 +113,7 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | `check.py` | Coverage report, self-tests, previews |
 | `feedback.md` | Notes on generated questions, for the agent to act on |
 | `CLAUDE.md` | Instructions for the AI agent that writes generators |
-| `output/` | Generated PDFs (not committed) |
+| `output/` | Generated PDFs (committed) |
 
 ## Status
 
