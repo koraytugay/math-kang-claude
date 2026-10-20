@@ -144,5 +144,6 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2007 Q17 — painted cube: small cubes with 2 painted faces | `y2007_q17.py` | two_faces, always_eight, painted_brick, not_underneath, how_big |
 | 2007 Q21 — growing grids: white cells in the next diagram | `y2007_q21.py` | next_white, border_next, far_diagram, black_and_total, which_diagram |
 | 2007 Q23 — digits needed to write 1 to 100 | `y2007_q23.py` | one_to_round, across_hundred, count_zeros, even_only, with_commas |
+| 2007 Q24 — fold a square twice, cut a corner, unfold | `y2007_q24.py` | which_cannot, which_result, which_can, count_pieces, which_corner |
 
 Run `python3 check.py` for the full, current list.
