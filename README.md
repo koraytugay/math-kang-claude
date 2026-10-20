@@ -21,6 +21,9 @@ window, and then `python3 make_exam.py` uses it. Without activating, write
 
 ## 1. Make an exam (no AI needed)
 
+The commands below assume `source .venv/bin/activate` was run in this Terminal window
+(otherwise replace `python3` with `.venv/bin/python`).
+
 ```
 python3 make_exam.py                  # 20 questions
 python3 make_exam.py -n 24 --harder   # more Part C questions, bigger numbers
@@ -70,6 +73,33 @@ The next time the AI agent works on the project, it applies the feedback and tic
 The agent follows the rules in `CLAUDE.md`: one generator per pool question, 4–6
 variants across Parts A–C, answers computed in code, wrong options based on likely
 mistakes, a self-test, and a visual review of the preview PDF.
+
+## Saving changes to GitHub
+
+The project lives at https://github.com/koraytugay/math-kang-claude. After adding tests,
+editing `question-pool.txt` or `feedback.md`, or after the agent adds or improves
+generators:
+
+```
+git add .
+git commit -m "Describe what changed"
+git push
+```
+
+Generated exams (`output/`) and the Python environment (`.venv/`) are ignored by git.
+
+## Troubleshooting
+
+**`ModuleNotFoundError: No module named 'reportlab'`** (or the message
+"reportlab is not installed"): the one-time setup hasn't been done, or you ran plain
+`python3` without the environment. Run the setup steps above, then use
+`.venv/bin/python make_exam.py ...` (or `source .venv/bin/activate` first).
+
+**`pip install` says "externally-managed-environment"**: macOS/Homebrew Python blocks
+system-wide installs. Use the `.venv` setup above instead of `pip install` directly.
+
+**`git push` is rejected** (the remote has commits you don't have):
+`git pull --rebase origin main`, then `git push`.
 
 ## Project layout
 
