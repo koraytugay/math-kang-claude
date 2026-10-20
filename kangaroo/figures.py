@@ -35,9 +35,9 @@ class Fig:
     def rect(self, x, y, w, h, fill=None, width: float = 1.2):
         self.poly([(x, y), (x + w, y), (x + w, y + h), (x, y + h)], fill=fill, width=width)
 
-    def line(self, a, b, dash: bool = False, width: float = 1.2):
+    def line(self, a, b, dash: bool = False, width: float = 1.2, color=colors.black):
         (x1, y1), (x2, y2) = self.p(*a), self.p(*b)
-        ln = Line(x1, y1, x2, y2, strokeColor=colors.black, strokeWidth=width)
+        ln = Line(x1, y1, x2, y2, strokeColor=color, strokeWidth=width)
         if dash:
             ln.strokeDashArray = [3, 2]
         self.d.add(ln)

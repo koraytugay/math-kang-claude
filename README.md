@@ -123,7 +123,9 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2002 Q7 — which piece cannot belong to the skyline | `y2002_q07.py` | cannot_belong, can_belong, how_many_fit |
 | 2002 Q9 — balance: oranges and melons | `y2002_q09.py` | one_more_balances, both_sides, chain, grams, what_to_add |
 | 2002 Q11 — cracked clock with consecutive sums | `y2002_q11.py` | biggest_piece, which_picture, largest_sum, straight_crack, count_ways |
-| 2002 Q15 — flag silhouette | *skipped for now* | The answer depends on judging how cloth can fold, which a generator can't check reliably. Revisit later. |
+| 2002 Q15 — flag silhouette | `y2002_q15.py` | torn_flag, door, too_wide, count_possible, only_one_right. Wrong pictures only ever break one of two clear-cut rules (part of the pole edge is bare, or wider than the flag), so no cloth-folding judgement is needed. |
 | 2002 Q18 — who has which pet (logic) | `y2002_q18.py` | who_has, which_true, which_not_true |
+| 2002 Q20 — tunnel of cubes rebuilt as a pyramid | `y2002_q20.py` | count_tunnel, tunnel_to_pyramid, count_pyramid, fill_the_hole, not_enough, longer_tunnel |
+| 2002 Q21 — who cannot make 20 from three cards | `y2002_q21.py` | who_cannot, which_can, which_cannot, hidden_card, biggest |
 
 Run `python3 check.py` for the full, current list.
