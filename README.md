@@ -131,5 +131,9 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2002 Q24 — odometer: next number with all different digits | `y2002_q24.py` | all_different, next_palindrome, last_time, same_digits, going_up |
 | 2003 Q9 — blue cubes inside a red brick | `y2003_q09.py` | blue_inside, red_outside, painted, how_deep, thick_wall |
 | 2003 Q10 — 50 dm 50 cm 50 mm + 123 cm | `y2003_q10.py` | jump, longest, how_much_longer, pieces, not_equal |
+| 2003 Q12 — paper net folded into a house | `y2003_q12.py` | which_house, which_strip, how_many_houses, right_neighbour (simplified: a strip of four walls) |
+| 2003 Q16 — 35 digits for the page numbers | `y2003_q16.py` | pages_from_digits, digits_for_pages, count_one_digit, from_page, three_digit_pages |
+| 2003 Q17 — bar code with wide and narrow bars | `y2003_q17.py` | narrow_bars, fence, wide_bars, necklace, ends_differ |
+| 2003 Q18 — which two pieces cover the empty area | `y2003_q18.py` | one_piece, two_pieces, two_copies, three_pieces |
 
 Run `python3 check.py` for the full, current list.
