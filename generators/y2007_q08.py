@@ -19,7 +19,7 @@ META = {
     "source": "2007 Q8",
     "skill": "Completing a rectangle: the missing part has a fixed shape and size; turn pieces in your head",
     "topics": ["spatial", "geometry"],
-    "version": 1,
+    "version": 2,
 }
 
 NOTE = "Pieces may be turned and flipped over."
@@ -136,9 +136,9 @@ def complete_rectangle(rng, harder):
            f"Piece {'ABCDE'[k_ans]} (turned) fills it; the others have a square too many, too few, "
            f"or in the wrong place.")
     shown = [_show(o, rng) for o in opts]
-    return Question(text=text, figure=draw_shape(normalize(given), scale=11, fill=GREY),
+    return Question(text=text, figure=draw_shape(normalize(given), scale=13, fill=GREY),
                     choices=[f"piece {c}" for c in "ABCDE"], answer=k_ans,
-                    choice_figures=[draw_shape(o, scale=9) for o in shown], solution=sol,
+                    choice_figures=[draw_shape(o, scale=12) for o in shown], solution=sol,
                     check=lambda i: makes_rectangle(given, shown[i]))
 
 
@@ -162,7 +162,7 @@ def squares_missing(rng, harder):
     g = normalize(given)
     smallest = min(W * H for W in range(1, 3 * w) for H in range(1, 3 * h)
                    if all(x < W and y < H for x, y in g))          # every rectangle the piece fits in
-    return Question(text=text, figure=draw_shape(normalize(given), scale=12, fill=GREY), after_figure=after,
+    return Question(text=text, figure=draw_shape(normalize(given), scale=14, fill=GREY), after_figure=after,
                     choices=choices, answer=ai, solution=sol, check=value_check(choices, smallest - len(g)))
 
 
@@ -190,7 +190,7 @@ def two_make_rectangle(rng, harder):
     labels = [f"{i + 1} and {j + 1}" for i, j in pairs if (i, j) != good]
     choices, ai = text_choices(f"{good[0] + 1} and {good[1] + 1}", labels, rng)
     shown = [_show(p, rng) for p in pieces]
-    figs = [draw_shape(p, scale=10, label=str(i + 1)) for i, p in enumerate(shown)]
+    figs = [draw_shape(p, scale=12, fill=GREY, label=str(i + 1)) for i, p in enumerate(shown)]
     text = f"Which two of these pieces fit together to make a rectangle? {NOTE}"
     sol = (f"Pieces {good[0] + 1} and {good[1] + 1} have {len(pieces[good[0]]) + len(pieces[good[1]])} squares "
            f"together and fit into a {w} × {h} rectangle. No other pair does.")
@@ -232,5 +232,5 @@ def two_copies(rng, harder):
            + f". Only two copies of piece {'ABCDE'[k]} fit together like that.")
     shown = [_show(o, rng) for o in opts]
     return Question(text=text, choices=[f"piece {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[draw_shape(o, scale=9) for o in shown], solution=sol,
+                    choice_figures=[draw_shape(o, scale=12) for o in shown], solution=sol,
                     check=lambda i: makes_rectangle(shown[i], shown[i]))

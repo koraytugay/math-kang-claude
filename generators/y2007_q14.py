@@ -17,7 +17,7 @@ META = {
     "source": "2007 Q14",
     "skill": "Space in a box = length × width × height; count hidden cubes; subtract",
     "topics": ["counting", "spatial", "geometry"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Daniella", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -54,7 +54,7 @@ def empty_places(h, a, b, c, levels=None):
 
 
 def _pic(h, box):
-    s = 22 if max(box) <= 3 else 17
+    s = 22 if max(box) <= 3 else 19
     return draw_cubes(cells_of(h), scale=s, box=box)
 
 

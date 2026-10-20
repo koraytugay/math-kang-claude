@@ -10,7 +10,9 @@ from reportlab.lib import colors
 
 from .figures import Fig
 
-SIDE = colors.Color(0.86, 0.84, 0.80)   # shaded right-hand faces
+SIDE = colors.Color(0.80, 0.78, 0.74)   # shaded right-hand faces
+TOP = colors.Color(0.93, 0.93, 0.93)    # top faces, lighter than the sides, so depth reads at a glance
+GLASS = colors.Color(0.45, 0.45, 0.45)  # edges of a glass box: grey, so they don't look like cube edges
 DX, DY = 0.45, 0.38                     # how far one step of depth moves on paper
 
 
@@ -33,7 +35,7 @@ def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7, b
     if box:
         a, b, c = box
         for e in ((P(0, b, 0), P(a, b, 0)), (P(0, b, 0), P(0, b, c)), (P(0, 0, 0), P(0, b, 0))):
-            f.line(*e, dash=True, width=0.8)
+            f.line(*e, dash=True, width=0.8, color=GLASS)
 
     # painter's order: far rows first, then left to right, then bottom to top
     for (x, y, z) in sorted(cells, key=lambda c: (-c[1], c[0], c[2])):
@@ -42,7 +44,7 @@ def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7, b
                    fill=SIDE, width=width)
         if (x, y, z + 1) not in cells:
             f.poly([P(x, y, z + 1), P(x + 1, y, z + 1), P(x + 1, y + 1, z + 1), P(x, y + 1, z + 1)],
-                   fill=colors.white, width=width)
+                   fill=TOP, width=width)
         if (x, y - 1, z) not in cells:
             f.poly([P(x, y, z), P(x + 1, y, z), P(x + 1, y, z + 1), P(x, y, z + 1)],
                    fill=colors.white, width=width)
@@ -52,7 +54,7 @@ def draw_cubes(cells, scale: float = 9, margin: float = 4, width: float = 0.7, b
                  ((a, 0, 0), (a, b, 0)), ((a, b, 0), (a, b, c)), ((a, 0, c), (a, b, c)),
                  ((0, 0, c), (0, b, c)), ((0, b, c), (a, b, c))]
         for p, q in front:
-            f.line(P(*p), P(*q), width=1.1)
+            f.line(P(*p), P(*q), width=1.1, color=GLASS)
     return f.drawing()
 
 

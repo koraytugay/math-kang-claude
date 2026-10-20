@@ -11,7 +11,7 @@ if they really fit. Children match by "looks similar" and skip the counting.
 from itertools import combinations
 
 from kangaroo import Question, variant
-from kangaroo.figures import row
+from kangaroo.figures import GREY, row
 from kangaroo.polyomino import (can_tile, covers, draw_hole, draw_shape, neighbours, normalize,
                                 orientations, random_shape, same_shape)
 
@@ -19,7 +19,7 @@ META = {
     "source": "2003 Q18",
     "skill": "Covering a shape with pieces of squares: count the squares, then turn the pieces",
     "topics": ["spatial", "geometry", "counting"],
-    "version": 1,
+    "version": 2,
 }
 
 NOTE = "The pieces may be turned and flipped over."
@@ -65,8 +65,9 @@ def _distractor(rng, size, avoid):
 
 
 def _pieces_fig(region, shown):
-    figs = [draw_hole(region, scale=9)]
-    figs += [draw_shape(p, scale=9, label=str(i + 1)) for i, p in enumerate(shown)]
+    sc = 13 if len(shown) <= 4 else 11          # five pieces must still fit across the page
+    figs = [draw_hole(region, scale=sc)]
+    figs += [draw_shape(p, scale=sc, fill=GREY, label=str(i + 1)) for i, p in enumerate(shown)]
     return row(figs, gap=14)
 
 
@@ -96,11 +97,11 @@ def one_piece(rng, harder):
     rng.shuffle(opts)
     k = opts.index(region)
     shown = [_show(p, rng) for p in opts]
-    figs = [draw_shape(p, scale=9) for p in shown]
+    figs = [draw_shape(p, scale=12, fill=GREY) for p in shown]
     text = f"Which piece covers the empty area exactly? {NOTE}"
     sol = (f"The empty area has {n} squares; all pieces do too, so look at the shape. Turn piece "
            f"{'ABCDE'[k]} and it fits exactly; each of the others has one square in a different place.")
-    return Question(text=text, figure=draw_hole(region, scale=9), choices=[f"piece {c}" for c in "ABCDE"],
+    return Question(text=text, figure=draw_hole(region, scale=12), choices=[f"piece {c}" for c in "ABCDE"],
                     answer=k, choice_figures=figs, solution=sol, check=lambda i: covers(region, [shown[i]]))
 
 
@@ -183,8 +184,8 @@ def two_copies(rng, harder):
     sol = (f"The empty area has {2 * n} squares, so each piece has {n}; every option has {n}. "
            f"Only two copies of piece {'ABCDE'[k]} fit together into the shape of the hole.")
     shown = [_show(o, rng) for o in opts]
-    return Question(text=text, figure=draw_hole(region, scale=9), choices=[f"piece {c}" for c in "ABCDE"],
-                    answer=k, choice_figures=[draw_shape(o, scale=9) for o in shown],
+    return Question(text=text, figure=draw_hole(region, scale=12), choices=[f"piece {c}" for c in "ABCDE"],
+                    answer=k, choice_figures=[draw_shape(o, scale=12, fill=GREY) for o in shown],
                     solution=sol, check=lambda i: covers(region, [shown[i], shown[i]]))
 
 

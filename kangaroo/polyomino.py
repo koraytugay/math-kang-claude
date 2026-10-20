@@ -95,8 +95,12 @@ def draw_shape(cells, scale: float = 9, fill=colors.white, margin: float = 3, la
     return f.drawing()
 
 
+DARK = colors.Color(0.38, 0.38, 0.38)
+
+
 def draw_hole(region, scale: float = 9, pad: int = 1):
-    """A rectangle of grey squares with the region left empty (white, thin grid)."""
+    """A rectangle of dark squares with the region left empty (white, thin grid), so the empty
+    shape stands out like a hole."""
     xs = [x for x, _ in region]; ys = [y for _, y in region]
     x0, x1, y0, y1 = min(xs) - pad, max(xs) + pad, min(ys) - pad, max(ys) + pad
     W, H = x1 - x0 + 1, y1 - y0 + 1
@@ -106,7 +110,7 @@ def draw_hole(region, scale: float = 9, pad: int = 1):
             if (x, y) in region:
                 f.rect(x - x0, y - y0, 1, 1, fill=colors.white, width=0.3)
             else:
-                f.rect(x - x0, y - y0, 1, 1, fill=GREY, width=0.9)
+                f.rect(x - x0, y - y0, 1, 1, fill=DARK, width=0.6)
     # outline of the hole drawn strong so its shape is clear
     for x, y in region:
         for (nx, ny), seg in (((x + 1, y), ((x + 1, y), (x + 1, y + 1))), ((x - 1, y), ((x, y), (x, y + 1))),
