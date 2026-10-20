@@ -14,7 +14,7 @@ design is always symmetric left-right and top-bottom.
 from reportlab.graphics.shapes import Polygon
 from reportlab.lib import colors
 
-from kangaroo import Fig, Question, variant
+from kangaroo import Fig, Question, value_check, variant
 from kangaroo.figures import GREY, column, row
 
 META = {
@@ -49,6 +49,70 @@ def unfold(poly):
         for my in (1, -1):
             out.append([(mx * x, my * y) for x, y in poly])
     return _dedupe(out)
+
+
+# ---------------------------------------------------------------- answer checks
+# The paper is split into N x N little cells (i, j); folding twice puts cell i on top of cell
+# N - 1 - i (left-right) and likewise for j, so the folded square is i, j >= N / 2.
+N = 30                      # no cell centre lies on a cut line (cuts are at 1.5 from a corner)
+H = N // 2
+
+
+def _centre(i):
+    return -Q + (i + 0.5) * 2 * Q / N
+
+
+def _inside(pt, poly):
+    """Ray casting: is the point inside the polygon?"""
+    x, y = pt
+    hit = False
+    for (x1, y1), (x2, y2) in zip(poly, poly[1:] + poly[:1]):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            hit = not hit
+    return hit
+
+
+def holes(polys):
+    """The cells of the paper that a drawn design has cut away."""
+    return frozenset((i, j) for i in range(N) for j in range(N)
+                     if any(_inside((_centre(i), _centre(j)), p) for p in polys))
+
+
+def _on_top(i):
+    """The cell of the folded square that cell i ends up under."""
+    return i if i >= H else N - 1 - i
+
+
+def cut_through_layers(cut):
+    """Fold, cut, unfold: every cell that lies under the cut when the paper is folded."""
+    return frozenset((i, j) for i in range(N) for j in range(N)
+                     if _inside((_centre(_on_top(i)), _centre(_on_top(j))), cut))
+
+
+def pieces_cut_off(cells):
+    """How many separate bits of paper fall out (cells joined side to side)."""
+    left, n = set(cells), 0
+    while left:
+        n += 1
+        todo = [left.pop()]
+        while todo:
+            i, j = todo.pop()
+            for nb in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+                if nb in left:
+                    left.discard(nb)
+                    todo.append(nb)
+    return n
+
+
+def can_make(polys):
+    """A design comes from cutting one corner of the folded square if it looks the same flipped
+    left-right and top-bottom, and folded up it is one piece at exactly one corner."""
+    cells = holes(polys)
+    if not cells or any((N - 1 - i, j) not in cells or (i, N - 1 - j) not in cells for i, j in cells):
+        return False
+    folded = {(i, j) for i, j in cells if i >= H and j >= H}
+    corners = {(H, H), (N - 1, N - 1), (N - 1, H), (H, N - 1)}
+    return pieces_cut_off(folded) == 1 and len(folded & corners) == 1
 
 
 def _key(poly):
@@ -209,7 +273,8 @@ def which_cannot(rng, harder):
     sol = (f"The cut goes through four layers, so it appears four times, mirrored over both folds. "
            f"Design {'ABCDE'[k]} is impossible: {why}.")
     return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[design_pic(p) for p in pics], solution=sol)
+                    choice_figures=[design_pic(p) for p in pics], solution=sol,
+                    check=lambda i: not can_make(pics[i]))
 
 
 @variant(difficulty=1)
@@ -236,7 +301,8 @@ def which_result(rng, harder):
            f"(look where the folds are). Mirrored four times it gives {WHAT[corner]}: design {'ABCDE'[k]}.")
     return Question(text=text, figure=folding_figure([cut]), after_figure=after,
                     choices=[f"design {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[design_pic(p) for p in pics], solution=sol)
+                    choice_figures=[design_pic(p) for p in pics], solution=sol,
+                    check=lambda i: holes(pics[i]) == cut_through_layers(cut))
 
 
 @variant(difficulty=2)
@@ -257,7 +323,8 @@ def which_can(rng, harder):
     sol = (f"A single cut appears four times, the same on the left and right and on the top and bottom. "
            f"Only design {'ABCDE'[k]} looks like that ({WHAT[spec[0]]}).")
     return Question(text=text, figure=fold_strip(), after_figure=after, choices=[f"design {c}" for c in "ABCDE"], answer=k,
-                    choice_figures=[design_pic(p) for p in pics], solution=sol)
+                    choice_figures=[design_pic(p) for p in pics], solution=sol,
+                    check=lambda i: can_make(pics[i]))
 
 
 @variant(difficulty=2)
@@ -277,7 +344,8 @@ def count_pieces(rng, harder):
               "gives 4 separate pieces (the four corners)."}[ans]
     choices = ["1", "2", "3", "4", "8"]
     return Question(text=text, figure=folding_figure([cut]), after_figure=after, choices=choices,
-                    answer=choices.index(str(ans)), solution=sol)
+                    answer=choices.index(str(ans)), solution=sol,
+                    check=value_check(choices, pieces_cut_off(cut_through_layers(cut))))
 
 
 @variant(difficulty=3)
@@ -294,5 +362,11 @@ def which_corner(rng, harder):
     choices = ["corner A", "corner B", "corner C", "corner D", "it cannot be made with one cut"]
     sol = (f"The design shows {WHAT[corner]}. That comes from cutting corner {names[corner]} "
            f"({'where both folds meet: the centre of the paper' if corner == 'centre' else 'the real paper corner, away from the folds' if corner == 'corner' else 'where one fold meets a paper edge'}).")
+    letter_at = {"A": CORNERS["side_tb"], "B": CORNERS["corner"], "C": CORNERS["side_lr"], "D": CORNERS["centre"]}
+    by_letter = {L: next(c for c, xy in CORNERS.items() if xy == pt) for L, pt in letter_at.items()}
+    made_by = [L for L in "ABCD" if cut_through_layers(cut_shape(by_letter[L], kind, 1.5)) == holes(design)]
+
+    def check(i):
+        return made_by == [choices[i][-1]] if i < 4 else not made_by
     return Question(text=text, figure=fig, after_figure=after, choices=choices,
-                    answer=choices.index(f"corner {names[corner]}"), solution=sol)
+                    answer=choices.index(f"corner {names[corner]}"), solution=sol, check=check)

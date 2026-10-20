@@ -27,8 +27,14 @@ an exam is just `python make_exam.py`.
    - Wrong options = plausible mistakes (forgot to double, used the wrong piece, ...), via `numeric_choices(correct, mistakes, rng, unit=...)`.
    - Draw figures with `kangaroo.Fig` (vector, Times font, `max_px` ~90–120). Figures must be unambiguous and roughly to scale.
    - Solutions: 1–3 short sentences a parent can explain from.
+   - **Answer check (required):** set `Question.check` — a function `i -> bool` saying whether option
+     `i` is correct, worked out *independently* from how the answer was built (brute force, simulate,
+     count cell by cell, re-solve from the drawn data). Numbers: `check=value_check(choices, value)`.
+     Shared solvers live in `kangaroo/solve.py`, `polyomino.covers`, `cubes.buried`/`exposed_faces`,
+     `numbers.written`. `validate()` demands exactly one passing option, and it must be the answer.
+   - Emphasise the key word of a reversed question in **bold**: `<b>not</b>`, `<b>cannot</b>`.
 4. If several generators need the same machinery (e.g. balance scales, cube nets), put it in `kangaroo/` rather than copying it.
-5. Verify: `python check.py` (stress test must be `ok`), then `python check.py --preview y<YEAR>_q<NN>` and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
+5. Verify: `python check.py` (stress test must be `ok`; it fails a variant with no answer check), then `python check.py --preview y<YEAR>_q<NN>` and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
 
 ## Conventions
 - One file per pool question, even if two questions share a skill (share code via `kangaroo/`).

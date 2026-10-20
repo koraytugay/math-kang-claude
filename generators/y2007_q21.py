@@ -11,7 +11,7 @@ of the numbers alone (8, 21, 40 -> +13, +19 -> +25 is right too, but harder).
 """
 from reportlab.lib import colors
 
-from kangaroo import Fig, Question, numeric_choices, variant
+from kangaroo import Fig, Question, numeric_choices, value_check, variant
 from kangaroo.figures import column, row
 
 META = {
@@ -41,6 +41,29 @@ def framed(k):
 
 
 FAMILIES = {"dots": dots, "framed": framed}
+
+
+def extend(shown, steps_on):
+    """Answer checks: continue the numbers of the three shown diagrams by their differences
+    (the step grows by the same amount each time) - using nothing but what is in the picture."""
+    a, b, c = shown
+    dd = (c - b) - (b - a)
+    x, step = c, c - b
+    for _ in range(steps_on):
+        step += dd
+        x += step
+    return x
+
+
+def counts(fam, ks, what="white"):
+    """White / black / all cells of the shown diagrams, counted cell by cell."""
+    out = []
+    for k in ks:
+        n, b = FAMILIES[fam](k)
+        grid = [[(x, y) in b for x in range(n)] for y in range(n)]
+        out.append(sum(row.count(False) for row in grid) if what == "white"
+                   else sum(row.count(True) for row in grid) if what == "black" else n * n)
+    return out
 
 
 def grid_pic(n, black, caption, cell=6.5):
@@ -82,7 +105,8 @@ def next_white(rng, harder):
     mistakes = [w[-1] + (w[-1] - w[-2]),        # same step again
                 n * n, (n - 1) ** 2, ans + k, ans - k, 2 * w[-1] - w[0]]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1, step=5 if ans % 5 == 0 else 1)
-    return Question(text=text, figure=_show("dots", ks), choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=_show("dots", ks), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, extend(counts("dots", ks), k - ks[-1])))
 
 
 @variant(difficulty=1)
@@ -100,7 +124,8 @@ def border_next(rng, harder):
            f"(or {n} × {n} − {k} × {k} = {ans}).")
     mistakes = [4 * n, n * n, ans + 4, ans - 4, k * k]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=_show("framed", ks), choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=_show("framed", ks), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, extend(counts("framed", ks), k - ks[-1])))
 
 
 @variant(difficulty=2)
@@ -117,7 +142,8 @@ def far_diagram(rng, harder):
                 white("dots", m - 1), white("dots", m + 1),   # one diagram too early / too late
                 (2 * m) ** 2 - m * m]           # side 2k instead of 2k + 1
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, figure=_show("dots", [1, 2, 3]), choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=_show("dots", [1, 2, 3]), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, extend(counts("dots", [1, 2, 3]), m - 3)))
 
 
 @variant(difficulty=2)
@@ -133,7 +159,8 @@ def black_and_total(rng, harder):
     mistakes = ([m * m, (n - 1) ** 2, (n + 1) ** 2, n * 4, n * n - m * m] if ask_total
                 else [2 * m, m * m + 1, (m - 1) ** 2, (m + 1) ** 2, n])
     choices, ai = numeric_choices(ans, [x for x in mistakes if x != ans], rng, lo=1)
-    return Question(text=text, figure=_show("dots", [1, 2, 3]), choices=choices, answer=ai, solution=sol)
+    return Question(text=text, figure=_show("dots", [1, 2, 3]), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, extend(counts("dots", [1, 2, 3], "all" if ask_total else "black"), m - 3)))
 
 
 @variant(difficulty=3)
@@ -150,4 +177,5 @@ def which_diagram(rng, harder):
     vals = sorted({m} | set(rng.sample([v for v in range(max(4, m - 3), m + 5) if v != m], 4)))
     labels = [f"the {ordinal(v)}" for v in vals]
     return Question(text=text, figure=_show(fam, [1, 2, 3], captions=False), choices=labels,
-                    answer=vals.index(m), solution=sol)
+                    answer=vals.index(m), solution=sol,
+                    check=lambda i: extend(counts(fam, [1, 2, 3]), vals[i] - 3) == W)

@@ -8,8 +8,8 @@ Core skill: counting in groups by length - how many one-, two- and three-digit
 numbers there are (90 two-digit numbers, not 89 or 99!) - and not forgetting
 the last number when it starts a new group (100 has 3 digits).
 """
-from kangaroo import Question, numeric_choices, variant
-from kangaroo.numbers import digits_between, digits_upto, split_by_length
+from kangaroo import Question, numeric_choices, value_check, variant
+from kangaroo.numbers import digits_between, digits_upto, split_by_length, written
 
 META = {
     "source": "2007 Q23",
@@ -37,7 +37,8 @@ def one_to_round(rng, harder):
                 9 + 99 * 2 + 3 * (n - 99) if n >= 100 else -1,          # 99 two-digit numbers
                 n, n * 3 if n < 1000 else -1, ans + 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m > 0 and m != ans], rng, lo=1)
-    return Question(text=text, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(written(1, n))))
 
 
 @variant(difficulty=1)
@@ -55,7 +56,8 @@ def across_hundred(rng, harder):
     sol = f"There are {count} numbers: {_groups(a, b)} = {ans} digits."
     mistakes = [count * len(str(a)), count * len(str(b)), (b - a) * len(str(a)), ans - 1, ans + 1, count]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m != ans], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(written(a, b))))
 
 
 @variant(difficulty=2)
@@ -72,7 +74,8 @@ def count_zeros(rng, harder):
               if extra else "") + f"Total {ans}.")
     mistakes = [tens, n // 10 - 1, ans + 1, ans - 1, tens + 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m != ans], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, written(1, n).count("0")))
 
 
 @variant(difficulty=2)
@@ -90,7 +93,8 @@ def even_only(rng, harder):
            + (f"; even three-digit numbers: {three}" if three else "") + f". " + " + ".join(parts) + f" = {ans}.")
     mistakes = [digits_upto(n) // 2, len(nums) * 2, len(nums), ans + 2, ans - 2]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m != ans], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len("".join(str(k) for k in range(2, n + 1, 2)))))
 
 
 @variant(difficulty=3)
@@ -107,4 +111,5 @@ def with_commas(rng, harder):
            f"{d} + {n - 1} = {ans}.")
     mistakes = [d + n, d, d + n - 2, n * 2, ans + 9]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m != ans], rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(written(1, n, sep=","))))
