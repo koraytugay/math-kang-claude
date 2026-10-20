@@ -14,7 +14,8 @@ two parts using a "3 more than" clue. (Nice fact: the narrow bars are always
 """
 from reportlab.lib import colors
 
-from kangaroo import Fig, Question, numeric_choices, variant
+from kangaroo import Fig, Question, numeric_choices, value_check, variant
+from kangaroo.solve import only
 
 META = {
     "source": "2003 Q17",
@@ -42,6 +43,19 @@ def barcode_pic(rng):
     return f.drawing()
 
 
+def lay_out(n):
+    """Answer checks: actually lay out n bars, black first, taking turns -> (#black, #white)."""
+    row = ["black" if i % 2 == 0 else "white" for i in range(n)]
+    return row.count("black"), row.count("white")
+
+
+def wide_narrow(n, d):
+    """Try every number of wide black bars; keep the one with d more white bars than wide ones."""
+    black, white = lay_out(n)
+    wide = only(w for w in range(black + 1) if white - w == d)
+    return wide, black - wide
+
+
 def _code(rng, harder, lo, hi):
     n = rng.choice(range(lo + 4, hi + 10, 2) if harder else range(lo, hi, 2))
     black, white = (n + 1) // 2, (n - 1) // 2
@@ -66,7 +80,8 @@ def narrow_bars(rng, harder):
                 d + 2, black - d]
     choices, ai = numeric_choices(narrow, mistakes, rng, lo=0)
     return Question(text=text, figure=barcode_pic(rng), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, wide_narrow(n, d)[1]))
 
 
 @variant(difficulty=1)
@@ -84,7 +99,8 @@ def fence(rng, harder):
            f"{n} = {posts} + {posts - 1}, so {posts} posts and {posts - 1} boards.")
     mistakes = [n // 2, posts + 1, posts - 1, posts, n, n // 2 + 2]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, lay_out(n)[0] if ask == "posts" else lay_out(n)[1]))
 
 
 @variant(difficulty=2)
@@ -99,7 +115,8 @@ def wide_bars(rng, harder):
     mistakes = [black - d, white + d, n // 2 - d + 1, wide - 1, d + 1, black - wide]
     choices, ai = numeric_choices(wide, mistakes, rng, lo=0)
     return Question(text=text, figure=barcode_pic(rng), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, wide_narrow(n, d)[0]))
 
 
 @variant(difficulty=2)
@@ -119,7 +136,8 @@ def necklace(rng, harder):
            + (f"Small red: {red} − {big} = {small}." if ask_small else ""))
     mistakes = ([d, big, small + 1, n // 2 - big] if ask_small else [small, red - d, big + 1, n // 2 - d])
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, wide_narrow(n, d)[1 if ask_small else 0]))
 
 
 @variant(difficulty=3)
@@ -139,4 +157,5 @@ def ends_differ(rng, harder):
     mistakes = [d + 1,                  # answered as if black were at both ends
                 wide, d - 1, d + 2, black - d - 1]
     choices, ai = numeric_choices(narrow, mistakes, rng, lo=0)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, wide_narrow(n, d)[1]))

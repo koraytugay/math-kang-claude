@@ -9,7 +9,7 @@ Core skill: converting between m, dm, cm and mm before adding or comparing -
 "50" means very different lengths depending on the unit. Children add the bare
 numbers, or mix up how many of one unit make the next.
 """
-from kangaroo import Question, numeric_choices, variant
+from kangaroo import Question, numeric_choices, value_check, variant
 
 META = {
     "source": "2003 Q10",
@@ -20,6 +20,12 @@ META = {
 
 MM = {"m": 1000, "dm": 100, "cm": 10, "mm": 1}
 ANIMALS = ["Jumpy the kangaroo", "Hoppy the frog", "Skip the grasshopper", "Bounce the rabbit"]
+
+
+def to_mm(s):
+    """Answer checks: read a length like '6 m 78 cm' or '4 dm 5 cm and 20 mm' back into mm."""
+    parts = s.replace(" and ", " ").split()
+    return sum(int(parts[i]) * MM[parts[i + 1]] for i in range(0, len(parts), 2))
 
 
 def m_cm(mm):
@@ -66,7 +72,9 @@ def jump(rng, harder):
              first + add * 100,             # added the cm as if they were dm
              ans + 1000]
     choices, ai = _length_choices(ans, wrong, rng)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    target = to_mm(f"{dm} dm {cm} cm {mm} mm") + to_mm(f"{add} cm")
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: to_mm(choices[i]) == target)
 
 
 @variant(difficulty=1)
@@ -91,7 +99,7 @@ def longest(rng, harder):
     sol = ("In cm: " + ", ".join(f"{l} = {v // 10} cm" for l, v in zip(labels, vals_mm))
            + f". The longest is {labels[vals_mm.index(best)]}.")
     return Question(text=text, after_figure=after, choices=labels, answer=vals_mm.index(best),
-                    solution=sol)
+                    solution=sol, check=lambda i: to_mm(labels[i]) == max(map(to_mm, labels)))
 
 
 @variant(difficulty=2)
@@ -109,7 +117,9 @@ def how_much_longer(rng, harder):
     mistakes = [diff * 10, abs(a_dm + a_cm - b_mm // 10), a_dm * 10 + a_cm - b_mm // 100,
                 diff + 10, diff - 10, diff + a_cm]
     choices, ai = numeric_choices(diff, mistakes, rng, unit="cm", lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    gap = to_mm(f"{a_dm} dm {a_cm} cm") - to_mm(f"{b_mm} mm")
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: to_mm(choices[i]) == gap)
 
 
 @variant(difficulty=2)
@@ -132,7 +142,10 @@ def pieces(rng, harder):
     mistakes = [m * 10 // piece_cm if (m * 10) % piece_cm == 0 else -1, n * 10, n // 10 if n >= 20 else -1,
                 n + 1, n - 1, total_cm // (piece_cm // 10) if in_dm else n * 2]
     choices, ai = numeric_choices(n, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    whole, part = to_mm(f"{m} m"), to_mm(piece)
+    assert whole % part == 0
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, whole // part))
 
 
 @variant(difficulty=3)
@@ -161,4 +174,5 @@ def not_equal(rng, harder):
     after = "Which one is <b>not</b> the same?"
     sol = (f"{m_cm(mm)} = {mm // 10} cm = {mm} mm. But {bad} = "
            + (f"{val(bad) // 10} cm" if val(bad) % 10 == 0 else f"{val(bad)} mm") + ".")
-    return Question(text=text, after_figure=after, choices=choices, answer=choices.index(bad), solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=choices.index(bad), solution=sol,
+                    check=lambda i: to_mm(choices[i]) != to_mm(m_cm(mm)))

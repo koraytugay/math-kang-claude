@@ -10,8 +10,9 @@ Core skill: the hidden inside of a box is a smaller box - one cube thinner on ea
 of the two ends, so every side length drops by 2 (not by 1). Children subtract 1,
 or count only what they see.
 """
-from kangaroo import Question, numeric_choices, variant
-from kangaroo.cubes import draw_cubes
+from kangaroo import Question, numeric_choices, value_check, variant
+from kangaroo.cubes import buried, draw_cubes, exposed_faces
+from kangaroo.solve import only
 
 META = {
     "source": "2003 Q9",
@@ -58,7 +59,8 @@ def blue_inside(rng, harder):
                 (b - 2) * (c - 2), a * b * c - a * b * 2, ans * 2]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=_pic(a, b, c), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, buried(box(a, b, c))))
 
 
 @variant(difficulty=1)
@@ -79,7 +81,8 @@ def red_outside(rng, harder):
                 a * c + b * c + a * b, ans - 8]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=_pic(a, b, c), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, len(box(a, b, c)) - buried(box(a, b, c))))
 
 
 @variant(difficulty=2)
@@ -104,7 +107,8 @@ def painted(rng, harder):
     mistakes = [v for kk, v in counts.items() if kk != k] + [ans + 4, 4 * (n - 2), 6 * (n - 2)]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0)
     return Question(text=text, figure=_pic(n, n, n), after_figure=after, choices=choices, answer=ai,
-                    solution=sol)
+                    solution=sol,
+                    check=value_check(choices, sum(exposed_faces(q, box(n, n, n)) == k for q in box(n, n, n))))
 
 
 @variant(difficulty=2)
@@ -124,7 +128,8 @@ def how_deep(rng, harder):
            f"layers of blue, plus the red front and back: {b}.")
     mistakes = [b - 2, b - 1, b + 1, inner // (a * c) if inner % (a * c) == 0 else -1, b + 2]
     choices, ai = numeric_choices(b, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, only(d for d in range(1, 30) if buried(box(a, d, c)) == inner)))
 
 
 @variant(difficulty=3)
@@ -145,4 +150,5 @@ def thick_wall(rng, harder):
                 ans * 2, a * b * c - ans]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, figure=_pic(a, b, c), after_figure=after,
-                    choices=choices, answer=ai, solution=sol)
+                    choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, buried(box(a, b, c), 2)))

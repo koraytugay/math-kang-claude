@@ -90,3 +90,21 @@ def step_pyramid(layers):
                     cells.add((off + x, off + y, z + dz))
         z += h
     return cells
+
+
+# ---------------------------------------------------------------- answer checks (cube by cube)
+SIX = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
+
+
+def exposed_faces(cell, cells) -> int:
+    """How many faces of this cube touch the outside (no neighbour there)."""
+    x, y, z = cell
+    return sum((x + dx, y + dy, z + dz) not in cells for dx, dy, dz in SIX)
+
+
+def buried(cells, layers: int = 1) -> int:
+    """Cubes with at least `layers` cubes of the building around them in every direction."""
+    cells = set(cells)
+    rng = range(-layers, layers + 1)
+    return sum(all((x + dx, y + dy, z + dz) in cells for dx in rng for dy in rng for dz in rng)
+               for x, y, z in cells)

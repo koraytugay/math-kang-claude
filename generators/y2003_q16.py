@@ -9,8 +9,9 @@ Core skill: counting digits in groups - one-digit, two-digit, three-digit
 numbers use different amounts, so split the count at 9 and 99. Children treat
 every page as one digit, or every page as two.
 """
-from kangaroo import Question, numeric_choices, variant
-from kangaroo.numbers import digits_upto
+from kangaroo import Question, numeric_choices, value_check, variant
+from kangaroo.numbers import digits_upto, last_page_for, written
+from kangaroo.solve import only
 
 META = {
     "source": "2003 Q16",
@@ -45,7 +46,8 @@ def pages_from_digits(rng, harder):
            f"{d - 9} ÷ 2 = {n - 9} numbers, from 10 to {n}. So there are {n}.")
     mistakes = [d, (d - 9) // 2, d // 2, n + 9, n - 9 + 1, (d + 9) // 2]
     choices, ai = numeric_choices(n, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, only(last_page_for(d))))
 
 
 @variant(difficulty=1)
@@ -61,7 +63,8 @@ def digits_for_pages(rng, harder):
     sol = f"{_split(n)} = {d}."
     mistakes = [n, 2 * n, 2 * n - 9, d - 9, d + 9, 3 * n if n >= 100 else d + n // 10]
     choices, ai = numeric_choices(d, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(written(1, n))))
 
 
 @variant(difficulty=2)
@@ -81,7 +84,8 @@ def count_one_digit(rng, harder):
            + (f"; as the hundreds digit: {hund} times" if hund else "") + f". Total {c}.")
     mistakes = [len(nums), ones, tens, c - 1, c + 1, ones + tens + 1]
     choices, ai = numeric_choices(c, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, written(1, n).count(str(k))))
 
 
 @variant(difficulty=2)
@@ -100,7 +104,8 @@ def from_page(rng, harder):
     sol = (f"There are {e - s + 1} pages: " + " + ".join(parts) + f" = {d} digits.")
     mistakes = [e - s + 1, 2 * (e - s + 1), digits_upto(e), 2 * (e - s), d - 2, d + 2]
     choices, ai = numeric_choices(d, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, len(written(s, e))))
 
 
 @variant(difficulty=3)
@@ -115,4 +120,5 @@ def three_digit_pages(rng, harder):
            f"digits are three-digit numbers: {d - 189} ÷ 3 = {n - 99}, from 100 to {n}.")
     mistakes = [(d - 9) // 2, d // 3, n - 99, n + 9, (d - 189) // 3 + 9, n - 1]
     choices, ai = numeric_choices(n, mistakes, rng, lo=1)
-    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol)
+    return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, only(last_page_for(d))))
