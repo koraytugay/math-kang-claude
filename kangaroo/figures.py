@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 
-from reportlab.graphics.shapes import Drawing, Line, Polygon, PolyLine, String, Rect
+from reportlab.graphics.shapes import Circle, Drawing, Group, Line, Polygon, PolyLine, String, Rect
 from reportlab.lib import colors
 
 GREY = colors.Color(0.82, 0.82, 0.82)
@@ -55,6 +55,11 @@ class Fig:
                for i in range(n + 1)]
         self.polyline(pts, width)
 
+    def circle(self, cx, cy, r, fill=None, width: float = 1.0):
+        px, py = self.p(cx, cy)
+        self.d.add(Circle(px, py, r * self.scale, fillColor=fill, strokeColor=colors.black,
+                          strokeWidth=width))
+
     def text(self, x, y, s, anchor="middle", size=None, italic=False):
         """Text at problem coordinates (x, y), no offset."""
         px, py = self.p(x, y)
@@ -90,3 +95,30 @@ class Fig:
 
     def drawing(self) -> Drawing:
         return self.d
+
+
+def row(drawings, gap: float = 18) -> Drawing:
+    """Place drawings side by side, bottom-aligned."""
+    w = sum(d.width for d in drawings) + gap * (len(drawings) - 1)
+    h = max(d.height for d in drawings)
+    out, x = Drawing(w, h), 0.0
+    for d in drawings:
+        g = Group(*d.contents)
+        g.translate(x, 0)
+        out.add(g)
+        x += d.width + gap
+    return out
+
+
+def column(drawings, gap: float = 10) -> Drawing:
+    """Stack drawings top to bottom, centred."""
+    w = max(d.width for d in drawings)
+    h = sum(d.height for d in drawings) + gap * (len(drawings) - 1)
+    out, y = Drawing(w, h), h
+    for d in drawings:
+        y -= d.height
+        g = Group(*d.contents)
+        g.translate((w - d.width) / 2, y)
+        out.add(g)
+        y -= gap
+    return out
