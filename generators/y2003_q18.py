@@ -12,8 +12,8 @@ from itertools import combinations
 
 from kangaroo import Question, variant
 from kangaroo.figures import row
-from kangaroo.polyomino import (can_tile, draw_hole, draw_shape, neighbours, normalize, orientations,
-                                random_shape, same_shape)
+from kangaroo.polyomino import (can_tile, covers, draw_hole, draw_shape, neighbours, normalize,
+                                orientations, random_shape, same_shape)
 
 META = {
     "source": "2003 Q18",
@@ -64,10 +64,15 @@ def _distractor(rng, size, avoid):
     raise RuntimeError("no distractor")
 
 
-def _pieces_fig(region, pieces, rng):
+def _pieces_fig(region, shown):
     figs = [draw_hole(region, scale=9)]
-    figs += [draw_shape(_show(p, rng), scale=9, label=str(i + 1)) for i, p in enumerate(pieces)]
+    figs += [draw_shape(p, scale=9, label=str(i + 1)) for i, p in enumerate(shown)]
     return row(figs, gap=14)
+
+
+def _numbered_check(region, shown, labels):
+    """check(i): the numbered pieces named in option i ('1+3') cover the region."""
+    return lambda i: covers(region, [shown[int(k) - 1] for k in labels[i].split("+")])
 
 
 @variant(difficulty=1)
@@ -90,12 +95,13 @@ def one_piece(rng, harder):
     opts = wrong + [region]
     rng.shuffle(opts)
     k = opts.index(region)
-    figs = [draw_shape(_show(p, rng), scale=9) for p in opts]
+    shown = [_show(p, rng) for p in opts]
+    figs = [draw_shape(p, scale=9) for p in shown]
     text = f"Which piece covers the empty area exactly? {NOTE}"
     sol = (f"The empty area has {n} squares; all pieces do too, so look at the shape. Turn piece "
            f"{'ABCDE'[k]} and it fits exactly; each of the others has one square in a different place.")
     return Question(text=text, figure=draw_hole(region, scale=9), choices=[f"piece {c}" for c in "ABCDE"],
-                    answer=k, choice_figures=figs, solution=sol)
+                    answer=k, choice_figures=figs, solution=sol, check=lambda i: covers(region, [shown[i]]))
 
 
 def _connected(cells):
@@ -144,8 +150,9 @@ def two_pieces(rng, harder):
     text = f"Which two of these pieces can be used to cover the empty area exactly? {NOTE}"
     sol = (f"The empty area has {n} squares. Pieces have {sizes} squares. Only pieces "
            f"{good[0] + 1} and {good[1] + 1} also fit together in the right shape.")
-    return Question(text=text, figure=_pieces_fig(region, pieces, rng), choices=labels, answer=k,
-                    solution=sol)
+    shown = [_show(p, rng) for p in pieces]
+    return Question(text=text, figure=_pieces_fig(region, shown), choices=labels, answer=k,
+                    solution=sol, check=_numbered_check(region, shown, labels))
 
 
 @variant(difficulty=2)
@@ -175,9 +182,10 @@ def two_copies(rng, harder):
     text = f"Two pieces that are exactly the same cover the empty area. Which piece is it? {NOTE}"
     sol = (f"The empty area has {2 * n} squares, so each piece has {n}; every option has {n}. "
            f"Only two copies of piece {'ABCDE'[k]} fit together into the shape of the hole.")
+    shown = [_show(o, rng) for o in opts]
     return Question(text=text, figure=draw_hole(region, scale=9), choices=[f"piece {c}" for c in "ABCDE"],
-                    answer=k, choice_figures=[draw_shape(_show(o, rng), scale=9) for o in opts],
-                    solution=sol)
+                    answer=k, choice_figures=[draw_shape(o, scale=9) for o in shown],
+                    solution=sol, check=lambda i: covers(region, [shown[i], shown[i]]))
 
 
 @variant(difficulty=3)
@@ -207,7 +215,6 @@ def three_pieces(rng, harder):
     text = f"Which three of these pieces can be used to cover the empty area exactly? {NOTE}"
     sol = (f"The empty area has {len(region)} squares, so the three sizes must add up to {len(region)}. "
            f"Only {' + '.join(str(i + 1) for i in good)} also fit together in the right shape.")
-    figs = [draw_hole(region, scale=9)] + [draw_shape(_show(p, rng), scale=9, label=str(i + 1))
-                                           for i, p in enumerate(pieces)]
-    return Question(text=text, figure=row(figs, gap=12), choices=labels, answer=opts.index(good),
-                    solution=sol)
+    shown = [_show(p, rng) for p in pieces]
+    return Question(text=text, figure=_pieces_fig(region, shown), choices=labels, answer=opts.index(good),
+                    solution=sol, check=_numbered_check(region, shown, labels))

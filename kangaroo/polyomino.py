@@ -115,3 +115,37 @@ def draw_hole(region, scale: float = 9, pad: int = 1):
                 (a, b), (c, d) = seg
                 f.line((a - x0, b - y0), (c - x0, d - y0), width=1.4)
     return f.drawing()
+
+
+# ---------------------------------------------------------------- answer checks
+_TURNS = [lambda x, y: (x, y), lambda x, y: (-y, x), lambda x, y: (-x, -y), lambda x, y: (y, -x),
+          lambda x, y: (-x, y), lambda x, y: (y, x), lambda x, y: (x, -y), lambda x, y: (-y, -x)]
+
+
+def placements(region, piece):
+    """Every way to lay the piece (turned or flipped) on squares of the region (written separately
+    from tilings(), so it can check it)."""
+    region = set(region)
+    out = set()
+    for t in _TURNS:
+        cells = [t(x, y) for x, y in piece]
+        ax, ay = cells[0]
+        for rx, ry in region:                      # put the piece's first square on every region square
+            moved = frozenset((x - ax + rx, y - ay + ry) for x, y in cells)
+            if moved <= region:
+                out.add(moved)
+    return out
+
+
+def covers(region, pieces) -> bool:
+    """Do these pieces (each used once) cover the region exactly, with no overlap?"""
+    region = frozenset(region)
+    if sum(len(p) for p in pieces) != len(region):
+        return False
+    options = [placements(region, p) for p in pieces]
+
+    def go(i, used):
+        if i == len(pieces):
+            return used == region
+        return any(go(i + 1, used | pl) for pl in options[i] if not used & pl)
+    return go(0, frozenset())
