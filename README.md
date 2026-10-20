@@ -119,6 +119,7 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 
 | Pool question | Generator | Variants |
 |---|---|---|
+| 2002 Q1 — which square was removed from the picture | `y2002_q01.py` | missing_square, not_a_piece, turned_square, which_gap. Pictures are smooth paths drawn across squared paper; the answer check compares where lines reach the edges of the gap. |
 | 2002 Q6 — perimeter of a rectangle cut from a square | `y2002_q06.py` | square_minus_strip, pieces_total, corner_cut, notch, strips_to_square, two_perimeters |
 | 2002 Q7 — which piece cannot belong to the skyline | `y2002_q07.py` | cannot_belong, can_belong, how_many_fit |
 | 2002 Q9 — balance: oranges and melons | `y2002_q09.py` | one_more_balances, both_sides, chain, grams, what_to_add |
