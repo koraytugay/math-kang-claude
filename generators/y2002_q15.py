@@ -22,7 +22,7 @@ META = {
     "source": "2002 Q15",
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Karla", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -150,9 +150,9 @@ def _size(rng, harder):
 
 
 def _intro(name):
-    return (f"From a window, {name} sees a rectangular flag on a pole. The wind turns and "
-            f"folds the flag, but the side sewn to the pole never moves. {name} draws the "
-            f"shadow of the flag on the wall at five different moments.")
+    return (f"A rectangular flag flies on a pole in front of a wall, and the sun throws its shadow "
+            f"onto the wall. The wind turns and folds the flag, but the side sewn to the pole always "
+            f"stays on the pole. {name} draws the shadow at five different moments.")
 
 
 # ------------------------------------------------------------------ variants
@@ -222,8 +222,8 @@ def too_wide(rng, harder):
     pics = [possible_shape(rng, w, h) for _ in range(4)]
     k = rng.randint(0, 4)
     pics.insert(k, wide_shape(rng, w, h))
-    text = (_intro(name) + f" When there is no wind at all, the flag hangs flat and is {w} squares wide "
-            f"and {h} squares tall (see the picture).")
+    text = (_intro(name) + f" Spread out flat, the flag is {w} squares wide and {h} squares tall "
+            f"(see the picture).")
     after = "Which shadow cannot be right?"
     sol = (f"Turning or folding can only make the flag look narrower. Picture {'ABCDE'[k]} reaches more "
            f"than {w} squares away from the pole, which is wider than the flag.")

@@ -19,7 +19,7 @@ META = {
     "source": "2002 Q20",
     "skill": "Counting cubes in a 3-D building, hidden ones included (slice x number of slices)",
     "topics": ["counting", "spatial", "geometry"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Robert", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -186,7 +186,8 @@ def longer_tunnel(rng, harder):
     ask_more = rng.random() < 0.5
     ans = front * extra if ask_more else front * new
     text = (f"{name}'s tunnel is {depth} cubes long. The hole goes straight through. "
-            f"{name} makes the tunnel longer, keeping the same front, until it is {new} cubes long.")
+            f"{name} makes it longer by adding more cubes at the back in the same pattern, until "
+            f"it is {new} cubes long.")
     after = ("How many cubes does " + name + " have to add?" if ask_more else
              "How many cubes are in the long tunnel?")
     sol = (f"Each slice of the tunnel has {n} × {n} − {n-2} × {n-2} = {front} cubes. "

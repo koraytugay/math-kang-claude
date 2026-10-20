@@ -135,5 +135,6 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | 2003 Q16 — 35 digits for the page numbers | `y2003_q16.py` | pages_from_digits, digits_for_pages, count_one_digit, from_page, three_digit_pages |
 | 2003 Q17 — bar code with wide and narrow bars | `y2003_q17.py` | narrow_bars, fence, wide_bars, necklace, ends_differ |
 | 2003 Q18 — which two pieces cover the empty area | `y2003_q18.py` | one_piece, two_pieces, two_copies, three_pieces |
+| 2007 Q1 — numbers along a forking road | `y2007_q01.py` | which_group, how_many_routes, largest_sum, impossible_total, which_branch |
 
 Run `python3 check.py` for the full, current list.

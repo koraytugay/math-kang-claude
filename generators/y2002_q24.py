@@ -15,7 +15,7 @@ META = {
     "source": "2002 Q24",
     "skill": "Next number with a digit property: change the rightmost digits as little as possible",
     "topics": ["arithmetic", "patterns", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 
@@ -117,7 +117,7 @@ def last_time(rng, harder):
     else:
         raise RuntimeError("no start found")
     ans = n - p
-    text = f"The odometer of a car shows {n} km. Not all of its digits are different."
+    text = f"The odometer of a car shows {n} km. Some of its digits are the same."
     after = "How many kilometres ago did the odometer last show a number with all different digits?"
     sol = (f"Counting down from {n}, the first number with all different digits is {p}: "
            f"{n} − {p} = {ans}.")
@@ -138,8 +138,8 @@ def same_digits(rng, harder):
     nxt = int(str(d + 1) * digits)
     n = rng.randint(rep + 1, nxt - 2)
     ans = nxt - n
-    text = f"A counter shows {n}."
-    after = f"How much must it count up until it shows a number with all {digits} digits the same?"
+    text = f"A counter shows {n}. Every second it goes up by 1."
+    after = f"How many seconds until it shows a number whose {digits} digits are all the same?"
     sol = (f"The numbers with all digits the same are {rep}, {nxt}, ... The next one after {n} is "
            f"{nxt}: {nxt} − {n} = {ans}.")
     last_only = (int(str(n)[0]) - int(str(n)[-1])) % 10

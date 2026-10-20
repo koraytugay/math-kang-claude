@@ -18,7 +18,7 @@ META = {
     "source": "2002 Q22",
     "skill": "Counting arrangements: fill places one by one and multiply the choices",
     "topics": ["counting", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["John", "Anna", "Ben", "Clara", "David", "Emma", "Felix", "Grace", "Hugo", "Iris"]
@@ -109,8 +109,10 @@ def outfits(rng, harder):
     b = rng.randint(2, 4)
     s = rng.randint(2, 3) if harder else 1
     ans = t * b * s
-    shoes = f" and {s} pairs of shoes" if s > 1 else ""
-    text = (f"{name} has {t} T-shirts, {b} pairs of trousers{shoes}, all different. An outfit is one "
+    clothes = [f"{t} different T-shirts", f"{b} different pairs of trousers"]
+    if s > 1:
+        clothes.append(f"{s} different pairs of shoes")
+    text = (f"{name} has {', '.join(clothes[:-1])} and {clothes[-1]}. An outfit is one "
             f"T-shirt and one pair of trousers" + (" and one pair of shoes." if s > 1 else "."))
     after = "How many different outfits can " + name + " make?"
     sol = (f"Each T-shirt goes with each pair of trousers" + (" and each pair of shoes" if s > 1 else "")
