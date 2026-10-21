@@ -15,7 +15,7 @@ from kangaroo.cubes import buried, draw_cubes, exposed_faces
 from kangaroo.solve import only
 
 META = {
-    "source": "2003 Q9",
+    "source": "set-03/by_level/Grade_03-04/2003 Q9",
     "skill": "Inside of a box of cubes: every length drops by 2; outside = total − inside",
     "topics": ["counting", "spatial", "geometry"],
     "version": 2,

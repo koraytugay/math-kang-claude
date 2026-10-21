@@ -18,7 +18,7 @@ from kangaroo import Fig, Question, numeric_choices, text_choices, value_check, 
 from kangaroo.choices import number_in
 
 META = {
-    "source": "2007 Q5",
+    "source": "set-03/by_level/Grade_03-04/2007 Q5",
     "skill": "Working backwards: undo each operation, last one first",
     "topics": ["arithmetic", "logic"],
     "version": 2,

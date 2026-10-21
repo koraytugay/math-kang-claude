@@ -14,7 +14,7 @@ from kangaroo import Question, numeric_choices, value_check, variant
 from kangaroo.cubes import draw_cubes
 
 META = {
-    "source": "2007 Q14",
+    "source": "set-03/by_level/Grade_03-04/2007 Q14",
     "skill": "Space in a box = length × width × height; count hidden cubes; subtract",
     "topics": ["counting", "spatial", "geometry"],
     "version": 2,

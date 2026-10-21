@@ -14,7 +14,7 @@ from kangaroo.numbers import digits_upto, last_page_for, written
 from kangaroo.solve import only
 
 META = {
-    "source": "2003 Q16",
+    "source": "set-03/by_level/Grade_03-04/2003 Q16",
     "skill": "Counting the digits in 1..N: split into one-, two- and three-digit numbers",
     "topics": ["counting", "arithmetic", "patterns"],
     "version": 1,

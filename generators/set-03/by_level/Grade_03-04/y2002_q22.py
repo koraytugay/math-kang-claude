@@ -16,7 +16,7 @@ from itertools import permutations, product
 from kangaroo import Fig, Question, numeric_choices, value_check, variant
 
 META = {
-    "source": "2002 Q22",
+    "source": "set-03/by_level/Grade_03-04/2002 Q22",
     "skill": "Counting arrangements: fill places one by one and multiply the choices",
     "topics": ["counting", "logic"],
     "version": 2,

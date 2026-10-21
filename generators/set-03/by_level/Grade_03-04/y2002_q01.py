@@ -22,7 +22,7 @@ from kangaroo import Fig, Question, variant
 from kangaroo.figures import LIGHT, row
 
 META = {
-    "source": "2002 Q1",
+    "source": "set-03/by_level/Grade_03-04/2002 Q1",
     "skill": "Find the missing square by its edges: lines must continue at the same places, not turned",
     "topics": ["spatial", "visual"],
     "version": 2,

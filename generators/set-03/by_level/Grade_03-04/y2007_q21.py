@@ -15,7 +15,7 @@ from kangaroo import Fig, Question, numeric_choices, value_check, variant
 from kangaroo.figures import column, row
 
 META = {
-    "source": "2007 Q21",
+    "source": "set-03/by_level/Grade_03-04/2007 Q21",
     "skill": "Growing patterns: describe how each diagram is built, then count cells = total − black",
     "topics": ["patterns", "counting"],
     "version": 1,

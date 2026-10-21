@@ -12,7 +12,7 @@ from kangaroo import Question, numeric_choices, value_check, variant
 from kangaroo.numbers import digits_between, digits_upto, split_by_length, written
 
 META = {
-    "source": "2007 Q23",
+    "source": "set-03/by_level/Grade_03-04/2007 Q23",
     "skill": "Counting digits by groups (1-, 2-, 3-digit numbers); how many numbers are in a range",
     "topics": ["counting", "arithmetic", "patterns"],
     "version": 1,

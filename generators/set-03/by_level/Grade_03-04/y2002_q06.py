@@ -16,7 +16,7 @@ from kangaroo.geometry import perimeter, rect_pts
 from kangaroo.figures import GREY
 
 META = {
-    "source": "2002 Q6",
+    "source": "set-03/by_level/Grade_03-04/2002 Q6",
     "skill": "Perimeter of rectangles cut from a square or rectangle",
     "topics": ["geometry", "perimeter"],
     "version": 1,

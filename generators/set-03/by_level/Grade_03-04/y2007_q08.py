@@ -16,7 +16,7 @@ from kangaroo.polyomino import (can_tile, draw_shape, makes_rectangle, neighbour
                                 orientations, random_shape, same_shape)
 
 META = {
-    "source": "2007 Q8",
+    "source": "set-03/by_level/Grade_03-04/2007 Q8",
     "skill": "Completing a rectangle: the missing part has a fixed shape and size; turn pieces in your head",
     "topics": ["spatial", "geometry"],
     "version": 2,

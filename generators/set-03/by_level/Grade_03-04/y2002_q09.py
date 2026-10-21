@@ -14,7 +14,7 @@ from kangaroo.pictures import balance, legend
 from kangaroo.solve import balance_weights, only
 
 META = {
-    "source": "2002 Q9",
+    "source": "set-03/by_level/Grade_03-04/2002 Q9",
     "skill": "Balance scales: remove equal things from both sides, substitute, scale up",
     "topics": ["logic", "arithmetic", "balance"],
     "version": 1,

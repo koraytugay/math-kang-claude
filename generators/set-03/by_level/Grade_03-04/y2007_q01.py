@@ -15,7 +15,7 @@ from itertools import product
 from kangaroo import Fig, Question, numeric_choices, text_choices, value_check, variant
 
 META = {
-    "source": "2007 Q1",
+    "source": "set-03/by_level/Grade_03-04/2007 Q1",
     "skill": "Routes through forks: one branch from every fork; number of routes = product of choices",
     "topics": ["logic", "counting"],
     "version": 2,

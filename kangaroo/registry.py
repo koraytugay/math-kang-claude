@@ -64,7 +64,12 @@ class Generator:
         fn = rng.choices(vs, weights=w)[0]
         q = fn(rng, harder)
         q.difficulty = fn._variant_difficulty
-        q.source = self.meta["source"]
+        folder = str(Path(self.key).parent)
+        src = self.meta.get("source", "")
+        if folder and folder != "." and not src.startswith(folder):
+            q.source = f"{folder}/{src}" if src else folder
+        else:
+            q.source = src
         q.variant = fn.__name__
         q.validate()
         used[f"{self.key}.{fn.__name__}"] = used.get(f"{self.key}.{fn.__name__}", 0) + 1

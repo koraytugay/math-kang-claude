@@ -10,7 +10,7 @@ after the first match. Children count repeated letters twice or miss a letter.
 from kangaroo import Question, numeric_choices, text_choices, value_check, variant
 
 META = {
-    "source": "2007 Q3",
+    "source": "set-03/by_level/Grade_03-04/2007 Q3",
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
     "version": 4,

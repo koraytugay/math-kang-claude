@@ -14,7 +14,7 @@ from kangaroo.cubes import SIX, draw_cubes, painted_counts
 from kangaroo.solve import only
 
 META = {
-    "source": "2007 Q17",
+    "source": "set-03/by_level/Grade_03-04/2007 Q17",
     "skill": "Painted cube cut up: corners 3 faces, edges 2, face middles 1, inside 0",
     "topics": ["counting", "spatial", "geometry"],
     "version": 1,

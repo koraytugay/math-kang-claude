@@ -12,7 +12,7 @@ numbers, or mix up how many of one unit make the next.
 from kangaroo import Question, numeric_choices, value_check, variant
 
 META = {
-    "source": "2003 Q10",
+    "source": "set-03/by_level/Grade_03-04/2003 Q10",
     "skill": "Lengths in m, dm, cm, mm: convert to one unit before adding or comparing",
     "topics": ["arithmetic", "measurement"],
     "version": 2,

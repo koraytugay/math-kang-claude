@@ -17,7 +17,7 @@ import math
 from kangaroo import Fig, Question, variant
 
 META = {
-    "source": "2002 Q7",
+    "source": "set-03/by_level/Grade_03-04/2002 Q7",
     "skill": "Visual matching: find which piece of a line drawing fits / does not fit",
     "topics": ["spatial", "visual"],
     "version": 2,

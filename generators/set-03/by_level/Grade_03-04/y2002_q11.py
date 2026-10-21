@@ -22,7 +22,7 @@ from kangaroo.solve import only
 from kangaroo.pictures import number_wheel
 
 META = {
-    "source": "2002 Q11",
+    "source": "set-03/by_level/Grade_03-04/2002 Q11",
     "skill": "Sums of numbers around a circle: use the total, split into equal/consecutive parts",
     "topics": ["arithmetic", "logic", "spatial"],
     "version": 1,

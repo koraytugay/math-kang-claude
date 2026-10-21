@@ -18,7 +18,7 @@ from kangaroo import Fig, Question, value_check, variant
 from kangaroo.figures import GREY, column, row
 
 META = {
-    "source": "2007 Q24",
+    "source": "set-03/by_level/Grade_03-04/2007 Q24",
     "skill": "Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric)",
     "topics": ["spatial", "geometry"],
     "version": 3,

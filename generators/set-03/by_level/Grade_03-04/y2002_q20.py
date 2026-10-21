@@ -16,7 +16,7 @@ from kangaroo.cubes import draw_cubes, step_pyramid, tunnel
 from kangaroo.figures import Fig, column, row
 
 META = {
-    "source": "2002 Q20",
+    "source": "set-03/by_level/Grade_03-04/2002 Q20",
     "skill": "Counting cubes in a 3-D building, hidden ones included (slice x number of slices)",
     "topics": ["counting", "spatial", "geometry"],
     "version": 3,

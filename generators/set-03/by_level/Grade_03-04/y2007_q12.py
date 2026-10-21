@@ -15,7 +15,7 @@ from datetime import date, datetime, timedelta
 from kangaroo import Question, numeric_choices, text_choices, value_check, variant
 
 META = {
-    "source": "2007 Q12",
+    "source": "set-03/by_level/Grade_03-04/2007 Q12",
     "skill": "Dates: older = born earlier; adding days across month and year ends",
     "topics": ["time", "logic"],
     "version": 3,

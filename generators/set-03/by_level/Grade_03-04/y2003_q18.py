@@ -16,7 +16,7 @@ from kangaroo.polyomino import (can_tile, covers, draw_hole, draw_shape, neighbo
                                 orientations, random_shape, same_shape)
 
 META = {
-    "source": "2003 Q18",
+    "source": "set-03/by_level/Grade_03-04/2003 Q18",
     "skill": "Covering a shape with pieces of squares: count the squares, then turn the pieces",
     "topics": ["spatial", "geometry", "counting"],
     "version": 2,

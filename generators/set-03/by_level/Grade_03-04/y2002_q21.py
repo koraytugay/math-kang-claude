@@ -19,7 +19,7 @@ from kangaroo.choices import number_in
 from kangaroo.solve import expression_values
 
 META = {
-    "source": "2002 Q21",
+    "source": "set-03/by_level/Grade_03-04/2002 Q21",
     "skill": "Reach a target with + − × ÷ using each card once; know when it is impossible",
     "topics": ["arithmetic", "logic"],
     "version": 2,

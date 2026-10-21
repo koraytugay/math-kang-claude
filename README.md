@@ -31,7 +31,7 @@ python3 make_exam.py --from 2002      # only questions based on the 2002 test
 python3 make_exam.py --from set-03    # only questions from set-03
 python3 make_exam.py --topic perimeter
 python3 make_exam.py --seed 2026      # re-create an exact exam (seed is printed under the title)
-python3 make_exam.py --hide-sources   # answer key without the [2002 Q7 · ...] tags
+python3 make_exam.py --hide-sources   # answer key without the [set-03/by_level/Grade_03-04/2002 Q7 · ...] tags
 ```
 
 The PDF goes to `output/`. Each run produces a different exam unless you pass `--seed`.
@@ -40,7 +40,7 @@ It contains:
 - the questions, ordered into Part A (3 points), Part B (4 points) and Part C (5 points), each with 5 options (A–E);
 - an **answer key** with a short solution for every question.
 
-Each solution ends with a tag such as `[2002 Q6 · notch]`, which names the generator and
+Each solution ends with a tag such as `[set-03/by_level/Grade_03-04/2002 Q6 · notch]`, which names the generator and
 the variant that made it. If the kids keep missing the same tag, that skill needs more
 practice.
 

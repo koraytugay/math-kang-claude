@@ -19,7 +19,7 @@ from kangaroo import Fig, Question, variant
 from kangaroo.figures import GREY, LIGHT, column, row
 
 META = {
-    "source": "2002 Q15",
+    "source": "set-03/by_level/Grade_03-04/2002 Q15",
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
     "version": 3,

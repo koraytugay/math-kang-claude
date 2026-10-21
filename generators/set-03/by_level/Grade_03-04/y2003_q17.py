@@ -18,7 +18,7 @@ from kangaroo import Fig, Question, numeric_choices, value_check, variant
 from kangaroo.solve import only
 
 META = {
-    "source": "2003 Q17",
+    "source": "set-03/by_level/Grade_03-04/2003 Q17",
     "skill": "Alternating rows: starts and ends the same, so one more of that kind; then split a group",
     "topics": ["counting", "logic", "patterns"],
     "version": 1,

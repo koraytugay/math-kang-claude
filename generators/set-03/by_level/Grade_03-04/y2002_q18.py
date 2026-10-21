@@ -18,7 +18,7 @@ from itertools import permutations
 from kangaroo import Question, text_choices, variant
 
 META = {
-    "source": "2002 Q18",
+    "source": "set-03/by_level/Grade_03-04/2002 Q18",
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
     "version": 1,
