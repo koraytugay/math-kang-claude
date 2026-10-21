@@ -28,6 +28,7 @@ The commands below assume `source .venv/bin/activate` was run in this Terminal w
 python3 make_exam.py                  # 20 questions
 python3 make_exam.py -n 24 --harder   # more Part C questions, bigger numbers
 python3 make_exam.py --from 2002      # only questions based on the 2002 test
+python3 make_exam.py --from set-03    # only questions from set-03
 python3 make_exam.py --topic perimeter
 python3 make_exam.py --seed 2026      # re-create an exact exam (seed is printed under the title)
 python3 make_exam.py --hide-sources   # answer key without the [2002 Q7 · ...] tags
@@ -62,15 +63,15 @@ The next time the AI agent works on the project, it applies the feedback and tic
 
 ## 4. Grow it (with a strong model, e.g. Claude Code in this folder)
 
-1. Drop the new contest PDF into `sample-tests/` (e.g. `2008.pdf`).
-2. Add the missed questions to `question-pool.txt`, e.g. `2008: 3, 7, 15`.
+1. Locate or add the contest PDF in `set-03/by_level/Grade_03-04/` (or other sets such as `set-01/by_level/Grade_03-04_Ecolier/`, `set-02/`, etc.).
+2. Add the missed questions to `question-pool.txt`, e.g. `set-03/by_level/Grade_03-04/2008: 3, 7, 15`.
 3. Ask the agent things like:
    - "sync generators, next 3"
    - "add a generator for 2002 Q9"
    - "apply feedback.md"
    - "improve y2002_q06: add a variant about area"
 
-The agent follows the rules in `CLAUDE.md`: one generator per pool question, 4–6
+The agent follows the rules in `CLAUDE.md`: one generator per pool question placed in `generators/<SET_PATH>/yYEAR_qNN.py`, 4–6
 variants across Parts A–C, answers computed in code, wrong options based on likely
 mistakes, a self-test, and a visual review of the preview PDF.
 
@@ -105,9 +106,9 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 
 | Path | What it is |
 |---|---|
-| `sample-tests/` | Original contest PDFs |
-| `question-pool.txt` | The questions the kids struggled with (`YEAR: n, n, n`) |
-| `generators/yYEAR_qNN.py` | One generator per pool question |
+| `set-01/`, `set-02/`, `set-03/` | Original contest PDFs organized by level and year |
+| `question-pool.txt` | The questions the kids struggled with (`PATH/YEAR: n, n, n`) |
+| `generators/<SET_PATH>/yYEAR_qNN.py` | One generator per pool question mirroring the contest path |
 | `kangaroo/` | Shared library: question format, answer options, drawing, PDF layout |
 | `make_exam.py` | Makes an exam |
 | `check.py` | Coverage report, self-tests, previews |

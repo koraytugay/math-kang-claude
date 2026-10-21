@@ -31,14 +31,26 @@ from kangaroo.registry import load_generators, read_pool  # noqa: E402
 from kangaroo.render import build_pdf  # noqa: E402
 
 
+def matches_source(g, s: str) -> bool:
+    s = s.strip()
+    return (
+        s == g.key
+        or s == g.name
+        or g.key.endswith(f"/{s}")
+        or g.key.endswith(f"/y{s}")
+        or f"y{s}_" in g.key
+        or f"/{s}/" in f"/{g.key}/"
+        or (s.isdigit() and f"y{s}_" in g.key)
+    )
+
+
 def pick_generators(args):
     gens = load_generators()
     pool = read_pool()
     chosen = [gens[k] for k in pool if k in gens]
     missing = [k for k in pool if k not in gens]
     if args.source:
-        chosen = [g for g in chosen if any(g.key.startswith(f"y{s}") or g.key == s
-                                           for s in args.source)]
+        chosen = [g for g in chosen if any(matches_source(g, s) for s in args.source)]
     if args.topic:
         chosen = [g for g in chosen if args.topic in g.meta.get("topics", [])]
     return chosen, missing

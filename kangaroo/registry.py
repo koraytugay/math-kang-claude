@@ -1,6 +1,7 @@
 """Finds generator modules and runs them.
 
-A generator is a file generators/y<YEAR>_q<NN>.py that defines:
+A generator is a Python file under generators/ (e.g. generators/set-03/by_level/Grade_03-04/y2002_q06.py)
+that defines:
 
     META = {"source": "2002 Q6", "skill": "...", "topics": [...], "version": 1}
 
@@ -9,10 +10,10 @@ Each variant takes (rng, harder: bool) and returns a Question.
 """
 from __future__ import annotations
 
-import importlib
-import pkgutil
+import importlib.util
 import random
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -34,8 +35,13 @@ def variant(difficulty: int):
 
 @dataclass
 class Generator:
-    key: str            # e.g. "y2002_q06"
+    key: str            # e.g. "set-03/by_level/Grade_03-04/y2002_q06"
     module: object
+
+    @property
+    def name(self) -> str:
+        """Base name of the generator, e.g. 'y2002_q06'."""
+        return Path(self.key).name
 
     @property
     def meta(self) -> dict:
@@ -65,29 +71,99 @@ class Generator:
         return q
 
 
-def pool_key(year: int, num: int) -> str:
-    return f"y{year}_q{num:02d}"
+class GeneratorsDict(dict):
+    """Dictionary of generators with fuzzy/short-key lookup support."""
+
+    def __getitem__(self, key: str) -> Generator:
+        if super().__contains__(key):
+            return super().__getitem__(key)
+        # Search by suffix / basename (e.g. y2002_q06 or 2002_q06)
+        matches = [v for k, v in self.items()
+                   if k == key or k.endswith(f"/{key}") or Path(k).name == key or Path(k).stem == key]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            raise KeyError(f"Ambiguous generator key '{key}' matches: {[m.key for m in matches]}")
+        raise KeyError(key)
+
+    def get(self, key: str, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def __contains__(self, key: object) -> bool:
+        if super().__contains__(key):
+            return True
+        if isinstance(key, str):
+            matches = [k for k in self.keys()
+                       if k == key or k.endswith(f"/{key}") or Path(k).name == key or Path(k).stem == key]
+            return len(matches) == 1
+        return False
 
 
-def load_generators() -> dict[str, Generator]:
-    import generators  # the package next to this one
-    out = {}
-    for info in pkgutil.iter_modules(generators.__path__):
-        if re.fullmatch(r"y\d{4}_q\d{2}", info.name):
-            mod = importlib.import_module(f"generators.{info.name}")
-            out[info.name] = Generator(info.name, mod)
-    return dict(sorted(out.items()))
+def pool_key(year: int, num: int, prefix: str = "") -> str:
+    base = f"y{year}_q{num:02d}"
+    return f"{prefix}/{base}" if prefix else base
+
+
+def load_generators() -> GeneratorsDict:
+    """Find and load all generator modules under generators/ recursively."""
+    gen_dir = ROOT / "generators"
+    out = GeneratorsDict()
+    for py_file in sorted(gen_dir.rglob("*.py")):
+        if py_file.name == "__init__.py":
+            continue
+        if not re.fullmatch(r"y\d{4}_q\d{2}\.py", py_file.name):
+            continue
+        rel = py_file.relative_to(gen_dir).with_suffix("")
+        key = str(rel).replace("\\", "/")
+        safe_mod_name = f"generators.{key.replace('/', '.').replace('-', '_')}"
+        spec = importlib.util.spec_from_file_location(safe_mod_name, py_file)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[safe_mod_name] = mod
+            spec.loader.exec_module(mod)
+            out[key] = Generator(key, mod)
+    return out
 
 
 def read_pool(path: Path | None = None) -> list[str]:
-    """Parse question-pool.txt lines like '2002: 6, 7, 9' into generator keys."""
+    """Parse question-pool.txt lines into generator keys.
+
+    Supports:
+        set-03/by_level/Grade_03-04/2002: 1, 6, 7
+    or section headers:
+        [set-03/by_level/Grade_03-04]
+        2002: 1, 6, 7
+    or legacy:
+        2002: 1, 6, 7
+    """
     path = path or ROOT / "question-pool.txt"
     keys = []
+    current_prefix = ""
     for line in path.read_text().splitlines():
         line = line.split("#", 1)[0].strip()
-        if not line or ":" not in line:
+        if not line:
             continue
-        year, nums = line.split(":", 1)
+        # Section header e.g. [set-03/by_level/Grade_03-04]
+        if line.startswith("[") and line.endswith("]"):
+            current_prefix = line[1:-1].strip().strip("/")
+            continue
+        if ":" not in line:
+            continue
+        prefix_or_year, nums = line.split(":", 1)
+        prefix_or_year = prefix_or_year.strip()
+        if "/" in prefix_or_year:
+            prefix, year_str = prefix_or_year.rsplit("/", 1)
+            prefix = prefix.strip()
+        else:
+            prefix = current_prefix
+            year_str = prefix_or_year
+        m = re.search(r"\d{4}", year_str)
+        if not m:
+            continue
+        year = int(m.group(0))
         for n in re.findall(r"\d+", nums):
-            keys.append(pool_key(int(year.strip()), int(n)))
+            keys.append(pool_key(year, int(n), prefix=prefix))
     return keys

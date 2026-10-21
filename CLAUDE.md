@@ -5,9 +5,9 @@ This project turns questions the kids struggled with into **question generators*
 an exam is just `python make_exam.py`.
 
 ## Layout
-- `sample-tests/<YEAR>.pdf` — original contests (Grade 3-4).
-- `question-pool.txt` — `YEAR: n, n, n` lines; the questions the kids got wrong.
-- `generators/y<YEAR>_q<NN>.py` — one generator per pool question (e.g. `y2002_q06.py`).
+- Contest PDFs are organized by set and level, e.g. `set-03/by_level/Grade_03-04/` (Canada Math Kangaroo Grade 3-4), `set-01/by_level/...`, etc.
+- `question-pool.txt` — `<PATH>/<YEAR>: n, n, n` lines (e.g. `set-03/by_level/Grade_03-04/2002: 1, 6, 7`); the questions the kids got wrong.
+- `generators/<PATH>/y<YEAR>_q<NN>.py` — one generator per pool question (e.g. `generators/set-03/by_level/Grade_03-04/y2002_q06.py`).
 - `kangaroo/` — shared library: `Question`, `numeric_choices`/`text_choices`, `Fig` (drawing), `render.py` (PDF), `registry.py`.
 - `feedback.md` — the parent's notes on generated questions. **Read it before touching a generator.**
 - `make_exam.py`, `check.py` — the two commands.
@@ -17,7 +17,7 @@ an exam is just `python make_exam.py`.
 - **"Improve y2002_q06"** / feedback in `feedback.md` → edit that generator, bump `META["version"]`, mark the feedback item done.
 
 ## How to write a generator
-1. Read the original question (render the PDF page to an image and look at the figure; `pdftotext -layout` for text). Put the original question + answer in the module docstring.
+1. Read the original question (find the contest PDF in e.g. `set-03/by_level/Grade_03-04/`; render the PDF page to an image and look at the figure; `pdftotext -layout` for text). Put the original question + answer in the module docstring.
 2. Name the **core skill** (why it is hard for an 8–10 year old), put it in `META["skill"]`, and pick `topics` (reuse existing topic words: geometry, perimeter, area, counting, logic, patterns, arithmetic, time, spatial, ...).
 3. Write **4–6 variants** with `@variant(difficulty=1|2|3)` — each a function `(rng, harder) -> Question`:
    - difficulty 1 ≈ Part A (close to the original), 2 ≈ Part B, 3 ≈ Part C (reverse the question, add a twist, combine steps).

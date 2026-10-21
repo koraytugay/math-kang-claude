@@ -53,8 +53,9 @@ def preview(gen, per_variant: int = 2):
         for k in range(per_variant):
             qs.append(gen.generate(rng, harder=(k % 2 == 1), only_variant=v.__name__))
     qs.sort(key=lambda q: q.difficulty)
-    out = ROOT / "output" / f"preview-{gen.key}.pdf"
-    out.parent.mkdir(exist_ok=True)
+    safe_key = gen.key.replace("/", "_")
+    out = ROOT / "output" / f"preview-{safe_key}.pdf"
+    out.parent.mkdir(parents=True, exist_ok=True)
     build_pdf(qs, str(out), title=f"Preview: {gen.key} (v{gen.meta.get('version', 1)})",
               subtitle=gen.meta.get("skill", ""))
     print(f"Wrote {out}")
@@ -72,13 +73,13 @@ def main():
         return
 
     pool = read_pool()
-    print(f"{'pool question':<14} {'generator':<10} {'ver':<4} {'variants':<9} self-test")
-    print("-" * 60)
+    print(f"{'pool question':<45} {'generator':<10} {'ver':<4} {'variants':<9} self-test")
+    print("-" * 85)
     bad = 0
     for key in pool:
         g = gens.get(key)
         if not g:
-            print(f"{key:<14} {'MISSING':<10}")
+            print(f"{key:<45} {'MISSING':<10}")
             continue
         try:
             errs = stress(g, args.runs)
@@ -86,12 +87,12 @@ def main():
             errs = [traceback.format_exc()]
         bad += bool(errs)
         status = "ok" if not errs else f"FAIL ({len(errs)})"
-        print(f"{key:<14} {'yes':<10} {g.meta.get('version', 1):<4} {len(g.variants):<9} {status}")
+        print(f"{key:<45} {'yes':<10} {g.meta.get('version', 1):<4} {len(g.variants):<9} {status}")
         for e in errs:
             print("      " + e)
     extra = [k for k in gens if k not in pool]
     done = sum(k in gens for k in pool)
-    print("-" * 60)
+    print("-" * 85)
     print(f"Coverage: {done}/{len(pool)} pool questions have generators. Failing: {bad}.")
     if extra:
         print(f"Generators not in the pool (unused): {', '.join(extra)}")
