@@ -58,6 +58,8 @@ def matches_source(g, s: str) -> bool:
         return True
     if s_norm in key_norm:
         return True
+    if s.lower() in [t.lower() for t in g.meta.get("topics", [])]:
+        return True
     return False
 
 
