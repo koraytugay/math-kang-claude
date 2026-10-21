@@ -18,7 +18,7 @@ on:
         required: false
         type: string
 
-      # Set / Year checkboxes (leave all unchecked to draw from all available questions)
+      # Filter by contest year (leave all unchecked to draw from all available questions)
       set_03_2002:
         description: 'set-03 / 2002'
         type: boolean
@@ -31,43 +31,9 @@ on:
         description: 'set-03 / 2007'
         type: boolean
         default: false
-      set_03_all:
-        description: 'set-03 (All years)'
-        type: boolean
-        default: false
-
-      set_02_2005:
-        description: 'set-02 / 2005'
-        type: boolean
-        default: false
-      set_02_2006:
-        description: 'set-02 / 2006'
-        type: boolean
-        default: false
-      set_02_2007:
-        description: 'set-02 / 2007'
-        type: boolean
-        default: false
-      set_02_all:
-        description: 'set-02 (All years)'
-        type: boolean
-        default: false
-
-      set_01_2009:
-        description: 'set-01 / 2009'
-        type: boolean
-        default: false
-      set_01_2010:
-        description: 'set-01 / 2010'
-        type: boolean
-        default: false
-      set_01_all:
-        description: 'set-01 (All years)'
-        type: boolean
-        default: false
 
       custom_filter:
-        description: 'Custom set/year filter (e.g. set-03/2012, set_2/2008)'
+        description: 'Custom filter (e.g. topic or source)'
         required: false
         type: string
 
@@ -109,17 +75,6 @@ jobs:
           if [ "${{ inputs.set_03_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.set_03_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
           if [ "${{ inputs.set_03_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
-          if [ "${{ inputs.set_03_all }}" = "true" ]; then SOURCES+=("set-03"); fi
-
-          if [ "${{ inputs.set_02_2005 }}" = "true" ]; then SOURCES+=("set-02/2005"); fi
-          if [ "${{ inputs.set_02_2006 }}" = "true" ]; then SOURCES+=("set-02/2006"); fi
-          if [ "${{ inputs.set_02_2007 }}" = "true" ]; then SOURCES+=("set-02/2007"); fi
-          if [ "${{ inputs.set_02_all }}" = "true" ]; then SOURCES+=("set-02"); fi
-
-          if [ "${{ inputs.set_01_2009 }}" = "true" ]; then SOURCES+=("set-01/2009"); fi
-          if [ "${{ inputs.set_01_2010 }}" = "true" ]; then SOURCES+=("set-01/2010"); fi
-          if [ "${{ inputs.set_01_all }}" = "true" ]; then SOURCES+=("set-01"); fi
-
           if [ -n "${{ inputs.custom_filter }}" ]; then SOURCES+=("${{ inputs.custom_filter }}"); fi
 
           if [ ${#SOURCES[@]} -gt 0 ]; then
