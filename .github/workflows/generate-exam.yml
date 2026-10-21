@@ -18,6 +18,59 @@ on:
         required: false
         type: string
 
+      # Set / Year checkboxes (leave all unchecked to draw from all available questions)
+      set_03_2002:
+        description: 'set-03 / 2002'
+        type: boolean
+        default: false
+      set_03_2003:
+        description: 'set-03 / 2003'
+        type: boolean
+        default: false
+      set_03_2007:
+        description: 'set-03 / 2007'
+        type: boolean
+        default: false
+      set_03_all:
+        description: 'set-03 (All years)'
+        type: boolean
+        default: false
+
+      set_02_2005:
+        description: 'set-02 / 2005'
+        type: boolean
+        default: false
+      set_02_2006:
+        description: 'set-02 / 2006'
+        type: boolean
+        default: false
+      set_02_2007:
+        description: 'set-02 / 2007'
+        type: boolean
+        default: false
+      set_02_all:
+        description: 'set-02 (All years)'
+        type: boolean
+        default: false
+
+      set_01_2009:
+        description: 'set-01 / 2009'
+        type: boolean
+        default: false
+      set_01_2010:
+        description: 'set-01 / 2010'
+        type: boolean
+        default: false
+      set_01_all:
+        description: 'set-01 (All years)'
+        type: boolean
+        default: false
+
+      custom_filter:
+        description: 'Custom set/year filter (e.g. set-03/2012, set_2/2008)'
+        required: false
+        type: string
+
 permissions:
   contents: write
 
@@ -50,9 +103,32 @@ jobs:
           if [ -n "${{ inputs.seed }}" ]; then
             ARGS+=("--seed" "${{ inputs.seed }}")
           fi
+
+          # Collect selected sources from checkboxes
+          SOURCES=()
+          if [ "${{ inputs.set_03_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
+          if [ "${{ inputs.set_03_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
+          if [ "${{ inputs.set_03_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
+          if [ "${{ inputs.set_03_all }}" = "true" ]; then SOURCES+=("set-03"); fi
+
+          if [ "${{ inputs.set_02_2005 }}" = "true" ]; then SOURCES+=("set-02/2005"); fi
+          if [ "${{ inputs.set_02_2006 }}" = "true" ]; then SOURCES+=("set-02/2006"); fi
+          if [ "${{ inputs.set_02_2007 }}" = "true" ]; then SOURCES+=("set-02/2007"); fi
+          if [ "${{ inputs.set_02_all }}" = "true" ]; then SOURCES+=("set-02"); fi
+
+          if [ "${{ inputs.set_01_2009 }}" = "true" ]; then SOURCES+=("set-01/2009"); fi
+          if [ "${{ inputs.set_01_2010 }}" = "true" ]; then SOURCES+=("set-01/2010"); fi
+          if [ "${{ inputs.set_01_all }}" = "true" ]; then SOURCES+=("set-01"); fi
+
+          if [ -n "${{ inputs.custom_filter }}" ]; then SOURCES+=("${{ inputs.custom_filter }}"); fi
+
+          if [ ${#SOURCES[@]} -gt 0 ]; then
+            ARGS+=("--from" "${SOURCES[@]}")
+          fi
+
           python make_exam.py "${ARGS[@]}"
 
-          LATEST_PDF=$(ls -t output/exam-*.pdf 2>/dev/null | head -n 1)
+          LATEST_PDF=$(ls -t output/exams/*.pdf 2>/dev/null | head -n 1)
           if [ -n "$LATEST_PDF" ]; then
             echo "pdf_path=$LATEST_PDF" >> "$GITHUB_OUTPUT"
             echo "pdf_name=$(basename "$LATEST_PDF")" >> "$GITHUB_OUTPUT"
@@ -62,7 +138,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add output/
+          git add output/exams/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -70,7 +146,7 @@ jobs:
             if [ -n "$PDF_NAME" ]; then
               git commit -m "Generate practice exam: $PDF_NAME"
             else
-              git commit -m "Generate practice exam (20 questions, harder)"
+              git commit -m "Generate practice exam"
             fi
             git pull --rebase origin "${{ github.ref_name }}"
             git push origin "${{ github.ref_name }}"

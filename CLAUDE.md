@@ -34,9 +34,9 @@ an exam is just `python make_exam.py`.
      `numbers.written`. `validate()` demands exactly one passing option, and it must be the answer.
    - Emphasise the key word of a reversed question in **bold**: `<b>not</b>`, `<b>cannot</b>`.
 4. If several generators need the same machinery (e.g. balance scales, cube nets), put it in `kangaroo/` rather than copying it.
-5. Verify: `python check.py` (stress test must be `ok`; it fails a variant with no answer check), then `python check.py --preview y<YEAR>_q<NN>` and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
+5. Verify: `python check.py` (stress test must be `ok`; it fails a variant with no answer check), then `python check.py --preview y<YEAR>_q<NN>` (or `python check.py --preview-all`) and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
 
 ## Conventions
 - One file per pool question, even if two questions share a skill (share code via `kangaroo/`).
 - Don't change `kangaroo/` APIs in ways that break existing generators; run `check.py` after any library change.
-- Exams and previews go to `output/`, which is committed to git (keep generated PDFs there).
+- Exams go to `output/exams/` (e.g. `001.pdf`) and previews to `output/previews/`, which are committed to git.

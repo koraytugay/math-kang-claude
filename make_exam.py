@@ -2,17 +2,18 @@
 """Generate a random practice exam (PDF with answer key).
 
 Examples:
-    python make_exam.py                     # 20 questions, random seed
+    python make_exam.py                     # 20 questions, saved as output/exams/001.pdf
     python make_exam.py -n 24 --harder      # tougher mix
     python make_exam.py --seed 1234         # reproduce an exact exam
-    python make_exam.py --from 2002         # only questions modelled on the 2002 test
+    python make_exam.py --from 2002         # only questions from 2002
+    python make_exam.py --from set-03/2002  # only questions from set-03 2002
     python make_exam.py --topic perimeter   # only generators with that topic
 """
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import random
+import re
 import sys
 from pathlib import Path
 
@@ -33,15 +34,44 @@ from kangaroo.render import build_pdf  # noqa: E402
 
 def matches_source(g, s: str) -> bool:
     s = s.strip()
-    return (
-        s == g.key
-        or s == g.name
-        or g.key.endswith(f"/{s}")
-        or g.key.endswith(f"/y{s}")
-        or f"y{s}_" in g.key
-        or f"/{s}/" in f"/{g.key}/"
-        or (s.isdigit() and f"y{s}_" in g.key)
-    )
+    if not s:
+        return False
+    name = Path(g.key).name
+    s_norm = re.sub(r"set[-_]0?(\d+)", r"set-\1", s.lower())
+    key_norm = re.sub(r"set[-_]0?(\d+)", r"set-\1", g.key.lower())
+
+    if s == g.key or s == name or s_norm == key_norm or s == Path(g.key).stem:
+        return True
+
+    if "/" in s:
+        parts = [p.strip() for p in s.split("/") if p.strip()]
+        return all(
+            (re.sub(r"set[-_]0?(\d+)", r"set-\1", p.lower()) in key_norm
+             or f"y{p}_" in g.key
+             or (p.isdigit() and f"y{p}_" in g.key))
+            for p in parts
+        )
+
+    if s.isdigit() and f"y{s}_" in g.key:
+        return True
+    if f"/y{s}_" in f"/{g.key}":
+        return True
+    if s_norm in key_norm:
+        return True
+    return False
+
+
+def get_next_exam_path(exams_dir: Path | None = None) -> Path:
+    exams_dir = exams_dir or ROOT / "output" / "exams"
+    exams_dir.mkdir(parents=True, exist_ok=True)
+    existing_nums = []
+    for f in exams_dir.glob("*.pdf"):
+        m = re.fullmatch(r"(\d+)\.pdf", f.name)
+        if m:
+            existing_nums.append(int(m.group(1)))
+    next_num = max(existing_nums, default=0) + 1
+    width = max(3, len(str(next_num)))
+    return exams_dir / f"{next_num:0{width}d}.pdf"
 
 
 def pick_generators(args):
@@ -62,9 +92,9 @@ def main():
     ap.add_argument("--seed", type=int, help="random seed (printed on the exam)")
     ap.add_argument("--harder", action="store_true", help="more Part C style questions, bigger numbers")
     ap.add_argument("--from", dest="source", nargs="+",
-                    help="restrict to source years (2002) or generator keys (y2002_q06)")
+                     help="restrict to source years (2002), sets (set-03), or set/year (set-03/2002)")
     ap.add_argument("--topic", help="restrict to a topic, e.g. perimeter")
-    ap.add_argument("-o", "--out", help="output PDF path (default output/exam-<date>-<seed>.pdf)")
+    ap.add_argument("-o", "--out", help="output PDF path (default output/exams/001.pdf, 002.pdf, etc.)")
     ap.add_argument("--hide-sources", action="store_true", help="don't print generator names in the key")
     args = ap.parse_args()
 
@@ -91,7 +121,13 @@ def main():
         questions.append(q)
     questions.sort(key=lambda q: q.difficulty)   # Part A, then B, then C
 
-    out = Path(args.out) if args.out else ROOT / "output" / f"exam-{dt.date.today()}-{seed}.pdf"
+    if args.out:
+        out = Path(args.out)
+        if out.is_dir() or str(args.out).endswith(("/", "\\")):
+            out = get_next_exam_path(out)
+    else:
+        out = get_next_exam_path()
+
     out.parent.mkdir(parents=True, exist_ok=True)
     mode = "harder" if args.harder else "standard"
     build_pdf(questions, str(out), title="Math Kangaroo Practice",

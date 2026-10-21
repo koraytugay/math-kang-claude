@@ -34,7 +34,7 @@ python3 make_exam.py --seed 2026      # re-create an exact exam (seed is printed
 python3 make_exam.py --hide-sources   # answer key without the [set-03/by_level/Grade_03-04/2002 Q7 · ...] tags
 ```
 
-The PDF goes to `output/`. Each run produces a different exam unless you pass `--seed`.
+The PDF goes to `output/exams/` (sequentially numbered: `001.pdf`, `002.pdf`, etc.). Each run produces a different exam unless you pass `--seed`.
 It contains:
 
 - the questions, ordered into Part A (3 points), Part B (4 points) and Part C (5 points), each with 5 options (A–E);
@@ -48,7 +48,8 @@ practice.
 
 ```
 python3 check.py                       # coverage: which pool questions have generators; runs self-tests
-python3 check.py --preview y2002_q07   # PDF showing every variant of one generator, for review
+python3 check.py --preview y2002_q07   # PDF preview in output/previews/<path>/y2002_q07.pdf
+python3 check.py --preview-all         # re-generate all preview PDFs
 ```
 
 ## 3. Report a bad question
@@ -87,7 +88,7 @@ git commit -m "Describe what changed"
 git push
 ```
 
-Generated exams in `output/` are committed too; only the Python environment (`.venv/`) is ignored by git.
+Generated exams in `output/exams/` and previews in `output/previews/` are committed too; only the Python environment (`.venv/`) is ignored by git.
 
 ## Troubleshooting
 
@@ -114,7 +115,8 @@ system-wide installs. Use the `.venv` setup above instead of `pip install` direc
 | `check.py` | Coverage report, self-tests, previews |
 | `feedback.md` | Notes on generated questions, for the agent to act on |
 | `CLAUDE.md` | Instructions for the AI agent that writes generators |
-| `output/` | Generated PDFs (committed) |
+| `output/exams/` | Generated practice exams (`001.pdf`, `002.pdf`, ...) |
+| `output/previews/` | Visual previews of each generator's variants |
 
 ## Status
 

@@ -46,27 +46,34 @@ def stress(gen, runs: int) -> list[str]:
     return errors
 
 
-def preview(gen, per_variant: int = 2):
+def preview(gen, per_variant: int = 2) -> Path:
     qs = []
     rng = random.Random(1)
     for v in gen.variants:
         for k in range(per_variant):
             qs.append(gen.generate(rng, harder=(k % 2 == 1), only_variant=v.__name__))
     qs.sort(key=lambda q: q.difficulty)
-    safe_key = gen.key.replace("/", "_")
-    out = ROOT / "output" / f"preview-{safe_key}.pdf"
+    out = ROOT / "output" / "previews" / f"{gen.key}.pdf"
     out.parent.mkdir(parents=True, exist_ok=True)
     build_pdf(qs, str(out), title=f"Preview: {gen.key} (v{gen.meta.get('version', 1)})",
               subtitle=gen.meta.get("skill", ""))
     print(f"Wrote {out}")
+    return out
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--preview", metavar="KEY")
+    ap.add_argument("--preview", metavar="KEY", help="Preview one generator (e.g. y2002_q06)")
+    ap.add_argument("--preview-all", action="store_true", help="Re-generate previews for all generators")
     ap.add_argument("--runs", type=int, default=200)
     args = ap.parse_args()
     gens = load_generators()
+
+    if args.preview_all:
+        print(f"Generating previews for all {len(gens)} generators...")
+        for g in gens.values():
+            preview(g)
+        return
 
     if args.preview:
         preview(gens[args.preview])
