@@ -31,6 +31,10 @@ on:
         description: 'set-03 / 2007'
         type: boolean
         default: false
+      set_01_2025:
+        description: 'set-01 / 2025'
+        type: boolean
+        default: false
 
       custom_filter:
         description: 'Custom filter (e.g. topic or source)'
@@ -75,6 +79,7 @@ jobs:
           if [ "${{ inputs.set_03_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.set_03_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
           if [ "${{ inputs.set_03_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
+          if [ "${{ inputs.set_01_2025 }}" = "true" ]; then SOURCES+=("set-01/2025"); fi
           if [ -n "${{ inputs.custom_filter }}" ]; then SOURCES+=("${{ inputs.custom_filter }}"); fi
 
           if [ ${#SOURCES[@]} -gt 0 ]; then
