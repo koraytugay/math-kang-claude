@@ -67,8 +67,60 @@ def _figure(drawing):
     return t
 
 
+TEACH_H = ParagraphStyle("teach_h", parent=BASE, fontName="Times-Bold", fontSize=13, leading=16,
+                         spaceBefore=8, spaceAfter=3)
+TEACH_P = ParagraphStyle("teach_p", parent=BASE, spaceAfter=4)
+TEACH_B = ParagraphStyle("teach_b", parent=TEACH_P, leftIndent=0.6 * cm, bulletIndent=0.15 * cm)
+TIP = ParagraphStyle("tip", parent=TEACH_P, backColor=colors.Color(0.94, 0.96, 1.0), borderPadding=5,
+                     spaceBefore=6, spaceAfter=8)
+
+
+def _teach(items, width):
+    """Teaching page items:
+        "text"              a paragraph (mini-HTML)
+        ("h", "text")       a heading
+        ("-", "text")       a bullet point
+        ("tip", "text")     a shaded box
+        ("table", rows)     a small table, first row is the header
+        Drawing             a centred figure
+    """
+    out = []
+    for it in items:
+        if isinstance(it, str):
+            out.append(Paragraph(clean(it), TEACH_P))
+        elif isinstance(it, tuple) and it[0] == "h":
+            out.append(Paragraph(clean(it[1]), TEACH_H))
+        elif isinstance(it, tuple) and it[0] == "-":
+            out.append(Paragraph(clean(it[1]), TEACH_B, bulletText="\u2022"))
+        elif isinstance(it, tuple) and it[0] == "tip":
+            out += [Spacer(1, 4), Paragraph(clean(it[1]), TIP)]
+        elif isinstance(it, tuple) and it[0] == "table":
+            rows = [[Paragraph(clean(str(c)), OPT) for c in r] for r in it[1]]
+            t = Table(rows, hAlign="CENTER")
+            t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                                   ("BACKGROUND", (0, 0), (-1, 0), colors.Color(0.92, 0.92, 0.92)),
+                                   ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+            out += [Spacer(1, 3), t, Spacer(1, 6)]
+        else:
+            out += [Spacer(1, 3), _figure(it), Spacer(1, 3)]
+    return out
+
+
+def _question_block(q: Question, label: str, width: float):
+    block = [Paragraph(f"<b>{label}</b>&nbsp;&nbsp;{clean(q.text)}", QTEXT)]
+    if q.figure is not None:
+        block += [Spacer(1, 4), _figure(q.figure), Spacer(1, 2)]
+    if q.after_figure:
+        block.append(Paragraph(clean(q.after_figure), INDENT))
+    block += [Spacer(1, 3), _options(q, width), Spacer(1, 12)]
+    return block
+
+
 def build_pdf(questions: list[Question], path: str, title: str, subtitle: str = "",
-              show_sources: bool = True) -> None:
+              show_sources: bool = True, teach: list | None = None,
+              warmups: list[Question] | None = None) -> None:
+    """teach: items for a "How to think about it" page (see _teach), shown first.
+    warmups: easy lead-in questions, numbered W1, W2, ... before Part A."""
     doc = SimpleDocTemplate(path, pagesize=letter, leftMargin=2 * cm, rightMargin=2 * cm,
                             topMargin=1.6 * cm, bottomMargin=1.6 * cm, title=title)
     width = doc.width
@@ -77,6 +129,14 @@ def build_pdf(questions: list[Question], path: str, title: str, subtitle: str = 
         story.append(Paragraph(subtitle, SUB))
     story.append(Spacer(1, 10))
 
+    if teach:
+        story += _teach(teach, width)
+        story.append(PageBreak())
+    if warmups:
+        story.append(Paragraph("Warm-up: small steps first (no points)", PART_H))
+        for i, q in enumerate(warmups, 1):
+            story.append(KeepTogether(_question_block(q, f"W{i}.", width)))
+
     current_part = None
     for i, q in enumerate(questions, 1):
         block = []
@@ -84,17 +144,14 @@ def build_pdf(questions: list[Question], path: str, title: str, subtitle: str = 
             current_part = q.difficulty
             block.append(Paragraph(f"Part {PART[current_part]}: Each question is worth "
                                    f"{POINTS[current_part]} points", PART_H))
-        block.append(Paragraph(f"<b>{i}.</b>&nbsp;&nbsp;{clean(q.text)}", QTEXT))
-        if q.figure is not None:
-            block += [Spacer(1, 4), _figure(q.figure), Spacer(1, 2)]
-        if q.after_figure:
-            block.append(Paragraph(clean(q.after_figure), INDENT))
-        block += [Spacer(1, 3), _options(q, width), Spacer(1, 12)]
+        block += _question_block(q, f"{i}.", width)
         story.append(KeepTogether(block))
 
     # ---- answer key -------------------------------------------------------
     story += [PageBreak(), Paragraph("Answer Key", TITLE), Spacer(1, 6)]
-    grid = [[f"{i}", LETTERS[q.answer]] for i, q in enumerate(questions, 1)]
+    keyed = [(f"W{i}", q) for i, q in enumerate(warmups or [], 1)] + \
+            [(f"{i}", q) for i, q in enumerate(questions, 1)]
+    grid = [[n, LETTERS[q.answer]] for n, q in keyed]
     # compact grid: 6 columns of (number, letter)
     cols = 6
     rows = []
@@ -114,7 +171,7 @@ def build_pdf(questions: list[Question], path: str, title: str, subtitle: str = 
         t.setStyle(TableStyle([("FONTNAME", (c, 0), (c, -1), "Times-Bold"),
                                ("ALIGN", (c, 0), (c, -1), "LEFT")]))
     story += [t, Spacer(1, 14), Paragraph("Solutions", PART_H)]
-    for i, q in enumerate(questions, 1):
+    for i, q in keyed:
         src = (f" <font color='#888888' size='8.5'>[{q.source} · {q.variant}]</font>"
                if show_sources else "")
         shown = "" if q.choice_figures else f" ({clean(q.choices[q.answer])})"

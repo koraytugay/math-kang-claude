@@ -33,6 +33,13 @@ def variant(difficulty: int):
     return deco
 
 
+def warmup(fn: Callable):
+    """An easy step-by-step question that leads up to the real skill. Warm-ups are shown in
+    previews (after the teaching page), not in exams. Same signature as a variant."""
+    fn._warmup = True
+    return fn
+
+
 @dataclass
 class Generator:
     key: str            # e.g. "set-03/by_level/Grade_03-04/y2002_q06"
@@ -51,6 +58,23 @@ class Generator:
     def variants(self) -> list[Callable]:
         return [v for v in vars(self.module).values()
                 if callable(v) and hasattr(v, "_variant_difficulty")]
+
+    @property
+    def warmups(self) -> list[Callable]:
+        return [v for v in vars(self.module).values() if callable(v) and getattr(v, "_warmup", False)]
+
+    def teach(self) -> list:
+        """The teaching page: the module's teach() items (see render.build_pdf), or []."""
+        fn = getattr(self.module, "teach", None)
+        return fn() if callable(fn) else []
+
+    def make_warmup(self, fn: Callable, rng: random.Random) -> Question:
+        q = fn(rng, False)
+        q.difficulty = 1
+        q.source = self.meta.get("source", "")
+        q.variant = fn.__name__
+        q.validate()
+        return q
 
     def generate(self, rng: random.Random, harder: bool = False,
                  only_variant: str | None = None, used: dict | None = None) -> Question:

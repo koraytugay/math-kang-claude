@@ -43,6 +43,16 @@ def stress(gen, runs: int) -> list[str]:
                     if len(errors) > 5:
                         return errors
                     break
+    for w in gen.warmups:
+        for i in range(runs):
+            try:
+                q = gen.make_warmup(w, random.Random(i * 7919))
+                if q.check is None:
+                    raise ValueError("no answer check (set Question.check)")
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"warm-up {w.__name__} seed={i}: {e!r}")
+                break
+    gen.teach()
     return errors
 
 
@@ -53,10 +63,11 @@ def preview(gen, per_variant: int = 2) -> Path:
         for k in range(per_variant):
             qs.append(gen.generate(rng, harder=(k % 2 == 1), only_variant=v.__name__))
     qs.sort(key=lambda q: q.difficulty)
+    warm = [gen.make_warmup(w, rng) for w in gen.warmups]
     out = ROOT / "output" / "previews" / f"{gen.key}.pdf"
     out.parent.mkdir(parents=True, exist_ok=True)
     build_pdf(qs, str(out), title=f"Preview: {gen.key} (v{gen.meta.get('version', 1)})",
-              subtitle=gen.meta.get("skill", ""))
+              subtitle=gen.meta.get("skill", ""), teach=gen.teach(), warmups=warm)
     print(f"Wrote {out}")
     return out
 

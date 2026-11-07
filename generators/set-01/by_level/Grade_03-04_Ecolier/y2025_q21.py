@@ -19,14 +19,14 @@ from itertools import combinations
 
 from reportlab.lib import colors
 
-from kangaroo import Fig, Question, numeric_choices, value_check, variant
+from kangaroo import Fig, Question, numeric_choices, value_check, variant, warmup
 from kangaroo.figures import row
 
 META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2025 Q21",
     "skill": "Closed loops: groups of neighbours can wrap around the start; recognise the same bracelet turned",
     "topics": ["patterns", "spatial", "logic"],
-    "version": 1,
+    "version": 2,
 }
 
 SHAPES = "CST"
@@ -339,3 +339,185 @@ def cannot_make(rng, harder):
                         choice_figures=[bracelet(o, 70) for o in opts], answer=ai, solution=sol,
                         check=lambda i: not can_make(seq, opts[i], need))
     raise RuntimeError("no bracelet found")
+
+
+
+# ------------------------------------------------------------------ teaching page
+ORIGINAL = list("TSSCTCSTTCC")      # the contest bracelet, clockwise from the top
+
+
+def _teach_strip(seq, extra=2):
+    """The bracelet written in a row, the first stones copied again at the end, with the
+    one-of-each groups bracketed underneath."""
+    n = len(seq)
+    row_ = seq + seq[:extra]
+    good = [j for j in range(n) if set(window(seq, j, 3)) == set(SHAPES)]
+    f = Fig(len(row_) * 1.2 + 0.6, 3.0, scale=26, margin=4)
+    top = 2.3
+    for i, k in enumerate(row_):
+        x = 0.6 + 1.2 * i
+        _stone(f, k, x, top, 0.4)
+        f.text(x, top - 0.75, str(i % n + 1), size=9, italic=i >= n)
+    xd = 0.6 + 1.2 * n - 0.6
+    f.line((xd, 1.2), (xd, 2.9), dash=True, width=0.8)
+    f.text(xd + 1.2, 2.95 - 0.1, "copied again", size=8, italic=True)
+    levels = []
+    for j in good:
+        lvl = 0
+        while any(abs(j - o) < 3 and l == lvl for o, l in levels):
+            lvl += 1
+        levels.append((j, lvl))
+        y = 1.15 - 0.35 * lvl
+        x0, x1 = 0.6 + 1.2 * j - 0.45, 0.6 + 1.2 * (j + 2) + 0.45
+        f.polyline([(x0, y + 0.15), (x0, y), (x1, y), (x1, y + 0.15)], width=1.4)
+    return f.drawing()
+
+
+def teach():
+    return [
+        ("h", "How to think about it: bracelets (stones in a loop)"),
+        "A bracelet is a <b>loop</b>: it has no first and no last stone. When you go around and come back to "
+        "where you started, the last stone you read and the first one are <b>neighbours</b>.",
+        bracelet(ORIGINAL, 95),
+        ("h", "Trick 1: write it in a row, then copy the first stones again at the end"),
+        "Start at any stone (here: the top one) and go clockwise, drawing each stone in a row. When you are back "
+        "at the start, draw the first two stones <b>once more</b>. Now every group of 3 neighbours, also the one "
+        "that goes across the start, is just 3 stones side by side in your row.",
+        _teach_strip(ORIGINAL),
+        "The brackets show the groups with one circle, one square and one triangle. There are 4 of them, and "
+        "the last one goes <b>across the start</b> (stones 10, 11 and 1). That is the one children miss.",
+        ("h", "Trick 2: check each answer picture"),
+        ("-", "<b>Count first.</b> Before: 4 circles, 3 squares, 4 triangles. Lisa takes away one of each, so the "
+              "answer must have 3 circles, 2 squares and 3 triangles. Pictures with other numbers are out."),
+        ("-", "<b>Counting is not enough!</b> Some pictures have the right numbers, but the stones taken away "
+              "were not next to each other. You still have to compare the order."),
+        ("-", "<b>Find a landmark</b>, a spot that is easy to see, such as two triangles side by side. Find it "
+              "in both pictures and read clockwise from there. If every stone matches, it is the same "
+              "bracelet, only turned."),
+        ("h", "Watch out"),
+        ("-", "Don't stop at the top: groups can go across the start."),
+        ("-", "A turned bracelet is still the same bracelet. Always read clockwise in both pictures."),
+        ("tip", "<b>Try it for real:</b> lay coins, buttons or Lego bricks in a circle on the table. Take away three "
+                "neighbours, close the gap, then turn the circle. Can your child still find where the gap was?"),
+    ]
+
+
+# ------------------------------------------------------------------ warm-ups (small steps)
+@warmup
+def w_count(rng, harder):
+    """Look closely: count one shape."""
+    seq = random_bracelet(rng, rng.choice([8, 9, 10]))
+    shape = rng.choice(SHAPES)
+    ans = seq.count(shape)
+    value = sum(1 for k in seq if k == shape)
+    text = f"Look at this bracelet with {legend_text()}. How many {PLURAL[shape]} are on it?"
+    sol = f"Put your finger on the top stone and go around once, counting the {PLURAL[shape]}: {ans}."
+    choices, ai = numeric_choices(ans, [ans - 1, ans + 1, len(seq) - ans, len(seq)], rng, lo=1, order="asc")
+    return Question(text=text, figure=bracelet(seq, 100), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, value))
+
+
+@warmup
+def w_row_of_three(rng, harder):
+    """Three neighbours in a row - the group across the top."""
+    from itertools import product
+    seq = random_bracelet(rng, 8)
+    n = len(seq)
+    j = rng.choice([n - 2, n - 1])                    # a group that goes across the top
+    right = tuple(window(seq, j, 3))
+    cw = {tuple(window(seq, i, 3)) for i in range(n)}
+    acw = {tuple(window(seq[::-1], i, 3)) for i in range(n)}
+    pool = [t for t in product(SHAPES, repeat=3) if t not in cw | acw]
+    same_stones = [t for t in pool if sorted(t) == sorted(right)]
+    rng.shuffle(pool)
+    wrong = (same_stones + [t for t in pool if t not in same_stones])[:4]
+    opts = wrong + [right]
+    rng.shuffle(opts)
+    text = (f"Going <b>clockwise</b> around this bracelet, which three stones come one after another? "
+            f"(Read each answer from left to right.)")
+    sol = ("Go around clockwise and look at every group of 3 neighbours. The right group goes across the "
+           "top: the last stone(s) before the top and the first one(s) after it.")
+    return Question(text=text, figure=bracelet(seq, 100), choices=["".join(o) for o in opts],
+                    choice_figures=[strip(o, size=14) for o in opts], answer=opts.index(right), solution=sol,
+                    check=lambda i: tuple(opts[i]) in cw)
+
+
+@warmup
+def w_groups_count(rng, harder):
+    """A loop of n stones has n groups of 3 neighbours (not n - 2)."""
+    seq = random_bracelet(rng, rng.choice([7, 8, 9]))
+    n = len(seq)
+    text = (f"This bracelet has {n} stones. How many different groups of 3 <b>neighbouring</b> stones are "
+            f"there? (Don't forget the groups that go across the top.)")
+    sol = (f"Every stone starts one group: that stone and the next two, going clockwise. "
+           f"{n} stones, so {n} groups. In a straight row there would only be {n - 2}.")
+    runs = {frozenset((s + t) % n for t in range(3)) for s in range(n)}
+    value = sum(1 for c in combinations(range(n), 3) if frozenset(c) in runs)
+    choices, ai = numeric_choices(n, [n - 2, n - 1, n // 3, n + 1, 3], rng, lo=1, order="asc")
+    return Question(text=text, figure=bracelet(seq, 100), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, value))
+
+
+@warmup
+def w_remove_one(rng, harder):
+    """Take away the only square: which bracelet is left (turned)?"""
+    while True:
+        n = 9
+        seq = [rng.choice("CT") for _ in range(n - 1)]
+        seq.insert(rng.randrange(n), "S")
+        if seq.count("C") >= 3 and seq.count("T") >= 3:
+            break
+    name = rng.choice(NAMES)
+    sq = seq.index("S")
+    answer = remove_at(seq, {sq})
+    wrong = {}
+    for d in (1, 2, 3):                              # the right stones, two of them swapped
+        for i in range(n - 1):
+            r = list(answer)
+            r[i], r[(i + d) % (n - 1)] = r[(i + d) % (n - 1)], r[i]
+            if canon(r) != canon(answer):
+                wrong.setdefault(canon(r), tuple(r))
+    wl = list(wrong.values())
+    if len(wl) < 4:
+        return w_remove_one(rng, harder)
+    opts = [turned(rng, answer)] + [turned(rng, w) for w in rng.sample(wl, 4)]
+    rng.shuffle(opts)
+    ai = [canon(o) for o in opts].index(canon(answer))
+    text = f"{name} takes the square off this bracelet and closes the gap. Which bracelet is left?"
+    sol = ("The other stones stay in the same order. Find a landmark (for example two equal stones side by side) "
+           f"and read clockwise: only {'ABCDE'[ai]} matches, turned a bit.")
+
+    def ok(i):
+        squares = [k for k, s_ in enumerate(seq) if s_ == "S"]
+        return len(squares) == 1 and canon(remove_at(seq, set(squares))) == canon(opts[i])
+    return Question(text=text, figure=bracelet(seq, 95), choices=["".join(canon(o)) for o in opts],
+                    choice_figures=[bracelet(o, 66) for o in opts], answer=ai, solution=sol, check=ok)
+
+
+@warmup
+def w_turned(rng, harder):
+    """Same bracelet, only turned - with just 6 stones."""
+    while True:
+        seq = list(rng.choice(["CCSTTS", "CSSTCT", "CCTSTS", "CTTSCS", "CSTTSC"]))
+        rng.shuffle(seq)
+        if len({canon(r) for r in rotations(seq)}) == 1 and len(set(rotations(seq))) == 6:
+            break
+    n = len(seq)
+    ans = turned(rng, seq)
+    wrong = {}
+    for i in range(n):
+        r = list(ans)
+        r[i], r[(i + 1) % n] = r[(i + 1) % n], r[i]
+        if canon(r) != canon(seq):
+            wrong.setdefault(canon(r), tuple(r))
+    if len(wrong) < 4:
+        return w_turned(rng, harder)
+    opts = [ans] + rng.sample(list(wrong.values()), 4)
+    rng.shuffle(opts)
+    ai = opts.index(ans)
+    text = "Which picture shows the same bracelet, only turned?"
+    sol = (f"Find a landmark in the bracelet (for example two equal stones side by side) and read clockwise "
+           f"from there. Only {'ABCDE'[ai]} matches all 6 stones.")
+    return Question(text=text, figure=bracelet(seq, 90), choices=["".join(canon(o)) for o in opts],
+                    choice_figures=[bracelet(o, 66) for o in opts], answer=ai, solution=sol,
+                    check=lambda i: tuple(opts[i]) in {tuple(r) for r in rotations(seq)})
