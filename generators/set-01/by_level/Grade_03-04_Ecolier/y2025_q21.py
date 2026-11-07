@@ -26,7 +26,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2025 Q21",
     "skill": "Closed loops: groups of neighbours can wrap around the start; recognise the same bracelet turned",
     "topics": ["patterns", "spatial", "logic"],
-    "version": 2,
+    "version": 3,
 }
 
 SHAPES = "CST"
@@ -385,7 +385,7 @@ def teach():
         "that goes across the start, is just 3 stones side by side in your row.",
         _teach_strip(ORIGINAL),
         "The brackets show the groups with one circle, one square and one triangle. There are 4 of them, and "
-        "the last one goes <b>across the start</b> (stones 10, 11 and 1). That is the one children miss.",
+        "the last one goes <b>across the start</b> (stones 10, 11 and 1). That one is easy to miss!",
         ("h", "Trick 2: check each answer picture"),
         ("-", "<b>Count first.</b> Before: 4 circles, 3 squares, 4 triangles. Lisa takes away one of each, so the "
               "answer must have 3 circles, 2 squares and 3 triangles. Pictures with other numbers are out."),
@@ -397,8 +397,8 @@ def teach():
         ("h", "Watch out"),
         ("-", "Don't stop at the top: groups can go across the start."),
         ("-", "A turned bracelet is still the same bracelet. Always read clockwise in both pictures."),
-        ("tip", "<b>Try it for real:</b> lay coins, buttons or Lego bricks in a circle on the table. Take away three "
-                "neighbours, close the gap, then turn the circle. Can your child still find where the gap was?"),
+        ("tip", "<b>Try it yourself:</b> lay coins, buttons or Lego bricks in a circle on the table. Take away "
+                "three neighbours, close the gap and turn the circle a bit. Can you still find where the gap was?"),
     ]
 
 

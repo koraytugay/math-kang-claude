@@ -25,7 +25,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2025 Q10",
     "skill": "Running towards each other around a circle: between two meetings they cover one whole lap together",
     "topics": ["logic", "arithmetic", "spatial"],
-    "version": 2,
+    "version": 3,
 }
 
 PAIRS = [("Lisa", "Max"), ("Mia", "Tom"), ("Anna", "Ben"), ("Sara", "Leo"), ("Emma", "Sam"), ("Zoe", "Jack")]
@@ -323,8 +323,9 @@ def teach():
         rows.append([str(i), lab, f"{i} part{'s' if i > 1 else ''}", f"{3 * i} parts"])
     return [
         ("h", "How to think about it: two runners going opposite ways round a circle"),
-        "Two children start at the same spot and run around a circle in <b>opposite directions</b>, so they "
-        "keep meeting. The question asks where they meet, how often, or how many times one of them runs around.",
+        "In these questions two children start at the same spot and run around a circle in <b>opposite "
+        "directions</b>, so they keep meeting. You are asked where they meet, how often, or how many times one "
+        "of them runs around.",
         ("tip", "<b>The big idea:</b> between two meetings, the two runners <b>together</b> run exactly "
                 "<b>once around the circle</b>."),
         "Why? Right after a meeting they stand on the same spot. They run apart, and they meet again when the "
@@ -348,8 +349,8 @@ def teach():
         ("-", "The number of <b>meetings</b> (4) is not the number of <b>laps</b> (3). Read what the question asks."),
         ("-", "Check your answer: Lisa's laps + Max's laps = number of meetings. Here 1 + 3 = 4."),
         ("-", "If they run equally fast, each runs half the circle: they meet exactly opposite the start."),
-        ("tip", "<b>Try it for real:</b> walk around the kitchen table with your child in opposite directions, "
-                "one slowly and one fast. Stop at every meeting and say how many parts each of you walked."),
+        ("tip", "<b>Try it yourself:</b> walk around a table with a friend or your brother, in opposite directions, one of "
+                "you slowly and one fast. Stop every time you meet and count how many parts each of you walked."),
     ]
 
 

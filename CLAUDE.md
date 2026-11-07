@@ -37,6 +37,7 @@ an exam is just `python make_exam.py`.
      "How to think about it" page (paragraphs, `("h", ...)`, `("-", ...)`, `("tip", ...)`, `("table", rows)`,
      Drawings — see `render._teach`), and a few `@warmup` questions (same signature as a variant) that build
      up to the skill in small steps. Both appear only in previews, before the real questions.
+     Write the teaching page **to the kids** (10-year-olds study it on their own): say "you", never address a parent (no "your child", "children often miss").
 4. If several generators need the same machinery (e.g. balance scales, cube nets), put it in `kangaroo/` rather than copying it.
 5. Verify: `python check.py` (stress test must be `ok`; it fails a variant with no answer check), then `python check.py --preview y<YEAR>_q<NN>` (or `python check.py --preview-all`) and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
 
