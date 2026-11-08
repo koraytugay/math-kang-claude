@@ -12,6 +12,11 @@ on:
         required: false
         default: '20'
         type: string
+      one_each:
+        description: 'Just 1 from each: one question from every picked question (the number of questions is ignored)'
+        required: false
+        default: false
+        type: boolean
       harder:
         description: 'Harder exam: more 5-point questions and bigger numbers'
         required: false
@@ -81,6 +86,9 @@ jobs:
           fi
           if [ -n "$SEED" ]; then
             ARGS+=("--seed" "$SEED")
+          fi
+          if [ "${{ inputs.one_each }}" = "true" ]; then
+            ARGS+=("--one-each")
           fi
 
           # Picked keywords / questions, plus ticked contests

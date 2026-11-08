@@ -5,6 +5,7 @@ Examples:
     python make_exam.py                     # 20 questions, saved as output/exams/001.pdf
     python make_exam.py -n 24 --harder      # tougher mix
     python make_exam.py --seed 1234         # reproduce an exact exam
+    python make_exam.py --one-each --from cube   # one question from each cube-counting generator
     python make_exam.py --from 2002         # only questions from 2002
     python make_exam.py --from set-03/2002  # only questions from set-03 2002
     python make_exam.py --from "cube counting, hiding digits, 2024 Q19"   # pick by keyword / question
@@ -113,6 +114,8 @@ def main():
     ap.add_argument("--topic", help="restrict to a topic, e.g. perimeter")
     ap.add_argument("-o", "--out", help="output PDF path (default output/exams/001.pdf, 002.pdf, etc.)")
     ap.add_argument("--hide-sources", action="store_true", help="don't print generator names in the key")
+    ap.add_argument("--one-each", action="store_true",
+                    help="exactly one question from each picked question (ignores -n)")
     args = ap.parse_args()
 
     seed = args.seed if args.seed is not None else random.randrange(10_000, 99_999)
@@ -124,6 +127,11 @@ def main():
     questions, seen, used = [], set(), {}
     order: list = []
     tries = 0
+    if args.one_each:                       # every picked generator exactly once
+        order = gens[:]
+        rng.shuffle(order)
+        questions = [g.generate(rng, harder=args.harder, used=used) for g in order]
+        args.n = len(questions)
     while len(questions) < args.n and tries < args.n * 50:
         tries += 1
         if not order:                       # cycle through generators so they share the exam evenly
