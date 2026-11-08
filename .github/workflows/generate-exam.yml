@@ -3,47 +3,48 @@ name: Generate Practice Exam
 on:
   workflow_dispatch:
     inputs:
+      pick:
+        description: 'Pick questions by keyword or number, separated by commas, e.g. cube counting, hiding digits, 2024 Q19 (all keywords are in QUESTIONS.md). Leave blank for all.'
+        required: false
+        type: string
       questions:
         description: 'Number of questions'
         required: false
         default: '20'
         type: string
       harder:
-        description: 'Generate harder mix (--harder)'
+        description: 'Harder exam: more 5-point questions and bigger numbers'
         required: false
         default: true
         type: boolean
       seed:
-        description: 'Specific seed (optional, leave blank for random)'
+        description: 'Seed number to repeat an earlier exam exactly (leave blank for a new random exam)'
         required: false
         type: string
 
-      # Filter by contest year (leave all unchecked to draw from all available questions)
-      set_03_2002:
-        description: 'set-03 / 2002'
+      # Whole contests (ticked ones are added to the picks above). Leave everything empty for all questions.
+      # BEGIN contests - written by `python check.py --catalog`, do not edit by hand
+      canada_2002:
+        description: 'Canada Math Kangaroo 2002, Grade 3-4: missing square, perimeter, matching pieces, balance scales, clock sums, flag silhouettes, logic clues, cube counting, make a target number, seating arrangements, odometer'
         type: boolean
         default: false
-      set_03_2003:
-        description: 'set-03 / 2003'
+      canada_2003:
+        description: 'Canada Math Kangaroo 2003, Grade 3-4: cube counting, length units, page numbers, bar code, covering shapes'
         type: boolean
         default: false
-      set_03_2007:
-        description: 'set-03 / 2007'
+      canada_2007:
+        description: 'Canada Math Kangaroo 2007, Grade 3-4: routes through forks, common letters, digit sum, working backwards, completing a rectangle, dates, cube counting, painted cube, growing patterns, counting digits, paper folding'
         type: boolean
         default: false
-      set_01_2024:
-        description: 'set-01 / 2024'
+      austria_2024:
+        description: 'Austrian Kangaroo 2024, Ecolier Grade 3-4: puzzle-piece chains, two repeating patterns, hiding digits'
         type: boolean
         default: false
-      set_01_2025:
-        description: 'set-01 / 2025'
+      austria_2025:
+        description: 'Austrian Kangaroo 2025, Ecolier Grade 3-4: runners on a circle, bracelet'
         type: boolean
         default: false
-
-      custom_filter:
-        description: 'Custom filter (e.g. topic or source)'
-        required: false
-        type: string
+      # END contests
 
 permissions:
   contents: write
@@ -69,23 +70,29 @@ jobs:
 
       - name: Generate practice exam
         id: generate
+        env:
+          PICK: ${{ inputs.pick }}
+          QUESTIONS: ${{ inputs.questions }}
+          SEED: ${{ inputs.seed }}
         run: |
-          ARGS=("-n" "${{ inputs.questions || '20' }}")
+          ARGS=("-n" "${QUESTIONS:-20}")
           if [ "${{ inputs.harder }}" != "false" ]; then
             ARGS+=("--harder")
           fi
-          if [ -n "${{ inputs.seed }}" ]; then
-            ARGS+=("--seed" "${{ inputs.seed }}")
+          if [ -n "$SEED" ]; then
+            ARGS+=("--seed" "$SEED")
           fi
 
-          # Collect selected sources from checkboxes
+          # Picked keywords / questions, plus ticked contests
           SOURCES=()
-          if [ "${{ inputs.set_03_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
-          if [ "${{ inputs.set_03_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
-          if [ "${{ inputs.set_03_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
-          if [ "${{ inputs.set_01_2024 }}" = "true" ]; then SOURCES+=("set-01/2024"); fi
-          if [ "${{ inputs.set_01_2025 }}" = "true" ]; then SOURCES+=("set-01/2025"); fi
-          if [ -n "${{ inputs.custom_filter }}" ]; then SOURCES+=("${{ inputs.custom_filter }}"); fi
+          if [ -n "$PICK" ]; then SOURCES+=("$PICK"); fi
+          # BEGIN contest-sources - written by `python check.py --catalog`, do not edit by hand
+          if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
+          if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
+          if [ "${{ inputs.canada_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
+          if [ "${{ inputs.austria_2024 }}" = "true" ]; then SOURCES+=("set-01/2024"); fi
+          if [ "${{ inputs.austria_2025 }}" = "true" ]; then SOURCES+=("set-01/2025"); fi
+          # END contest-sources
 
           if [ ${#SOURCES[@]} -gt 0 ]; then
             ARGS+=("--from" "${SOURCES[@]}")

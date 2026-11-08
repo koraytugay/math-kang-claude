@@ -17,6 +17,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q14",
     "skill": "Space in a box = length × width × height; count hidden cubes; subtract",
     "topics": ["counting", "spatial", "geometry"],
+    "keywords": ["cube counting", "box volume"],
     "version": 2,
 }
 

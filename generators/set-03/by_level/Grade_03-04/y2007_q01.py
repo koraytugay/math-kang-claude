@@ -18,6 +18,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q1",
     "skill": "Routes through forks: one branch from every fork; number of routes = product of choices",
     "topics": ["logic", "counting"],
+    "keywords": ["routes through forks", "counting routes"],
     "version": 2,
 }
 

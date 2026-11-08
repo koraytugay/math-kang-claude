@@ -17,6 +17,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2003 Q16",
     "skill": "Counting the digits in 1..N: split into one-, two- and three-digit numbers",
     "topics": ["counting", "arithmetic", "patterns"],
+    "keywords": ["page numbers", "counting digits"],
     "version": 1,
 }
 

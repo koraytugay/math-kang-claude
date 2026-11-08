@@ -18,6 +18,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q21",
     "skill": "Growing patterns: describe how each diagram is built, then count cells = total − black",
     "topics": ["patterns", "counting"],
+    "keywords": ["growing patterns", "grid patterns"],
     "version": 1,
 }
 

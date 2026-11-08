@@ -19,6 +19,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2003 Q18",
     "skill": "Covering a shape with pieces of squares: count the squares, then turn the pieces",
     "topics": ["spatial", "geometry", "counting"],
+    "keywords": ["covering shapes", "pieces that fit"],
     "version": 2,
 }
 

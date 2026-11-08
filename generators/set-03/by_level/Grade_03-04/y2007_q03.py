@@ -13,6 +13,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q3",
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
+    "keywords": ["common letters", "words"],
     "version": 4,
 }
 

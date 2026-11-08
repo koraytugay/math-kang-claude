@@ -15,6 +15,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2003 Q10",
     "skill": "Lengths in m, dm, cm, mm: convert to one unit before adding or comparing",
     "topics": ["arithmetic", "measurement"],
+    "keywords": ["length units", "m dm cm mm"],
     "version": 2,
 }
 

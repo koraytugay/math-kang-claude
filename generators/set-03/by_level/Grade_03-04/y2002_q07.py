@@ -20,6 +20,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q7",
     "skill": "Visual matching: find which piece of a line drawing fits / does not fit",
     "topics": ["spatial", "visual"],
+    "keywords": ["matching pieces", "skyline"],
     "version": 2,
 }
 

@@ -25,6 +25,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q1",
     "skill": "Find the missing square by its edges: lines must continue at the same places, not turned",
     "topics": ["spatial", "visual"],
+    "keywords": ["missing square", "picture puzzle"],
     "version": 2,
 }
 

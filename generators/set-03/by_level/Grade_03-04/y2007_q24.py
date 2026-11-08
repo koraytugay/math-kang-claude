@@ -21,6 +21,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q24",
     "skill": "Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric)",
     "topics": ["spatial", "geometry"],
+    "keywords": ["paper folding", "fold and cut"],
     "version": 3,
 }
 

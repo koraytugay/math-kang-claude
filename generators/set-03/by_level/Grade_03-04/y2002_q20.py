@@ -19,6 +19,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q20",
     "skill": "Counting cubes in a 3-D building, hidden ones included (slice x number of slices)",
     "topics": ["counting", "spatial", "geometry"],
+    "keywords": ["cube counting", "cube buildings"],
     "version": 3,
 }
 

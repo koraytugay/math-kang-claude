@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import random
+import re
 import sys
 import traceback
 from pathlib import Path
@@ -72,13 +73,87 @@ def preview(gen, per_variant: int = 2) -> Path:
     return out
 
 
+CONTESTS = {"set-03": ("canada", "Canada Math Kangaroo"), "set-01": ("austria", "Austrian Kangaroo")}
+WORKFLOW = ROOT / ".github" / "workflows" / "generate-exam.yml"
+
+
+def _contests(gens, pool):
+    """[(set, year, level, [generators])] in pool order."""
+    out = {}
+    for key in pool:
+        g = gens.get(key)
+        if not g:
+            continue
+        set_, _, level, name = key.split("/")[:4] if key.count("/") >= 3 else (key.split("/")[0], "", "", key)
+        year = Path(key).name[1:5]
+        out.setdefault((set_, year, level), []).append(g)
+    return [(s, y, l, gs) for (s, y, l), gs in out.items()]
+
+
+def _level(level: str) -> str:
+    m = re.match(r"Grade_0?(\d+)-0?(\d+)(?:_(\w+))?", level)
+    if not m:
+        return level
+    return (f"{m.group(3)} " if m.group(3) else "") + f"Grade {m.group(1)}-{m.group(2)}"
+
+
+def catalog(gens) -> None:
+    """Write QUESTIONS.md and the contest checkboxes of the exam workflow from the pool + keywords."""
+    pool = read_pool()
+    contests = _contests(gens, pool)
+    lines = ["# Practice questions",
+             "",
+             "Made by `python check.py --catalog` from `question-pool.txt` and the generators' keywords.",
+             "",
+             "**Pick questions** in the GitHub Actions exam form (or `python make_exam.py --from \"...\"`): type",
+             "keywords or question names separated by commas, e.g. `cube counting, hiding digits, 2024 Q19`.",
+             "A part of a keyword is enough (`cube` finds every cube question). Topics like `patterns` work too.",
+             ""]
+    for set_, year, level, gs in contests:
+        cid, cname = CONTESTS.get(set_, (set_.replace("-", "_"), set_))
+        lines += [f"## {cname} {year}, {_level(level)}", "",
+                  "| Question | Keywords | What it practises | Preview |", "|---|---|---|---|"]
+        for g in gs:
+            q = f"{year} Q{int(Path(g.key).name[7:9])}"
+            kws = ", ".join(g.meta.get("keywords", []))
+            prev = f"[PDF](output/previews/{g.key}.pdf)"
+            lines.append(f"| {q} | {kws} | {g.meta.get('skill', '')} | {prev} |")
+        lines.append("")
+    (ROOT / "QUESTIONS.md").write_text("\n".join(lines))
+    print(f"Wrote {ROOT / 'QUESTIONS.md'}")
+
+    inputs, picks = [], []
+    for set_, year, level, gs in contests:
+        cid, cname = CONTESTS.get(set_, (set_.replace("-", "_"), set_))
+        kws = ", ".join(g.meta.get("keywords", ["?"])[0] for g in gs)
+        desc = f"{cname} {year}, {_level(level)}: {kws}".replace("'", "")
+        inputs += [f"      {cid}_{year}:", f"        description: '{desc}'", "        type: boolean",
+                   "        default: false"]
+        picks.append(f'          if [ "${{{{ inputs.{cid}_{year} }}}}" = "true" ]; then SOURCES+=("{set_}/{year}"); fi')
+    wf = WORKFLOW.read_text()
+    for tag, body in (("contests", inputs), ("contest-sources", picks)):
+        start, end = f"# BEGIN {tag}", f"# END {tag}"
+        i, j = wf.index(start), wf.index(end)
+        i = wf.index("\n", i) + 1
+        j = wf.rindex("\n", 0, j) + 1
+        wf = wf[:i] + "\n".join(body) + "\n" + wf[j:]
+    WORKFLOW.write_text(wf)
+    print(f"Updated the contest checkboxes in {WORKFLOW.relative_to(ROOT)}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--preview", metavar="KEY", help="Preview one generator (e.g. y2002_q06)")
     ap.add_argument("--preview-all", action="store_true", help="Re-generate previews for all generators")
     ap.add_argument("--runs", type=int, default=200)
+    ap.add_argument("--catalog", action="store_true",
+                    help="Write QUESTIONS.md and the exam workflow's contest checkboxes from the pool")
     args = ap.parse_args()
     gens = load_generators()
+
+    if args.catalog:
+        catalog(gens)
+        return
 
     if args.preview_all:
         print(f"Generating previews for all {len(gens)} generators...")

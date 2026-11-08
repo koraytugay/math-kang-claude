@@ -7,6 +7,7 @@ Examples:
     python make_exam.py --seed 1234         # reproduce an exact exam
     python make_exam.py --from 2002         # only questions from 2002
     python make_exam.py --from set-03/2002  # only questions from set-03 2002
+    python make_exam.py --from "cube counting, hiding digits, 2024 Q19"   # pick by keyword / question
     python make_exam.py --topic perimeter   # only generators with that topic
 """
 from __future__ import annotations
@@ -33,9 +34,18 @@ from kangaroo.render import build_pdf  # noqa: E402
 
 
 def matches_source(g, s: str) -> bool:
+    """Does generator g match one pick? A pick is a keyword ("cube counting", "cube"), a topic
+    ("patterns"), a question ("2024 Q20", "y2024_q20"), a contest year ("2002", "set-03/2002")
+    or a set ("set-03")."""
     s = s.strip()
     if not s:
         return False
+    low = s.lower()
+    if any(low in kw.lower() for kw in g.meta.get("keywords", [])):
+        return True
+    m = re.fullmatch(r"(?:y)?(\d{4})\s*[_ ]?\s*q\s*(\d{1,2})", low)
+    if m:
+        return Path(g.key).name == f"y{m.group(1)}_q{int(m.group(2)):02d}"
     name = Path(g.key).name
     s_norm = re.sub(r"set[-_]0?(\d+)", r"set-\1", s.lower())
     key_norm = re.sub(r"set[-_]0?(\d+)", r"set-\1", g.key.lower())
@@ -82,7 +92,11 @@ def pick_generators(args):
     chosen = [gens[k] for k in pool if k in gens]
     missing = [k for k in pool if k not in gens]
     if args.source:
-        chosen = [g for g in chosen if any(matches_source(g, s) for s in args.source)]
+        picks = [p.strip() for s in args.source for p in s.split(",") if p.strip()]
+        unknown = [p for p in picks if not any(matches_source(g, p) for g in chosen)]
+        if unknown:
+            print(f"Note: nothing matches {', '.join(repr(u) for u in unknown)} (see QUESTIONS.md for keywords).")
+        chosen = [g for g in chosen if any(matches_source(g, p) for p in picks)]
     if args.topic:
         chosen = [g for g in chosen if args.topic in g.meta.get("topics", [])]
     return chosen, missing
@@ -94,7 +108,8 @@ def main():
     ap.add_argument("--seed", type=int, help="random seed (printed on the exam)")
     ap.add_argument("--harder", action="store_true", help="more Part C style questions, bigger numbers")
     ap.add_argument("--from", dest="source", nargs="+",
-                     help="restrict to source years (2002), sets (set-03), or set/year (set-03/2002)")
+                     help="only these questions: keywords (\"cube counting\"), questions (\"2024 Q20\"), topics, "
+                          "years (2002), sets (set-03) or set/year (set-03/2002); commas or spaces between picks")
     ap.add_argument("--topic", help="restrict to a topic, e.g. perimeter")
     ap.add_argument("-o", "--out", help="output PDF path (default output/exams/001.pdf, 002.pdf, etc.)")
     ap.add_argument("--hide-sources", action="store_true", help="don't print generator names in the key")

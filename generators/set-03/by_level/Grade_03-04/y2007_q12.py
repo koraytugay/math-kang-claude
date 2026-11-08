@@ -18,6 +18,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q12",
     "skill": "Dates: older = born earlier; adding days across month and year ends",
     "topics": ["time", "logic"],
+    "keywords": ["dates", "birthdays"],
     "version": 3,
 }
 

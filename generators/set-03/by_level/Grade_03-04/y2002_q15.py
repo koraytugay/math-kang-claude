@@ -22,6 +22,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q15",
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
+    "keywords": ["flag silhouettes", "what cannot change"],
     "version": 3,
 }
 

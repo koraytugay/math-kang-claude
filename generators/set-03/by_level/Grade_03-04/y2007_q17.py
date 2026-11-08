@@ -17,6 +17,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q17",
     "skill": "Painted cube cut up: corners 3 faces, edges 2, face middles 1, inside 0",
     "topics": ["counting", "spatial", "geometry"],
+    "keywords": ["painted cube", "cube counting"],
     "version": 1,
 }
 

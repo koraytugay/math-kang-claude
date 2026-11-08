@@ -17,6 +17,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q9",
     "skill": "Balance scales: remove equal things from both sides, substitute, scale up",
     "topics": ["logic", "arithmetic", "balance"],
+    "keywords": ["balance scales", "weights"],
     "version": 1,
 }
 

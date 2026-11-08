@@ -18,7 +18,9 @@ an exam is just `python make_exam.py`.
 
 ## How to write a generator
 1. Read the original question (find the contest PDF in e.g. `set-03/by_level/Grade_03-04/`; render the PDF page to an image and look at the figure; `pdftotext -layout` for text). Put the original question + answer in the module docstring.
-2. Name the **core skill** (why it is hard for an 8–10 year old), put it in `META["skill"]`, and pick `topics` (reuse existing topic words: geometry, perimeter, area, counting, logic, patterns, arithmetic, time, spatial, ...).
+2. Give `META["keywords"]`: 2-3 short plain words a parent would type to pick this question
+   ("cube counting", "hiding digits"); the first one is shown in the GitHub Actions form.
+   Name the **core skill** (why it is hard for an 8–10 year old), put it in `META["skill"]`, and pick `topics` (reuse existing topic words: geometry, perimeter, area, counting, logic, patterns, arithmetic, time, spatial, ...).
 3. Write **4–6 variants** with `@variant(difficulty=1|2|3)` — each a function `(rng, harder) -> Question`:
    - difficulty 1 ≈ Part A (close to the original), 2 ≈ Part B, 3 ≈ Part C (reverse the question, add a twist, combine steps).
    - Be creative: different stories/contexts, asking for a different unknown, a counter-intuitive twist (e.g. "the perimeter doesn't change"). Keep the same underlying skill and grade 3–4 language.
@@ -44,4 +46,7 @@ an exam is just `python make_exam.py`.
 ## Conventions
 - One file per pool question, even if two questions share a skill (share code via `kangaroo/`).
 - Don't change `kangaroo/` APIs in ways that break existing generators; run `check.py` after any library change.
+- When `question-pool.txt` or any `META["keywords"]` changes, run `python check.py --catalog`: it rewrites
+  `QUESTIONS.md` and the contest checkboxes in `.github/workflows/generate-exam.yml` (between the BEGIN/END
+  markers - never edit those by hand). New sets need an entry in `CONTESTS` in `check.py`.
 - Exams go to `output/exams/` (e.g. `001.pdf`) and previews to `output/previews/`, which are committed to git.

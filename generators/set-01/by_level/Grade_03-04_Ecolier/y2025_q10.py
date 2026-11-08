@@ -25,6 +25,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2025 Q10",
     "skill": "Running towards each other around a circle: between two meetings they cover one whole lap together",
     "topics": ["logic", "arithmetic", "spatial"],
+    "keywords": ["runners on a circle", "meeting on a circle"],
     "version": 3,
 }
 

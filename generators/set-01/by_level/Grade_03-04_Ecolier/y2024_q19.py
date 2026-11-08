@@ -23,6 +23,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2024 Q19",
     "skill": "Two repeating patterns together: find the block where both start again, count in it, multiply",
     "topics": ["patterns", "counting", "arithmetic"],
+    "keywords": ["two repeating patterns", "vests and backpacks"],
     "version": 1,
 }
 

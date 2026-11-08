@@ -21,6 +21,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q18",
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
+    "keywords": ["logic clues", "who has what"],
     "version": 1,
 }
 

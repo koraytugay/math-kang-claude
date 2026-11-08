@@ -17,6 +17,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q24",
     "skill": "Next number with a digit property: change the rightmost digits as little as possible",
     "topics": ["arithmetic", "patterns", "logic"],
+    "keywords": ["odometer", "different digits"],
     "version": 2,
 }
 

@@ -25,6 +25,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q11",
     "skill": "Sums of numbers around a circle: use the total, split into equal/consecutive parts",
     "topics": ["arithmetic", "logic", "spatial"],
+    "keywords": ["clock sums", "numbers around a circle"],
     "version": 1,
 }
 

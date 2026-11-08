@@ -21,6 +21,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q5",
     "skill": "Working backwards: undo each operation, last one first",
     "topics": ["arithmetic", "logic"],
+    "keywords": ["working backwards", "chain of calculations"],
     "version": 2,
 }
 

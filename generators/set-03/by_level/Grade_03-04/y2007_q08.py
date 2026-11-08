@@ -19,6 +19,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q8",
     "skill": "Completing a rectangle: the missing part has a fixed shape and size; turn pieces in your head",
     "topics": ["spatial", "geometry"],
+    "keywords": ["completing a rectangle", "pieces that fit"],
     "version": 2,
 }
 

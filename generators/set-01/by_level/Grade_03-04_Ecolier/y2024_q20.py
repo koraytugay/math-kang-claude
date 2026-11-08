@@ -24,6 +24,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2024 Q20",
     "skill": "Cards hiding digits: find the forced digit first (two digits add to at most 18), then try and check",
     "topics": ["arithmetic", "logic"],
+    "keywords": ["hiding digits", "digit figuring out", "cryptarithm"],
     "version": 1,
 }
 

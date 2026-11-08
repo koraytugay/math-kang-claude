@@ -21,6 +21,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2003 Q17",
     "skill": "Alternating rows: starts and ends the same, so one more of that kind; then split a group",
     "topics": ["counting", "logic", "patterns"],
+    "keywords": ["bar code", "alternating rows"],
     "version": 1,
 }
 

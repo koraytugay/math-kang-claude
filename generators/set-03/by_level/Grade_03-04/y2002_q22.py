@@ -19,6 +19,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q22",
     "skill": "Counting arrangements: fill places one by one and multiply the choices",
     "topics": ["counting", "logic"],
+    "keywords": ["seating arrangements", "counting orders"],
     "version": 2,
 }
 

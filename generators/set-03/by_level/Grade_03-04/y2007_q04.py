@@ -18,6 +18,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2007 Q4",
     "skill": "Digit sums: find the next/previous number with the same digit sum",
     "topics": ["arithmetic", "patterns", "logic"],
+    "keywords": ["digit sum", "next number"],
     "version": 1,
 }
 

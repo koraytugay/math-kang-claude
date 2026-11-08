@@ -25,6 +25,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2024 Q14",
     "skill": "Counting chains systematically: list what fits after what, then branch like a tree",
     "topics": ["counting", "logic"],
+    "keywords": ["puzzle-piece chains", "counting with a tree"],
     "version": 1,
 }
 

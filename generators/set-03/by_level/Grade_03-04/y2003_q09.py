@@ -18,6 +18,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2003 Q9",
     "skill": "Inside of a box of cubes: every length drops by 2; outside = total − inside",
     "topics": ["counting", "spatial", "geometry"],
+    "keywords": ["cube counting", "hidden cubes inside"],
     "version": 2,
 }
 

@@ -22,6 +22,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q21",
     "skill": "Reach a target with + − × ÷ using each card once; know when it is impossible",
     "topics": ["arithmetic", "logic"],
+    "keywords": ["make a target number", "card calculations"],
     "version": 2,
 }
 

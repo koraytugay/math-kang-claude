@@ -19,6 +19,7 @@ META = {
     "source": "set-03/by_level/Grade_03-04/2002 Q6",
     "skill": "Perimeter of rectangles cut from a square or rectangle",
     "topics": ["geometry", "perimeter"],
+    "keywords": ["perimeter", "cutting rectangles"],
     "version": 1,
 }
 

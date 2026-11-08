@@ -26,6 +26,7 @@ META = {
     "source": "set-01/by_level/Grade_03-04_Ecolier/2025 Q21",
     "skill": "Closed loops: groups of neighbours can wrap around the start; recognise the same bracelet turned",
     "topics": ["patterns", "spatial", "logic"],
+    "keywords": ["bracelet", "loops and neighbours"],
     "version": 3,
 }
 
