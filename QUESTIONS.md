@@ -56,6 +56,7 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 | 2024 Q19 | two repeating patterns, shirts and cards | Two repeating patterns together: find the block where both start again, count in it, multiply | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2024_q19.pdf) |
 | 2024 Q20 | hiding digits, digit figuring out, cryptarithm | Cards hiding digits: find the forced digit first (two digits add to at most 18), then try and check | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2024_q20.pdf) |
 | 2024 Q21 | frogs jumping, rows and columns | Two jumps that keep every row and column count: the second jump must undo the first | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2024_q21.pdf) |
+| 2024 Q24 | cookies on a tray, who went first | Taking turns: what is still left depends on who went first - try the orders and keep track | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2024_q24.pdf) |
 
 ## Austrian Kangaroo 2025, Ecolier Grade 3-4
 
