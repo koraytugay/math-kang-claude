@@ -71,7 +71,7 @@ TEACH_H = ParagraphStyle("teach_h", parent=BASE, fontName="Times-Bold", fontSize
                          spaceBefore=8, spaceAfter=3)
 TEACH_P = ParagraphStyle("teach_p", parent=BASE, spaceAfter=4)
 TEACH_B = ParagraphStyle("teach_b", parent=TEACH_P, leftIndent=0.6 * cm, bulletIndent=0.15 * cm)
-TIP = ParagraphStyle("tip", parent=TEACH_P, backColor=colors.Color(0.94, 0.96, 1.0), borderPadding=5,
+TIP = ParagraphStyle("tip", parent=TEACH_P, backColor=colors.Color(0.93, 0.93, 0.93), borderPadding=5,
                      spaceBefore=6, spaceAfter=8)
 
 

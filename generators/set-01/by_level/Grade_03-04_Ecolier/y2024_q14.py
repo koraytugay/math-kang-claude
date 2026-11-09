@@ -26,13 +26,14 @@ META = {
     "skill": "Counting chains systematically: list what fits after what, then branch like a tree",
     "topics": ["counting", "logic"],
     "keywords": ["puzzle-piece chains", "counting with a tree"],
-    "version": 1,
+    "version": 2,
 }
 
 SHAPES = ["round", "square", "tri"]
 SHAPE_WORD = {"round": "round", "square": "square", "tri": "triangle"}
-GREEN = colors.Color(0.64, 0.82, 0.55)
-BLUE = colors.Color(0.62, 0.76, 0.93)
+# Black-and-white printing: light grey bodies, the pegs and holes carry the information.
+GREEN = colors.Color(0.82, 0.82, 0.82)
+BLUE = colors.Color(0.82, 0.82, 0.82)
 NAMES = ["Lucas", "Mia", "Tom", "Anna", "Ben", "Sara", "Leo", "Emma"]
 
 THEMES = {
@@ -120,7 +121,7 @@ def piece(f, cx, kind, left, right, label="", theme="caterpillar"):
             f.rect(cx - 0.45, 1.0, 0.5, 0.45, fill=colors.white, width=0.8)  # window
         if kind == "tail":
             f.line((cx + 0.6, 1.65), (cx + 0.6, 2.15), width=1.0)
-            f.poly([(cx + 0.6, 2.15), (cx + 0.6, 1.9), (cx + 0.95, 2.02)], fill=colors.Color(0.9, 0.2, 0.2),
+            f.poly([(cx + 0.6, 2.15), (cx + 0.6, 1.9), (cx + 0.95, 2.02)], fill=colors.black,
                    width=0.6)
     else:
         f.circle(cx, y, 1.0, fill=fill, width=1.0)
@@ -399,7 +400,7 @@ def _tree_pic(head_r, mids, tail_l, names, lengths):
 
     def draw(node):
         x, y = pos(node)
-        fill = colors.Color(0.85, 0.95, 0.82) if node["label"] == "tail" else colors.white
+        fill = colors.Color(0.85, 0.85, 0.85) if node["label"] == "tail" else colors.white
         f.rect(x, y - 0.3, W, 0.6, fill=fill, width=0.8)
         f.text(x + W / 2, y, node["label"], size=10.5)
         if "n" in node:

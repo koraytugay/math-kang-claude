@@ -26,7 +26,7 @@ META = {
     "skill": "Running towards each other around a circle: between two meetings they cover one whole lap together",
     "topics": ["logic", "arithmetic", "spatial"],
     "keywords": ["runners on a circle", "meeting on a circle"],
-    "version": 3,
+    "version": 4,
 }
 
 PAIRS = [("Lisa", "Max"), ("Mia", "Tom"), ("Anna", "Ben"), ("Sara", "Leo"), ("Emma", "Sam"), ("Zoe", "Jack")]
@@ -80,7 +80,7 @@ def circle_pic(labels, cw_name, acw_name, max_px=118):
     for i, lab in enumerate(labels):
         a = math.radians(90 - 360 * i / k)
         x, y = cx + R * math.cos(a), cy + R * math.sin(a)
-        f.circle(x, y, 0.055, fill=colors.Color(0.95, 0.6, 0.6) if i == 0 else colors.white, width=0.8)
+        f.circle(x, y, 0.055, fill=colors.black if i == 0 else colors.white, width=0.8)
         rr = 0.78 if len(lab) == 1 else 0.62
         f.text(cx + rr * R * math.cos(a), cy + rr * R * math.sin(a), lab, size=10)
     _arrow(f, cx, cy, 1.22, 80, 38)           # clockwise, right
@@ -262,8 +262,9 @@ def minutes(rng, harder):
 
 
 # ------------------------------------------------------------------ teaching page
-RED = colors.Color(0.85, 0.2, 0.2)
-BLUE = colors.Color(0.15, 0.4, 0.85)
+# Black-and-white printing: Lisa's path is black, Max's is light grey.
+RED = colors.black
+BLUE = colors.Color(0.62, 0.62, 0.62)
 
 
 def _path(f, cx, cy, r, a0, a1, color, width=3.0):
@@ -285,7 +286,7 @@ def _path(f, cx, cy, r, a0, a1, color, width=3.0):
 
 
 def _teach_circle():
-    """The original: Lisa's piece A->B (1 part, red, outside), Max's piece A->D->C->B (3 parts, blue, inside)."""
+    """The original: Lisa's piece A->B (1 part, black, outside), Max's piece A->D->C->B (3 parts, grey, inside)."""
     import math
     cx, cy, R = 2.2, 1.7, 1.0
     f = Fig(4.4, 3.4, max_px=125, margin=4, font_size=11)

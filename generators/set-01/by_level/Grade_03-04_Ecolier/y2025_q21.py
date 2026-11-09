@@ -27,14 +27,14 @@ META = {
     "skill": "Closed loops: groups of neighbours can wrap around the start; recognise the same bracelet turned",
     "topics": ["patterns", "spatial", "logic"],
     "keywords": ["bracelet", "loops and neighbours"],
-    "version": 3,
+    "version": 4,
 }
 
 SHAPES = "CST"
 NAME = {"C": "circle", "S": "square", "T": "triangle"}
 PLURAL = {"C": "circles", "S": "squares", "T": "triangles"}
-FILL = {"C": colors.Color(0.87, 0.24, 0.22), "S": colors.Color(0.22, 0.68, 0.36),
-        "T": colors.Color(0.15, 0.62, 0.87)}
+# Black-and-white printing: the shape tells the stones apart; fills are black / white / grey.
+FILL = {"C": colors.Color(0.15, 0.15, 0.15), "S": colors.white, "T": colors.Color(0.65, 0.65, 0.65)}
 NAMES = ["Lisa", "Mia", "Tom", "Anna", "Ben", "Sara", "Leo"]
 
 
@@ -130,7 +130,7 @@ def arrow_pic():
 
 
 def legend_text():
-    return "circles (red), squares (green) and triangles (blue)"
+    return "circles, squares and triangles"
 
 
 # ------------------------------------------------------------------ "which bracelet can she make?"
