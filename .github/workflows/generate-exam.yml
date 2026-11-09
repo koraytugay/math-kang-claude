@@ -42,7 +42,7 @@ on:
         type: boolean
         default: false
       austria_2024:
-        description: 'Austrian Kangaroo 2024, Ecolier Grade 3-4: puzzle-piece chains, two repeating patterns, hiding digits, frogs jumping, cookies on a tray'
+        description: 'Austrian Kangaroo 2024, Ecolier Grade 3-4: puzzle-piece chains, two repeating patterns, hiding digits, frogs jumping, building with parts, cookies on a tray'
         type: boolean
         default: false
       austria_2025:
