@@ -73,7 +73,8 @@ function render() {
         none.type = "button"; none.onclick = () => toggle(keys, false);
         btns.append(all, none);
         top.append(t, btns);
-        const grid = el("div", "kt-grid kt-grid--list");
+        const grid = el("div", "kt-grid");
+        grid.style.setProperty("--kt-grid-min", "480px");
         for (const q of c.questions) grid.append(card(q));
         sec.append(top, grid);
         root.append(sec);
@@ -107,7 +108,7 @@ function refresh() {
     });
     const n = picked.size, oneEach = $("one-each").checked;
     $("picked").textContent = `${n} question${n === 1 ? "" : "s"} picked`;
-    $("picked-hint").textContent = n === 0 ? "Tap a question to pick it."
+    $("picked-hint").textContent = n === 0 ? "Click a question to pick it."
         : oneEach ? `The exam will have ${n} question${n === 1 ? "" : "s"}, one of each.`
         : `The exam will have ${$("count").value} questions.`;
     $("make").disabled = n === 0;
