@@ -3,17 +3,13 @@ name: Generate Practice Exam
 on:
   workflow_dispatch:
     inputs:
-      pick:
-        description: 'Pick questions by keyword or number, separated by commas, e.g. cube counting, hiding digits, 2024 Q19 (all keywords are in QUESTIONS.md). Leave blank for all.'
-        required: false
-        type: string
       questions:
         description: 'Number of questions'
         required: false
         default: '20'
         type: string
       one_each:
-        description: 'Just 1 from each: one question from every picked question (the number of questions is ignored)'
+        description: 'Just 1 from each: one question of each kind from the ticked contests (the number of questions is ignored)'
         required: false
         default: false
         type: boolean
@@ -27,7 +23,7 @@ on:
         required: false
         type: string
 
-      # Whole contests (ticked ones are added to the picks above). Leave everything empty for all questions.
+      # Whole contests (tick the ones you want). Leave everything empty for all questions.
       # BEGIN contests - written by `python check.py --catalog`, do not edit by hand
       canada_2002:
         description: 'Canada Math Kangaroo 2002, Grade 3-4: missing square, perimeter, matching pieces, balance scales, clock sums, flag silhouettes, logic clues, cube counting, make a target number, seating arrangements, odometer'
@@ -76,7 +72,6 @@ jobs:
       - name: Generate practice exam
         id: generate
         env:
-          PICK: ${{ inputs.pick }}
           QUESTIONS: ${{ inputs.questions }}
           SEED: ${{ inputs.seed }}
         run: |
@@ -93,7 +88,6 @@ jobs:
 
           # Picked keywords / questions, plus ticked contests
           SOURCES=()
-          if [ -n "$PICK" ]; then SOURCES+=("$PICK"); fi
           # BEGIN contest-sources - written by `python check.py --catalog`, do not edit by hand
           if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi

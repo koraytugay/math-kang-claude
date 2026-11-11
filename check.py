@@ -105,8 +105,8 @@ def catalog(gens) -> None:
              "",
              "Made by `python check.py --catalog` from `question-pool.txt` and the generators' keywords.",
              "",
-             "**Pick questions** in the GitHub Actions exam form (or `python make_exam.py --from \"...\"`): type",
-             "keywords or question names separated by commas, e.g. `cube counting, hiding digits, 2024 Q19`.",
+             "**Pick questions** with `python make_exam.py --from \"...\"`: type keywords or question names",
+             "separated by commas, e.g. `cube counting, hiding digits, 2024 Q19`.",
              "A part of a keyword is enough (`cube` finds every cube question). Topics like `patterns` work too.",
              ""]
     for set_, year, level, gs in contests:
