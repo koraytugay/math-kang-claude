@@ -28,9 +28,12 @@ function card(q) {
     b.type = "button";
     b.dataset.key = q.key;
     const head = el("div", "kt-card__header mk-card-head");
-    head.append(el("div", "kt-card__title", q.label));
-    for (const k of q.keywords) head.append(el("span", "kt-chip", k));
-    head.style.flexWrap = "wrap";
+    const lines = el("div", "kt-stack");
+    lines.style.setProperty("--kt-gap", "var(--kt-space-2)");
+    const chips = el("div", "kt-cluster");
+    for (const k of q.keywords) chips.append(el("span", "kt-chip", k));
+    lines.append(el("div", "kt-card__title", q.label), chips);
+    head.append(lines);
     const body = el("div", "kt-card__body");
     const img = el("img", "mk-card-img");
     img.src = q.img; img.alt = `Example: ${q.label}`; img.loading = "lazy";
@@ -109,7 +112,7 @@ function refresh() {
         const n = keys.filter((k) => picked.has(k)).length;
         const badge = b.querySelector(".kt-badge");
         badge.textContent = n;
-        badge.style.display = n ? "" : "none";
+        badge.hidden = n === 0;
         b.classList.toggle("is-active", i === show);
         b.setAttribute("aria-pressed", String(i === show));
     });
@@ -124,11 +127,22 @@ function refresh() {
 }
 
 // ------------------------------------------------------------------ modals
-function openModal(m) { m.classList.add("is-open"); }
-function closeModal(m) { m.classList.remove("is-open"); }
+let opener = null;
+function openModal(m) {
+    if (!m.classList.contains("is-open")) opener = document.activeElement;
+    m.classList.add("is-open");
+}
+function closeModal(m) {
+    m.classList.remove("is-open");
+    if (opener && document.contains(opener)) opener.focus();
+    opener = null;
+}
 document.querySelectorAll(".kt-modal").forEach((m) => {
+    // Close on the backdrop only when the press also started there (not when a text selection ends outside).
+    let downOnBackdrop = false;
+    m.addEventListener("mousedown", (e) => { downOnBackdrop = e.target === m; });
     m.addEventListener("click", (e) => {
-        if (e.target === m || e.target.closest(".kt-modal__close")) closeModal(m);
+        if ((e.target === m && downOnBackdrop) || e.target.closest(".kt-modal__close")) closeModal(m);
     });
 });
 document.addEventListener("keydown", (e) => {
@@ -160,7 +174,7 @@ function askPassword() {
         err.hidden = true;
         $("password").value = "";
         openModal(m);
-        setTimeout(() => $("password").focus(), 50);
+        setTimeout(() => $("password").focus(), 50);   // after the open transition starts
         const done = (v) => { obs.disconnect(); $("unlock-form").onsubmit = null; resolve(v); };
         const obs = new MutationObserver(() => { if (!m.classList.contains("is-open")) done(null); });
         obs.observe(m, { attributes: true, attributeFilter: ["class"] });
@@ -177,6 +191,7 @@ function askPassword() {
             } catch (x) {
                 err.textContent = x.message;
                 err.hidden = false;
+                $("password").select();
             } finally {
                 $("unlock-btn").disabled = false;
             }
@@ -218,9 +233,14 @@ async function latestRunId() {
 
 function status(text) { $("progress-text").textContent = text; }
 
+let running = false, pdfUrl = null;
+
 async function makeExam() {
+    if (running) { openModal($("progress")); return; }
     if (!token) token = await askPassword();
     if (!token) return;
+    running = true;
+    $("make").textContent = "Making exam…";
 
     const m = $("progress");
     $("progress-title").textContent = "Making your exam";
@@ -276,7 +296,8 @@ async function makeExam() {
         }
         if (!name) throw new Error("The run finished, but no new PDF showed up in output/exams.");
         const pdf = await gh(`/contents/output/exams/${name}`, { headers: { Accept: "application/vnd.github.raw" } });
-        const url = URL.createObjectURL(new Blob([await pdf.arrayBuffer()], { type: "application/pdf" }));
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        const url = pdfUrl = URL.createObjectURL(new Blob([await pdf.arrayBuffer()], { type: "application/pdf" }));
 
         $("progress-title").textContent = "Your exam is ready";
         $("done-text").textContent = `${name} is ready (${secs()} s).`;
@@ -292,6 +313,10 @@ async function makeExam() {
         $("progress-error").textContent = x.message +
             (x instanceof AuthError ? " The saved password was forgotten; try again." : "");
         $("progress-error").hidden = false;
+    } finally {
+        running = false;
+        $("make").textContent = "Make exam";
+        openModal(m);   // the dialog may have been closed while waiting: show how it ended
     }
 }
 
