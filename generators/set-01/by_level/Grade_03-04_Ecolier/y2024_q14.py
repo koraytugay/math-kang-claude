@@ -26,7 +26,7 @@ META = {
     "skill": "Counting chains systematically: list what fits after what, then branch like a tree",
     "topics": ["counting", "logic"],
     "keywords": ["puzzle-piece chains", "counting with a tree"],
-    "version": 2,
+    "version": 3,
 }
 
 SHAPES = ["round", "square", "tri"]
@@ -165,7 +165,7 @@ def _intro(theme, name, k, lengths):
     ln = ", ".join(str(x) for x in ls[:-1]) + f" or {ls[-1]}" if len(ls) > 1 else str(ls[0])
     return (f"{name} has these pieces: {t['first']}, {t['last']} and {k} {t['mid'][1]} with numbers. "
             f"A peg fits only into a hole of the <b>same shape</b>, and the pieces cannot be turned around. "
-            f"A {t['thing'][0]} is {t['First']}, then {ln} {t['mid'][1]}, then {t['Last']}. "
+            f"A {t['thing'][0]} is {t['First']}, then {ln} numbered {t['mid'][1]}, then {t['Last']}. "
             f"Each piece can be used only once. ")
 
 
@@ -224,12 +224,16 @@ def exact_length(rng, harder):
     name = rng.choice(NAMES)
     t = THEMES[theme]
     text = (_intro(theme, name, k, list(range(1, k + 1))) +
-            f"How many different {t['thing'][1]} with <b>exactly {m}</b> {t['mid'][1]} can {name} build?")
+            f"How many different {t['thing'][1]} can {name} build with <b>exactly {m}</b> numbered "
+            f"{t['mid'][1]} <b>between</b> {t['First']} and {t['Last']}?")
+    # m - 2: counted the two end pieces as well
     mistakes = [alls, ans + 1, ans - 1, len(chains(head_r, mids, tail_l, [m - 1])),
-                len(chains(head_r, mids, tail_l, [m + 1]))]
+                len(chains(head_r, mids, tail_l, [m + 1]))] + \
+               ([len(chains(head_r, mids, tail_l, [m - 2]))] if m > 2 else [])
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0, order="asc")
     return Question(text=text, figure=pieces_pic(head_r, mids, tail_l, theme), choices=choices, answer=ai,
-                    solution=_solution_lines(head_r, mids, tail_l, [m], theme),
+                    solution=f"Count only the numbered {t['mid'][1]}, not {t['First']} and {t['Last']}. " +
+                    _solution_lines(head_r, mids, tail_l, [m], theme),
                     check=value_check(choices, len(brute(head_r, mids, tail_l, [m]))))
 
 
