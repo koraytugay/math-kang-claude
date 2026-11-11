@@ -90,6 +90,13 @@ function toggle(keys, on) {
     refresh();
 }
 
+// Number of questions typed in the box, or null when it is not a whole number from 1 to 60.
+function count() {
+    const v = $("count").value.trim();
+    const n = /^\d+$/.test(v) ? Number(v) : NaN;
+    return n >= 1 && n <= 60 ? n : null;
+}
+
 function refresh() {
     const valid = new Set(allKeys());
     picked = new Set([...picked].filter((k) => valid.has(k)));
@@ -110,8 +117,10 @@ function refresh() {
     $("picked").textContent = `${n} question${n === 1 ? "" : "s"} picked`;
     $("picked-hint").textContent = n === 0 ? "Click a question to pick it."
         : oneEach ? `The exam will have ${n} question${n === 1 ? "" : "s"}, one of each.`
-        : `The exam will have ${$("count").value} questions.`;
-    $("make").disabled = n === 0;
+        : count() === null ? "Type a number of questions from 1 to 60."
+        : `The exam will have ${count()} questions.`;
+    $("count").classList.toggle("is-invalid", !oneEach && count() === null);
+    $("make").disabled = n === 0 || (!oneEach && count() === null);
 }
 
 // ------------------------------------------------------------------ modals
@@ -232,7 +241,7 @@ async function makeExam() {
             body: JSON.stringify({
                 ref: "main",
                 inputs: {
-                    questions: $("count").value,
+                    questions: String(count() ?? 20),
                     harder: String($("harder").checked),
                     one_each: String($("one-each").checked),
                     website: [...picked].join(","),
@@ -289,7 +298,7 @@ async function makeExam() {
 // ------------------------------------------------------------------ start
 $("all").onclick = () => toggle(allKeys(), true);
 $("none").onclick = () => toggle(allKeys(), false);
-$("count").onchange = refresh;
+$("count").oninput = refresh;
 $("one-each").onchange = refresh;
 $("make").onclick = makeExam;
 $("forget").onclick = (e) => {

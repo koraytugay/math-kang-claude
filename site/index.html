@@ -9,6 +9,7 @@
         /* layout glue only */
         .mk-page { max-width: 1240px; }
         .mk-card-head { padding-right: 3.6rem; }
+        .mk-count { width: 5rem; }
         .mk-card-img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--kt-radius-md); }
         .mk-bar { position: sticky; bottom: var(--kt-space-2); z-index: 5; }
         .mk-contest + .mk-contest { margin-top: var(--kt-space-6); }
@@ -21,21 +22,18 @@
         <p class="kt-page-subtitle">Click the questions you want to practise, then make a PDF exam.</p>
     </header>
 
-    <div class="kt-card kt-card--padded">
-        <div class="kt-cluster">
-            <label class="kt-field">
+    <div class="kt-toolbar">
+        <div class="kt-toolbar__row">
+            <label class="kt-field kt-field--inline">
                 <span class="kt-field__label">Number of questions</span>
-                <select class="kt-select" id="count">
-                    <option>8</option><option>10</option><option>12</option><option>15</option>
-                    <option selected>20</option><option>24</option>
-                </select>
+                <input class="kt-input mk-count" type="text" inputmode="numeric" id="count" value="20">
             </label>
             <label class="kt-check kt-check--boxed"><input type="checkbox" id="harder" checked> Harder</label>
             <label class="kt-check kt-check--boxed"><input type="checkbox" id="one-each"> Just 1 from each</label>
-        </div>
-        <div class="kt-cluster kt-mt-3">
-            <button type="button" class="kt-btn" id="all">Select all</button>
-            <button type="button" class="kt-btn" id="none">Clear all</button>
+            <div class="kt-cluster kt-ml-auto">
+                <button type="button" class="kt-btn" id="all">Select all</button>
+                <button type="button" class="kt-btn" id="none">Clear all</button>
+            </div>
         </div>
     </div>
 
