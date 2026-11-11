@@ -11,7 +11,7 @@
         .mk-card-head { padding-right: 3.6rem; }
         .mk-card-img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--kt-radius-md); }
         .mk-bar { position: sticky; bottom: var(--kt-space-2); z-index: 5; }
-        .mk-contest { margin-top: var(--kt-space-6); }
+        .mk-contest + .mk-contest { margin-top: var(--kt-space-6); }
     </style>
 </head>
 <body>
@@ -38,6 +38,8 @@
             <button type="button" class="kt-btn" id="none">Clear all</button>
         </div>
     </div>
+
+    <nav class="kt-nav kt-nav--pill kt-nav--left kt-mt-4" id="pills" aria-label="Contests"></nav>
 
     <div id="contests"><div class="kt-loading kt-mt-4"><div class="kt-spinner"></div>Loading questions…</div></div>
 

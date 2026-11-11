@@ -8,11 +8,12 @@ const store = {
     set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
     del(k) { try { localStorage.removeItem(k); } catch { /* private mode */ } },
 };
-const TOKEN_KEY = "mk.token", PICK_KEY = "mk.picked";
+const TOKEN_KEY = "mk.token", PICK_KEY = "mk.picked", SHOW_KEY = "mk.show";
 
 let cfg = null;              // questions.json
 let picked = new Set(JSON.parse(store.get(PICK_KEY) || "[]"));
 let token = store.get(TOKEN_KEY);
+let show = Number(store.get(SHOW_KEY) ?? 0);   // index of the contest shown, -1 = all
 
 // ------------------------------------------------------------------ gallery
 function el(tag, cls, text) {
@@ -40,11 +41,27 @@ function card(q) {
     return b;
 }
 
+function pill(label, idx) {
+    const b = el("button", "kt-nav__link");
+    b.type = "button";
+    b.dataset.idx = idx;
+    b.append(el("span", null, label), el("span", "kt-badge kt-badge--pill"));
+    b.onclick = () => { show = idx; store.set(SHOW_KEY, String(idx)); refresh(); };
+    return b;
+}
+
 function render() {
+    if (!(show >= -1 && show < cfg.contests.length)) show = 0;
+    const nav = $("pills");
+    nav.innerHTML = "";
+    nav.append(pill("All", -1));
+    cfg.contests.forEach((c, i) => nav.append(pill(c.pill, i)));
+
     const root = $("contests");
     root.innerHTML = "";
-    for (const c of cfg.contests) {
+    for (const [i, c] of cfg.contests.entries()) {
         const sec = el("section", "mk-contest");
+        sec.dataset.idx = i;
         const top = el("div", "kt-split kt-mb-3");
         const t = el("div");
         t.append(el("h2", "kt-section-title kt-m-0", c.name), el("div", "kt-caption", c.level));
@@ -77,6 +94,17 @@ function refresh() {
     picked = new Set([...picked].filter((k) => valid.has(k)));
     document.querySelectorAll(".kt-card--selectable").forEach((b) =>
         b.setAttribute("aria-pressed", picked.has(b.dataset.key) ? "true" : "false"));
+    document.querySelectorAll(".mk-contest").forEach((s) => { s.hidden = show !== -1 && Number(s.dataset.idx) !== show; });
+    document.querySelectorAll("#pills .kt-nav__link").forEach((b) => {
+        const i = Number(b.dataset.idx);
+        const keys = i === -1 ? allKeys() : cfg.contests[i].questions.map((q) => q.key);
+        const n = keys.filter((k) => picked.has(k)).length;
+        const badge = b.querySelector(".kt-badge");
+        badge.textContent = n;
+        badge.style.display = n ? "" : "none";
+        b.classList.toggle("is-active", i === show);
+        b.setAttribute("aria-pressed", String(i === show));
+    });
     const n = picked.size, oneEach = $("one-each").checked;
     $("picked").textContent = `${n} question${n === 1 ? "" : "s"} picked`;
     $("picked-hint").textContent = n === 0 ? "Tap a question to pick it."

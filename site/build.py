@@ -78,7 +78,8 @@ def main() -> None:
             items.append({"key": g.key, "label": f"{year} Q{int(g.name[7:9])}",
                           "keywords": g.meta.get("keywords", []), "skill": g.meta.get("skill", ""),
                           "img": img})
-        contests.append({"name": f"{cname} {year}", "level": _level(level), "questions": items})
+        contests.append({"name": f"{cname} {year}", "level": _level(level), "questions": items,
+                         "pill": f"Set {set_.split('-')[-1]} · {year}"})
         print(f"{cname} {year}: {len(items)} questions")
     (OUT / "questions.json").write_text(json.dumps(
         {"repo": REPO, "workflow": WORKFLOW, "contests": contests}, indent=1))
