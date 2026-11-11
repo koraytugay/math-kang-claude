@@ -50,3 +50,8 @@ an exam is just `python make_exam.py`.
   `QUESTIONS.md` and the contest checkboxes in `.github/workflows/generate-exam.yml` (between the BEGIN/END
   markers - never edit those by hand). New sets need an entry in `CONTESTS` in `check.py`.
 - Exams go to `output/exams/` (e.g. `001.pdf`) and previews to `output/previews/`, which are committed to git.
+
+## Practice website (ongoing project)
+`PLAN.md` holds the plan, decisions and progress log for the online practice website (kids solve questions
+on the site, answers stored in Postgres, smart practice, gamification). When asked to "continue PLAN.md",
+read it, do the first unchecked task, tick it and add a Log line.
