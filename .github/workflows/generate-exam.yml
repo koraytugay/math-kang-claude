@@ -22,6 +22,10 @@ on:
         description: 'Seed number to repeat an earlier exam exactly (leave blank for a new random exam)'
         required: false
         type: string
+      website:
+        description: 'Filled in by the exam website (the chosen questions). Leave empty here.'
+        required: false
+        type: string
 
       # Whole contests (tick the ones you want). Leave everything empty for all questions.
       # BEGIN contests - written by `python check.py --catalog`, do not edit by hand
@@ -74,6 +78,7 @@ jobs:
         env:
           QUESTIONS: ${{ inputs.questions }}
           SEED: ${{ inputs.seed }}
+          WEBSITE: ${{ inputs.website }}
         run: |
           ARGS=("-n" "${QUESTIONS:-20}")
           if [ "${{ inputs.harder }}" != "false" ]; then
@@ -86,8 +91,9 @@ jobs:
             ARGS+=("--one-each")
           fi
 
-          # Ticked contests
+          # Questions chosen on the website, plus ticked contests
           SOURCES=()
+          if [ -n "$WEBSITE" ]; then SOURCES+=("$WEBSITE"); fi
           # BEGIN contest-sources - written by `python check.py --catalog`, do not edit by hand
           if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi

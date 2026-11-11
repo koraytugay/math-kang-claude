@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Math Kangaroo Practice</title>
+    <link rel="stylesheet" href="https://koraytugay.github.io/kt-styles/dist/kt.min.css">
+    <style>
+        /* layout glue only */
+        .mk-page { max-width: 820px; }
+        .mk-card-head { padding-right: 3.6rem; }
+        .mk-card-img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--kt-radius-md); }
+        .mk-bar { position: sticky; bottom: var(--kt-space-2); z-index: 5; }
+        .mk-contest { margin-top: var(--kt-space-6); }
+    </style>
+</head>
+<body>
+<div class="kt-container mk-page">
+    <header class="kt-page-header">
+        <h1 class="kt-page-title">Math Kangaroo Practice</h1>
+        <p class="kt-page-subtitle">Tap the questions you want to practise, then make a PDF exam.</p>
+    </header>
+
+    <div class="kt-card kt-card--padded">
+        <div class="kt-cluster">
+            <label class="kt-field">
+                <span class="kt-field__label">Number of questions</span>
+                <select class="kt-select" id="count">
+                    <option>8</option><option>10</option><option>12</option><option>15</option>
+                    <option selected>20</option><option>24</option>
+                </select>
+            </label>
+            <label class="kt-check kt-check--boxed"><input type="checkbox" id="harder" checked> Harder</label>
+            <label class="kt-check kt-check--boxed"><input type="checkbox" id="one-each"> Just 1 from each</label>
+        </div>
+        <div class="kt-cluster kt-mt-3">
+            <button type="button" class="kt-btn" id="all">Select all</button>
+            <button type="button" class="kt-btn" id="none">Clear all</button>
+        </div>
+    </div>
+
+    <div id="contests"><div class="kt-loading kt-mt-4"><div class="kt-spinner"></div>Loading questions…</div></div>
+
+    <div class="kt-card kt-card--padded kt-mt-6 mk-bar">
+        <div class="kt-split">
+            <div>
+                <div class="kt-fw-bold" id="picked">0 questions picked</div>
+                <div class="kt-caption" id="picked-hint">Tap a question to pick it.</div>
+            </div>
+            <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="make" disabled>Make exam</button>
+        </div>
+    </div>
+
+    <p class="kt-caption kt-mt-4"><a href="#" id="forget">Forget the password on this device</a></p>
+</div>
+
+<!-- password -->
+<div class="kt-modal kt-modal--sm" id="unlock" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
+    <form class="kt-modal__dialog" id="unlock-form">
+        <div class="kt-modal__header">
+            <h2 class="kt-modal__title" id="unlock-title">Password</h2>
+            <button type="button" class="kt-btn kt-btn--ghost kt-btn--icon kt-modal__close" aria-label="Close">✕</button>
+        </div>
+        <div class="kt-modal__body kt-stack">
+            <p>Making an exam needs the password.</p>
+            <input class="kt-input" type="password" id="password" autocomplete="current-password" placeholder="Password">
+            <label class="kt-check"><input type="checkbox" id="remember" checked> Remember on this device</label>
+            <div class="kt-alert kt-alert--danger" id="unlock-error" hidden></div>
+        </div>
+        <div class="kt-modal__footer">
+            <button type="button" class="kt-btn kt-modal__close">Cancel</button>
+            <button type="submit" class="kt-btn kt-btn--primary" id="unlock-btn">Unlock</button>
+        </div>
+    </form>
+</div>
+
+<!-- progress / result -->
+<div class="kt-modal kt-modal--sm" id="progress" role="dialog" aria-modal="true" aria-labelledby="progress-title">
+    <div class="kt-modal__dialog">
+        <div class="kt-modal__header">
+            <h2 class="kt-modal__title" id="progress-title">Making your exam</h2>
+            <button type="button" class="kt-btn kt-btn--ghost kt-btn--icon kt-modal__close" aria-label="Close">✕</button>
+        </div>
+        <div class="kt-modal__body kt-stack">
+            <div class="kt-loading" id="progress-busy"><div class="kt-spinner"></div><span id="progress-text">Starting…</span></div>
+            <div class="kt-alert kt-alert--danger" id="progress-error" hidden></div>
+            <div class="kt-stack" id="progress-done" hidden>
+                <div class="kt-alert kt-alert--success" id="done-text"></div>
+                <a class="kt-btn kt-btn--primary kt-btn--lg kt-btn--block" id="open-pdf" target="_blank" rel="noopener">Open PDF</a>
+                <a class="kt-btn kt-btn--block" id="save-pdf">Download</a>
+            </div>
+            <a class="kt-caption" id="run-link" target="_blank" rel="noopener" hidden>See the run on GitHub</a>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
