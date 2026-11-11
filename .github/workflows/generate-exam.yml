@@ -86,7 +86,7 @@ jobs:
             ARGS+=("--one-each")
           fi
 
-          # Picked keywords / questions, plus ticked contests
+          # Ticked contests
           SOURCES=()
           # BEGIN contest-sources - written by `python check.py --catalog`, do not edit by hand
           if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
