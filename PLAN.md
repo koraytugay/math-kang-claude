@@ -20,10 +20,13 @@ The PDF exams (`make_exam.py`, the GitHub Actions workflow, the exam page) keep 
   missing UI elements are added to kt-styles first.
 - **Generators stay Python; no rewrite to JS.** One source, two outputs: PDF (as now) and a pre-generated
   **question bank** (JSON + SVG figures) built in GitHub Actions and published with the site.
-- **Database: Postgres on Neon** (the parent already has an account). The browser must never hold the
-  database connection string. Preferred: **Neon Data API + Neon Auth** (browser calls an HTTPS API with a
-  login, row-level security in Postgres). Fallback: a tiny free proxy (Cloudflare Worker) holding the
-  connection string. Verify Neon's current docs before Phase 2.
+- **Database: Postgres on Neon** (the parent already has an account), used **directly from the browser** with
+  Neon's serverless driver (`@neondatabase/serverless`, SQL over HTTPS). The connection string is **locked with
+  the site password** exactly like the GitHub token (PBKDF2 + AES-GCM, `site/lock-token.mjs`), in the same
+  locked file: one password unlocks both. The site asks for the password when it opens ("Remember on this
+  device"), so the kids don't type it. Safety: the site uses a **limited Postgres role** (only
+  SELECT/INSERT/UPDATE on our tables, no DDL/DELETE), a strong passphrase, and Neon's point-in-time restore.
+  (Earlier idea, not needed now: Neon Data API + Neon Auth, or a Cloudflare Worker proxy.)
 - **Write the website text to the kids** ("you"), never about them (see feedback memory / CLAUDE.md).
 - Siblings: no head-to-head leaderboard; personal goals + one shared family goal.
 
@@ -65,10 +68,12 @@ Database tables (Phase 2):
 - [ ] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
 
 ### Phase 2 — Postgres on Neon
-- [ ] 2.1 Parent: Neon project for this site; enable Data API + Neon Auth (or decide on the proxy fallback).
-      Give the agent: the Data API URL and the auth settings (NOT the database password in chat if avoidable).
-- [ ] 2.2 SQL migration file `db/001_init.sql` (tables above + row-level security: only the family login).
-- [ ] 2.3 Family login on the site (parent signs in once per computer), then the profile picker.
+- [ ] 2.1 Parent: Neon project/database for this site. Run `db/001_init.sql` in the Neon SQL editor
+      (agent writes it): tables + a limited role `mk_site` with its own password.
+- [ ] 2.2 Lock file holds several secrets: extend `site/lock-token.mjs` + the page to `{github, db}`
+      (keep reading the old one-secret file). Parent runs it locally with `MK_TOKEN`, `MK_DB` (the
+      `mk_site` connection string) and `MK_PASSWORD`, so the secrets never go through chat.
+- [ ] 2.3 Unlock on page open (one password for exams + practice), then the profile picker.
 - [ ] 2.4 `DbStore` implementing the Store interface; switch practice.js to it; keep LocalStore as offline fallback.
 - [ ] 2.5 One-time import of any LocalStore data from Phase 1 into the database.
 
@@ -96,9 +101,11 @@ Database tables (Phase 2):
 
 ## What the parent needs to provide
 - Phase 1: nothing.
-- Phase 2: Neon project with Data API + Neon Auth enabled (or OK for a Cloudflare account for the proxy),
-  and the Data API URL / auth config. The agent will give exact click-by-click steps at that point.
+- Phase 2: a Neon database; run the SQL file the agent writes (creates tables + the `mk_site` role); then run
+  the lock script locally with the GitHub token, the `mk_site` connection string and a strong passphrase.
 
 ## Log
 - 2026-11-11: Plan written. Exam website (site/index.html) already live with password-locked token.
   Next: Phase 1, task 1.1.
+- 2026-11-11: Decided: Neon used from the browser with the connection string locked by the site password
+  (no Neon Auth / proxy). Started Phase 1.
