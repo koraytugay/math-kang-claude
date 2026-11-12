@@ -4,25 +4,23 @@
 // Every child has their own state per skill (generator), replayed from their answers in time order:
 //  - box: a review schedule. Wrong -> box 1 (back tomorrow); right -> next box. Box n is due GAP[n] days
 //    after the last answer, so known skills come back less and less often.
-//  - level: which questions to give. 3 right in a row -> one level up (Part A -> B -> C -> harder numbers);
-//    2 wrong in a row -> one level down.
+//  - level: which questions to give. Right -> one level up for next time (Part A -> B -> C -> harder
+//    numbers); wrong -> one level down, so a child never gets stuck on something too hard.
 const DAY = 864e5, GAP = [0, 1, 3, 7, 21];
 const LEVELS = [[1, false], [2, false], [3, false], [3, true]];     // [difficulty, harder]
 
 function skillStates(attempts) {
     const states = new Map();
     for (const a of attempts) {
-        const s = states.get(a.gen) || { box: 0, level: 0, rightRun: 0, wrongRun: 0, last: 0, tries: 0 };
+        const s = states.get(a.gen) || { box: 0, level: 0, last: 0, tries: 0 };
         s.tries++;
         s.last = new Date(a.at).getTime();
         if (a.correct) {
             s.box = Math.min(GAP.length - 1, s.box + 1);
-            s.wrongRun = 0;
-            if (++s.rightRun >= 3) { s.level = Math.min(LEVELS.length - 1, s.level + 1); s.rightRun = 0; }
+            s.level = Math.min(LEVELS.length - 1, s.level + 1);
         } else {
             s.box = 1;
-            s.rightRun = 0;
-            if (++s.wrongRun >= 2) { s.level = Math.max(0, s.level - 1); s.wrongRun = 0; }
+            s.level = Math.max(0, s.level - 1);
         }
         s.due = s.last + GAP[s.box] * DAY;
         states.set(a.gen, s);

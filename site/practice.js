@@ -192,6 +192,8 @@ async function answer(i) {
         if (j === i) { b.setAttribute("aria-pressed", "true"); if (!correct) b.classList.add("kt-card--danger"); }
     });
     results.push({ q, chosen: i, correct });
+    // The same skill later in this session: give the next level up after a right answer, down after a wrong one.
+    await adaptLater(q, correct);
     let saveNote = "";
     try {
         await store.recordAttempt(profile.id, {
@@ -209,6 +211,17 @@ async function answer(i) {
     $("teach-btn").hidden = correct || !q.teach;
     $("feedback").hidden = false;
     $("next").focus();
+}
+
+async function adaptLater(q, correct) {
+    const k = session.findIndex((x, j) => j > pos && x.gen === q.gen);
+    if (k < 0) return;
+    const cur = LEVELS.findIndex(([d, h]) => d === q.difficulty && h === q.harder);
+    const [difficulty, harder] = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, (cur < 0 ? 0 : cur) + (correct ? 1 : -1)))];
+    const bank = await bankFor(index.generators.find((g) => g.key === q.gen));
+    const used = new Set(session.map((x) => x.id));
+    const list = bank.filter((x) => !used.has(x.id) && x.difficulty === difficulty && x.harder === harder);
+    if (list.length) session[k] = { ...list[Math.floor(Math.random() * list.length)], gen: q.gen, teach: session[k].teach };
 }
 
 function next() {

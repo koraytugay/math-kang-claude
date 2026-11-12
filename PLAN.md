@@ -82,7 +82,8 @@ Database tables (Phase 2):
 ### Phase 3 — Smart practice
 - [x] 3.1 Per kid per skill (generator): Leitner box + due date. Wrong → box 1 (due tomorrow);
       right → next box (1, 3, 7, 21 days).
-- [x] 3.2 Adaptive difficulty per skill: level 1→2→3, then `harder`; 3 right in a row up, 2 wrong down.
+- [x] 3.2 Adaptive difficulty per skill: level A→B→C→C harder; **each right answer = one level up, each wrong
+      = one level down** (parent, 2026-11-12: "harder ones once the easy one is solved"); also inside a session.
 - [x] 3.3 Session builder: ~60% due/weak skills, ~25% review, ~15% new or maintenance; never the same
       question id twice in a row; avoid repeats seen in the last 2 weeks.
 - [x] 3.4 After a wrong answer: show the solution, offer the generator's "How to think about it" page
@@ -133,3 +134,5 @@ Database tables (Phase 2):
   Next: Phase 4 parent view (4.1), or more teach() pages / warm-ups for skills the kids miss most.
 - 2026-11-12: Personal PDF exams (4.2) added; planning code moved to site/smart.js (shared by both pages).
   Emojis removed from the profiles. Next: 4.1 parent view, or more teach() pages for the most-missed skills.
+- 2026-11-12: Levels now move one step per answer (right up, wrong down), also for a skill's second question
+  in the same session (practice.js adaptLater). Personal PDF exams use the same levels.
