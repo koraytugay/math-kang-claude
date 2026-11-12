@@ -89,16 +89,27 @@ Database tables (Phase 2):
 - [x] 3.4 After a wrong answer: show the solution, offer the generator's "How to think about it" page
       (`teach()`, export it to the bank) and its warm-ups.
 
-### Phase 4 — Parent view (only Koray sees it)
-- [ ] 4.1 Parent view: skill table per kid (weak / getting there / strong), recent mistakes.
-- [x] 4.2 Personal PDF exams: "For Deniz / For Toprak / For Koray (test)" on the exam page run smart.js on the
-      child's answers and send `plan:<Name>:<key@level,...>` in the workflow's `website` input;
-      `make_exam.py --plan` makes one question per item at that level ("Math Kangaroo Practice for Deniz").
-- (Gamification — points, streaks, badges, avatars, family goal — dropped by the parent on 2026-11-12.)
+### Phase 4 — Learning from mistakes (parent picked these on 2026-11-12)
+- [ ] 4.1 **One more try + hint.** First wrong click: "Not quite, try once more" + a hint (first sentence of
+      the solution, or `Question.hint` when a generator sets one). Second wrong click: show the answer.
+      Only the first click counts (`correct`); store `second_try` too (new nullable column, `db/002_*.sql`).
+- [ ] 4.2 **Guessing does not level up.** A right first answer faster than a minimum time (Part A 4 s, B 6 s,
+      C 8 s) keeps the level (box still moves). Applies in smart.js, so PDFs follow too.
+- [ ] 4.3 **Warm-ups for a stuck skill.** When a child missed a skill twice in a row, the next session starts
+      that skill with 1-2 warm-ups (export `@warmup` questions to the bank: `bank/<key>.warmup.json`).
+      Warm-ups are recorded with `variant = "warmup:<name>"` and do not change the level.
+- [ ] 4.4 **Mistake labels.** Wrong options carry the mistake they stand for. Extend `numeric_choices` /
+      `text_choices` (backwards compatible) to accept labels, add them to `Question.meta["mistakes"]`
+      (index -> short text), export to the bank, show "This is what you get if you <mistake>" after a wrong
+      answer, and store `chosen` (already there) so the parent page can group mistakes. Add labels to
+      generators gradually, most-missed skills first.
+- [ ] 4.5 **Hidden parent page** `parent.html` (not linked anywhere; needs the site password like the rest):
+      per child each skill as *needs work / getting there / solid* (from smart.js states), recent mistakes
+      with the option picked (and its mistake label), and what the next session will focus on.
 
-### Phase 5 — Explaining mistakes (later)
-- [ ] 5.1 Label wrong options in generators with the mistake they represent (extend `numeric_choices`
-      to accept labels, backwards compatible), export to the bank, show "you often ...".
+Not now (parent's choice): recording paper-exam results, more teach pages, a "report a question" button
+(the kids will tell the parent instead), new token/password, backups (Neon keeps data permanently; the
+restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 
 ## What the parent needs to provide
 - Phase 1: nothing.
@@ -138,3 +149,5 @@ Database tables (Phase 2):
   in the same session (practice.js adaptLater). Personal PDF exams use the same levels.
 - 2026-11-12: GitHub Pages source set to "GitHub Actions" (it was "Deploy from a branch", which served the
   README). If the README ever shows again, check Settings -> Pages -> Source, then re-run "Publish website".
+- 2026-11-12: New Phase 4 (learning from mistakes) planned with the parent: 4.1 try again + hint, 4.2 guesses
+  do not level up, 4.3 warm-ups, 4.4 mistake labels, 4.5 hidden parent page. Old Phase 5 folded into 4.4.
