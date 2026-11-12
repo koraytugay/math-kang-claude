@@ -65,7 +65,7 @@ Database tables (Phase 2):
 - [x] 1.4 `LocalStore` (localStorage) behind the Store interface; per profile attempts + skill state.
 - [x] 1.5 Simple choice of questions: weak skills first (most wrong recently), then unseen skills.
 - [x] 1.6 Link between the exam page (`index.html`) and the practice page.
-- [ ] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
+- [x] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
 
 ### Phase 2 — Postgres on Neon
 - [ ] 2.1 Parent: Neon project/database for this site. Replace CHANGE_ME in `db/001_init.sql` (already
@@ -114,3 +114,5 @@ Database tables (Phase 2):
   sessions, feedback + solution, summary with pictures), LocalStore, weak-skill weighting, links between the
   exam and practice pages. kt-styles got card tones (.kt-card--success/--danger).
   Next: 1.7 check the live site with the Koray profile, then Phase 2 (needs the parent: Neon, see 2.1).
+- 2026-11-11: 1.7 done, practice page live (35 skills, 5,635 questions). db/001_init.sql written.
+  Next: Phase 2, waiting for the parent (task 2.1).
