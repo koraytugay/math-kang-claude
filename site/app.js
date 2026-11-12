@@ -331,7 +331,8 @@ async function examFor(id, name) {
         return;
     }
     const states = skillStates(attempts);
-    const gens = allKeys().map((key) => ({ key }));
+    const known = new Map((await fetch("bank/index.json").then((r) => r.json())).generators.map((g) => [g.key, g]));
+    const gens = allKeys().map((key) => known.get(key) || { key });   // with g.added for the new-in-pool boost
     const items = planSkills(gens, states, count() ?? 20)
         .map((g) => `${g.key}@${states.get(g.key)?.level ?? 0}`).join(",");
     makeExam({ name, items });

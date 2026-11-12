@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history: site/bank.py reads when each generator was added
 
       - uses: actions/setup-python@v5
         with:

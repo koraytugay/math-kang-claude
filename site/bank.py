@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import random
 import re
 import sys
@@ -101,6 +102,17 @@ def teach(g) -> list[dict]:
     return out
 
 
+def added_ms(g) -> int:
+    """When the generator was added to the repo (first commit of its file), in ms; now if unknown."""
+    path = ROOT / "generators" / f"{g.key}.py"
+    try:
+        out = subprocess.run(["git", "log", "--diff-filter=A", "--follow", "--format=%at", "--", str(path)],
+                             cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
+        return int(out[-1]) * 1000 if out else 0
+    except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
+        return 0
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     gens, pool = load_generators(), read_pool()
@@ -121,7 +133,7 @@ def main() -> None:
                           "contest": f"{cname} {year}", "pill": f"Set {set_.split('-')[-1]} · {year}",
                           "level": _level(level), "keywords": g.meta.get("keywords", []),
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
-                          "file": f"bank/{name}", "count": len(qs),
+                          "file": f"bank/{name}", "count": len(qs), "added": added_ms(g),
                           "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None,
                           "warmup": f"bank/{name.replace('.json', '.warmup.json')}" if warm else None})
             total += len(qs)

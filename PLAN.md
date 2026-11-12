@@ -164,3 +164,12 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   Practice: first wrong click hint "Did you ...?", final feedback "X is what you get if you ...";
   parent page shows it. Labelled so far: y2007_q04 (digit sum), y2025_q10 (runners). Label more
   generators gradually, most-missed first (see the parent page). Phase 4 complete.
+- 2026-11-12: New algorithm in smart.js (parent: "1 easy right is not strong; 2 rights should already show it
+  less; don't discourage"). Score 0-100 per skill: right A/B/C/C+ +15/20/25/30, quick guess or right on 2nd
+  try +5, wrong -20; fades 10%/week after a week without practice. Status (parent page only): needs work
+  (<15 with a real mistake) / getting there / solid (>=60 and 3+ rights). Weight = 1 + (100-score)/10
+  (+ up to 2 when long unseen), untried 6, x up to 2 for skills added to the pool in the last 60 days
+  (bank index "added" from git; pages.yml checks out full history). Sessions: max 3 weak skills, never two
+  in a row, start and end with a strong skill; after 2 misses in a row the next question is a strong or
+  untried one. End screen: "You're getting stronger at" / "You tried something new" first, then
+  "Worth another look". Never the exact same question again (seen ones only if a skill runs out).

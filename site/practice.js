@@ -80,9 +80,8 @@ async function bankFor(gen) {
 async function buildSession(profile) {
     const attempts = await store.attempts(profile.id);
     const states = skillStates(attempts);
+    sessionStates = states;
     const seen = new Set(attempts.map((a) => a.id));
-    const twoWeeks = Date.now() - 14 * DAY;
-    const recent = new Set(attempts.filter((a) => new Date(a.at).getTime() > twoWeeks).map((a) => a.id));
 
     const qs = [];
     for (const g of planSkills(index.generators, states, SESSION)) {
@@ -93,21 +92,13 @@ async function buildSession(profile) {
         const tiers = [
             bank.filter((q) => free(q) && !seen.has(q.id) && atLevel(q)),      // new question, right level
             bank.filter((q) => free(q) && !seen.has(q.id) && q.difficulty === difficulty),
-            bank.filter((q) => free(q) && !recent.has(q.id) && atLevel(q)),    // not in the last two weeks
             bank.filter((q) => free(q) && !seen.has(q.id)),
-            bank.filter(free),
+            bank.filter(free),                                                 // only if the skill ran out
         ];
         const list = tiers.find((t) => t.length) || bank;
         qs.push({ ...list[Math.floor(Math.random() * list.length)], gen: g.key, teach: g.teach });
     }
-    // Part A, then B, then C, like the contest; two questions of one skill are kept apart.
-    qs.sort((a, b) => a.difficulty - b.difficulty);
-    for (let k = 1; k < qs.length; k++) {
-        if (qs[k].gen === qs[k - 1].gen) {
-            const m = qs.findIndex((q, j) => j > k && q.gen !== qs[k].gen);
-            if (m > 0) [qs[k], qs[m]] = [qs[m], qs[k]];
-        }
-    }
+    // Keep the plan's encouraging order (smart.js): a confident start and finish, weak skills spread out.
     // A skill missed twice in a row starts with up to 2 warm-ups (small steps), right before its question.
     for (const g of index.generators) {
         if (!g.warmup || (states.get(g.key)?.stuck ?? 0) < 2) continue;
@@ -144,7 +135,7 @@ async function renderProfiles() {
     }
 }
 
-let profile = null, session = [], pos = 0, shownAt = 0, results = [];
+let profile = null, session = [], pos = 0, shownAt = 0, results = [], sessionStates = new Map();
 
 async function start(p) {
     profile = p;
@@ -267,7 +258,15 @@ async function adaptLater(q, correct, seconds) {
     if (list.length) session[k] = { ...list[Math.floor(Math.random() * list.length)], gen: q.gen, teach: session[k].teach };
 }
 
+// Two misses in a row: the next question is one from a skill the child is good at (if one is left).
 function next() {
+    const recentRes = results.filter((r) => !r.q.isWarmup).slice(-2);
+    if (recentRes.length === 2 && recentRes.every((r) => !r.correct)) {
+        // a skill the child is good at, or an untried one (those start at Part A, the easy level)
+        const good = (q) => !q.isWarmup && (!sessionStates.has(q.gen) || sessionStates.get(q.gen).score >= 30);
+        const k = session.findIndex((q, j) => j > pos + 1 && good(q));
+        if (k > 0 && !good(session[pos + 1] || {})) [session[pos + 1], session[k]] = [session[k], session[pos + 1]];
+    }
     pos++;
     if (pos < session.length) { renderQuestion(); return; }
     finish();
@@ -277,8 +276,18 @@ function finish() {
     $("done-title").textContent = `Nice work, ${profile.name}!`;
     const box = $("done-mistakes");
     box.innerHTML = "";
+    // The good news first: skills that went up a level today, and skills tried for the first time.
+    const name = (gen) => index.generators.find((g) => g.key === gen)?.keywords?.[0] || "";
+    const real = results.filter((r) => !r.q.isWarmup);
+    const stronger = [...new Set(real.filter((r) => r.correct).map((r) => name(r.q.gen)))].filter(Boolean);
+    const fresh = [...new Set(real.filter((r) => !sessionStates.has(r.q.gen)).map((r) => name(r.q.gen)))]
+        .filter((n) => n && !stronger.includes(n));
+    const good = [];
+    if (stronger.length) good.push(`<div><b>You're getting stronger at:</b> ${stronger.join(", ")}.</div>`);
+    if (fresh.length) good.push(`<div><b>You tried something new:</b> ${fresh.join(", ")}.</div>`);
+    if (good.length) { const g = el("div", "kt-alert kt-alert--success"); g.innerHTML = good.join(""); box.append(g); }
     const wrong = results.filter((r) => !r.correct);
-    if (wrong.length) box.append(el("h3", "kt-section-title", "Look at these once more"));
+    if (wrong.length) box.append(el("h3", "kt-section-title", "Worth another look"));
     for (const r of wrong) {
         const c = el("div", "kt-card kt-card--padded");
         const t = el("div"); t.innerHTML = r.q.text;

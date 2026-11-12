@@ -22,11 +22,11 @@ const bankFor = (g) => {
 const day = (t) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 const plain = (html) => { const d = el("div"); d.innerHTML = html; return d.textContent; };
 
-/** needs work / getting there / solid, from the review box (smart.js). */
+/** needs work / getting there / solid, from the score (smart.js). */
 function status(s) {
     if (!s) return ["Not tried yet", "kt-badge"];
-    if (s.box <= 1) return ["Needs work", "kt-badge kt-badge--soft-danger"];
-    if (s.box <= 3) return ["Getting there", "kt-badge kt-badge--soft-warning"];
+    if (s.status === "needs work") return ["Needs work", "kt-badge kt-badge--soft-danger"];
+    if (s.status === "getting there") return ["Getting there", "kt-badge kt-badge--soft-warning"];
     return ["Solid", "kt-badge kt-badge--soft-success"];
 }
 
@@ -62,12 +62,14 @@ async function show(k) {
         seen.add(g.key);
         const s = states.get(g.key);
         focus.append(el("span", "kt-chip", `${g.label} · ${g.keywords[0] || ""} · ${s ? status(s)[0].toLowerCase() : "new"}`));
+        // (in the order the session asks them: a confident start and finish)
     }
 
     // skills, weakest first
     const order = { "Needs work": 0, "Getting there": 1, Solid: 2, "Not tried yet": 3 };
     const rows = gens.map((g) => ({ g, s: states.get(g.key) }))
-        .sort((a, b) => order[status(a.s)[0]] - order[status(b.s)[0]] || a.g.label.localeCompare(b.g.label));
+        .sort((a, b) => order[status(a.s)[0]] - order[status(b.s)[0]] || (a.s?.score ?? 0) - (b.s?.score ?? 0)
+            || a.g.label.localeCompare(b.g.label));
     const body = $("skills");
     body.innerHTML = "";
     for (const { g, s } of rows) {
@@ -82,7 +84,7 @@ async function show(k) {
             el("td", "kt-num", mine.length ? String(mine.length) : ""),
             el("td", "kt-num", mine.length ? `${Math.round((100 * right) / mine.length)}%` : ""),
             el("td", null, s ? day(s.last) : ""),
-            el("td", null, s ? (s.due <= Date.now() ? "now" : day(s.due)) : ""),
+            el("td", "kt-num", s ? String(s.score) : ""),
         ];
         cells[2].append(badge);
         tr.append(...cells);
