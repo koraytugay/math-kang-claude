@@ -90,10 +90,10 @@ Database tables (Phase 2):
       (`teach()`, export it to the bank) and its warm-ups.
 
 ### Phase 4 — Learning from mistakes (parent picked these on 2026-11-12)
-- [ ] 4.1 **One more try + hint.** First wrong click: "Not quite, try once more" + a hint (first sentence of
+- [x] 4.1 **One more try + hint.** First wrong click: "Not quite, try once more" + a hint (first sentence of
       the solution, or `Question.hint` when a generator sets one). Second wrong click: show the answer.
       Only the first click counts (`correct`); store `second_try` too (new nullable column, `db/002_*.sql`).
-- [ ] 4.2 **Guessing does not level up.** A right first answer faster than a minimum time (Part A 4 s, B 6 s,
+- [x] 4.2 **Guessing does not level up.** A right first answer faster than a minimum time (Part A 4 s, B 6 s,
       C 8 s) keeps the level (box still moves). Applies in smart.js, so PDFs follow too.
 - [ ] 4.3 **Warm-ups for a stuck skill.** When a child missed a skill twice in a row, the next session starts
       that skill with 1-2 warm-ups (export `@warmup` questions to the bank: `bank/<key>.warmup.json`).
@@ -151,3 +151,5 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   README). If the README ever shows again, check Settings -> Pages -> Source, then re-run "Publish website".
 - 2026-11-12: New Phase 4 (learning from mistakes) planned with the parent: 4.1 try again + hint, 4.2 guesses
   do not level up, 4.3 warm-ups, 4.4 mistake labels, 4.5 hidden parent page. Old Phase 5 folded into 4.4.
+- 2026-11-12: 4.1 + 4.2 done. Hint = the generator's META["skill"] (the method, never the answer).
+  db/002_second_try.sql applied. Guess thresholds in smart.js MIN_SECONDS. Next: 4.3 warm-ups.

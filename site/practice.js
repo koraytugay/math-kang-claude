@@ -50,9 +50,9 @@ class DbStore {
     }
     async insert(p, a) {
         await this.sql`insert into attempts (profile_id, question_id, gen, variant, difficulty, harder, chosen,
-                                             correct, seconds, created_at)
+                                             correct, second_try, seconds, created_at)
                        values (${p}, ${a.id}, ${a.gen}, ${a.variant}, ${a.difficulty}, ${a.harder}, ${a.chosen},
-                               ${a.correct}, ${a.seconds}, ${a.at})`;
+                               ${a.correct}, ${a.second_try ?? null}, ${a.seconds}, ${a.at})`;
     }
     async recordAttempt(p, a) {
         await this.ready;
@@ -162,6 +162,8 @@ function renderQuestion() {
     bigger($("q-fig"), 2);
     $("q-after").innerHTML = q.after;
     $("feedback").hidden = true;
+    $("retry").hidden = true;
+    firstChoice = null;
 
     const opts = $("q-options");
     opts.innerHTML = "";
@@ -181,43 +183,66 @@ function renderQuestion() {
     shownAt = Date.now();
 }
 
+let firstChoice = null;          // the wrong first click of the current question, or null
+
 async function answer(i) {
     const q = session[pos];
     if (!$("feedback").hidden) return;                // already answered
-    const correct = i === q.answer;
+    const buttons = [...$("q-options").children];
+    if (buttons[i].disabled) return;
+    const right = i === q.answer;
+
+    // First wrong click: one more try, with a hint about the method (never the answer itself).
+    if (!right && firstChoice === null) {
+        firstChoice = i;
+        buttons[i].disabled = true;
+        buttons[i].setAttribute("aria-pressed", "true");
+        buttons[i].classList.add("kt-card--danger");
+        const skill = index.generators.find((g) => g.key === q.gen)?.skill;
+        $("retry").innerHTML = `<div class="kt-alert__title">Not quite. Try once more!</div>` +
+            (skill ? `Hint: ${skill}.` : "");
+        $("retry").hidden = false;
+        return;
+    }
+
+    const correct = firstChoice === null && right;     // only the first try counts
+    const secondTry = firstChoice === null ? null : right;
+    const chosen = firstChoice ?? i;
     const seconds = Math.round((Date.now() - shownAt) / 1000);
-    [...$("q-options").children].forEach((b, j) => {
+    $("retry").hidden = true;
+    buttons.forEach((b, j) => {
         b.disabled = true;
         if (j === q.answer) b.classList.add("kt-card--success");
-        if (j === i) { b.setAttribute("aria-pressed", "true"); if (!correct) b.classList.add("kt-card--danger"); }
+        if (j === i) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-card--danger"); }
     });
-    results.push({ q, chosen: i, correct });
-    // The same skill later in this session: give the next level up after a right answer, down after a wrong one.
-    await adaptLater(q, correct);
+    results.push({ q, chosen, correct });
+    // The same skill later in this session: next level up after a right answer, down after a wrong one.
+    await adaptLater(q, correct, seconds);
     let saveNote = "";
     try {
         await store.recordAttempt(profile.id, {
             id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
-            chosen: i, correct, seconds, at: new Date().toISOString(),
+            chosen, correct, second_try: secondTry, seconds, at: new Date().toISOString(),
         });
     } catch {
         saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
     }
     const fb = $("feedback-text");
-    fb.className = `kt-alert ${correct ? "kt-alert--success" : "kt-alert--danger"}`;
-    fb.innerHTML = `<div class="kt-alert__title">${correct ? "Right!" :
-        `Not this time. The answer is ${"ABCDE"[q.answer]}.`}</div>${q.solution}${saveNote}`;
+    fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
+    const title = correct ? "Right!" : right ? "Right, on the second try!" : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
+    fb.innerHTML = `<div class="kt-alert__title">${title}</div>${q.solution}${saveNote}`;
     $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
     $("teach-btn").hidden = correct || !q.teach;
     $("feedback").hidden = false;
     $("next").focus();
 }
 
-async function adaptLater(q, correct) {
+async function adaptLater(q, correct, seconds) {
     const k = session.findIndex((x, j) => j > pos && x.gen === q.gen);
     if (k < 0) return;
     const cur = LEVELS.findIndex(([d, h]) => d === q.difficulty && h === q.harder);
-    const [difficulty, harder] = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, (cur < 0 ? 0 : cur) + (correct ? 1 : -1)))];
+    const step = correct ? (isGuess(q.difficulty, seconds) ? 0 : 1) : -1;
+    const [difficulty, harder] = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, (cur < 0 ? 0 : cur) + step))];
     const bank = await bankFor(index.generators.find((g) => g.key === q.gen));
     const used = new Set(session.map((x) => x.id));
     const list = bank.filter((x) => !used.has(x.id) && x.difficulty === difficulty && x.harder === harder);

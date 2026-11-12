@@ -8,6 +8,9 @@
 //    numbers); wrong -> one level down, so a child never gets stuck on something too hard.
 const DAY = 864e5, GAP = [0, 1, 3, 7, 21];
 const LEVELS = [[1, false], [2, false], [3, false], [3, true]];     // [difficulty, harder]
+// A right answer faster than this (seconds, by Part A/B/C) is probably a guess: it does not raise the level.
+const MIN_SECONDS = { 1: 4, 2: 6, 3: 8 };
+const isGuess = (difficulty, seconds) => seconds != null && seconds < (MIN_SECONDS[difficulty] ?? 4);
 
 function skillStates(attempts) {
     const states = new Map();
@@ -17,7 +20,7 @@ function skillStates(attempts) {
         s.last = new Date(a.at).getTime();
         if (a.correct) {
             s.box = Math.min(GAP.length - 1, s.box + 1);
-            s.level = Math.min(LEVELS.length - 1, s.level + 1);
+            if (!isGuess(a.difficulty, a.seconds)) s.level = Math.min(LEVELS.length - 1, s.level + 1);
         } else {
             s.box = 1;
             s.level = Math.max(0, s.level - 1);
@@ -54,6 +57,6 @@ function planSkills(gens, states, n) {
 async function fetchAttempts(dbUrl, profileId) {
     const m = await import("https://cdn.jsdelivr.net/npm/@neondatabase/serverless@1.2.0/+esm");
     const sql = m.neon(dbUrl, { disableWarningInBrowsers: true });
-    return sql`select question_id as id, gen, difficulty, harder, correct, created_at as at
+    return sql`select question_id as id, gen, difficulty, harder, correct, seconds, created_at as at
                from attempts where profile_id = ${profileId} order by id`;
 }
