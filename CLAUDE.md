@@ -14,6 +14,8 @@ an exam is just `python make_exam.py`.
 
 ## Typical requests
 - **"Sync generators"** → run `python check.py`, pick MISSING entries (a few at a time unless told otherwise), write them.
+- **"We solved an exam" / `/new-questions`** → follow `.claude/skills/new-questions/SKILL.md`: ask only which
+  exam and which questions, then pool, generators (with mistake labels), checks, catalog, push, live check.
 - **"Improve y2002_q06"** / feedback in `feedback.md` → edit that generator, bump `META["version"]`, mark the feedback item done.
 
 ## How to write a generator
