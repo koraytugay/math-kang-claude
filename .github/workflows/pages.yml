@@ -32,11 +32,12 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Build the site (example pictures + question list)
+      - name: Build the site (example pictures, question list, practice question bank)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt pymupdf
           python site/build.py
+          python site/bank.py
 
       - uses: actions/upload-pages-artifact@v3
         with:

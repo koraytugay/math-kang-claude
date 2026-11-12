@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kangaroo Practice</title>
+    <link rel="stylesheet" href="https://koraytugay.github.io/kt-styles/dist/kt.min.css">
+    <style>
+        /* layout glue only */
+        .mk-page { max-width: 1000px; }
+        .mk-avatar { font-size: var(--kt-fs-3xl); line-height: 1; }
+        .mk-qtext { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
+        .mk-fig { text-align: center; margin: var(--kt-space-4) 0; }
+        .mk-fig svg, .mk-opt svg { max-width: 100%; height: auto; }
+        .mk-fig svg { display: block; margin: 0 auto; }
+        .mk-opt .kt-card__body { display: flex; align-items: center; gap: var(--kt-space-3); min-height: 4.5rem; padding-right: 3.2rem; }
+        .mk-opt-text { font-size: var(--kt-fs-lg); }
+    </style>
+</head>
+<body>
+<div class="kt-container mk-page">
+    <header class="kt-page-header">
+        <h1 class="kt-page-title">Kangaroo Practice</h1>
+        <p class="kt-page-subtitle"><a href="./">Make a PDF exam instead</a></p>
+    </header>
+
+    <!-- who is practising -->
+    <section id="who">
+        <h2 class="kt-section-title">Who's practising?</h2>
+        <div class="kt-grid kt-grid--3 kt-mt-3" id="profiles"></div>
+    </section>
+
+    <!-- a question -->
+    <section id="play" hidden>
+        <div class="kt-split kt-mb-3">
+            <div class="kt-cluster">
+                <span class="kt-chip" id="play-who"></span>
+                <span class="kt-fw-bold" id="play-count"></span>
+                <span class="kt-badge kt-badge--soft-info" id="play-part"></span>
+            </div>
+            <div class="kt-cluster">
+                <span class="kt-fw-bold" id="play-points"></span>
+                <button type="button" class="kt-btn kt-btn--ghost" id="quit">Stop</button>
+            </div>
+        </div>
+        <div class="kt-progress kt-mb-4"><div class="kt-progress__bar" id="play-bar" style="width: 0%"></div></div>
+
+        <div class="kt-card kt-card--padded">
+            <div class="mk-qtext" id="q-text"></div>
+            <div class="mk-fig" id="q-fig"></div>
+            <div class="mk-qtext" id="q-after"></div>
+        </div>
+        <div class="kt-grid kt-mt-4" style="--kt-grid-min: 170px" id="q-options"></div>
+
+        <div class="kt-mt-4" id="feedback" hidden>
+            <div class="kt-alert" id="feedback-text"></div>
+            <div class="kt-cluster kt-mt-3">
+                <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="next">Next question</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- summary -->
+    <section id="done" hidden>
+        <h2 class="kt-section-title" id="done-title"></h2>
+        <div class="kt-stat-row kt-mt-3">
+            <div class="kt-stat"><div class="kt-stat__value" id="done-right"></div><div class="kt-stat__label">Right</div></div>
+            <div class="kt-stat"><div class="kt-stat__value" id="done-points"></div><div class="kt-stat__label">Points</div></div>
+            <div class="kt-stat"><div class="kt-stat__value" id="done-time"></div><div class="kt-stat__label">Minutes</div></div>
+        </div>
+        <div class="kt-stack kt-mt-4" id="done-mistakes"></div>
+        <div class="kt-cluster kt-mt-4">
+            <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="again">Practise again</button>
+            <button type="button" class="kt-btn kt-btn--lg" id="switch">Switch profile</button>
+        </div>
+    </section>
+</div>
+<script src="practice.js"></script>
+</body>
+</html>

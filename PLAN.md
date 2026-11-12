@@ -56,15 +56,15 @@ Database tables (Phase 2):
 ## Phases and tasks
 
 ### Phase 1 — Question bank + practice page (no database; answers kept in the browser)
-- [ ] 1.1 `site/bank.py`: export every generator × variant × seeds (normal + harder) to `_site/bank/*.json`;
+- [x] 1.1 `site/bank.py`: export every generator × variant × seeds (normal + harder) to `_site/bank/*.json`;
       figures and choice figures as inline SVG; reportlab markup (`<b> <i> <br/> <sup> <font>`) passed as HTML.
       Seeds per variant configurable (start 20). Check the answer with `Question.check` while exporting.
-- [ ] 1.2 Run bank export in `.github/workflows/pages.yml` (after `site/build.py`).
-- [ ] 1.3 `site/practice.html` + `site/practice.js`: "Who's practising?" (Deniz, Toprak, Koray),
+- [x] 1.2 Run bank export in `.github/workflows/pages.yml` (after `site/build.py`).
+- [x] 1.3 `site/practice.html` + `site/practice.js`: "Who's practising?" (Deniz, Toprak, Koray),
       a session of 10 questions, click an option → right/wrong + solution, end-of-session summary.
-- [ ] 1.4 `LocalStore` (localStorage) behind the Store interface; per profile attempts + skill state.
-- [ ] 1.5 Simple choice of questions: weak skills first (most wrong recently), then unseen skills.
-- [ ] 1.6 Link between the exam page (`index.html`) and the practice page.
+- [x] 1.4 `LocalStore` (localStorage) behind the Store interface; per profile attempts + skill state.
+- [x] 1.5 Simple choice of questions: weak skills first (most wrong recently), then unseen skills.
+- [x] 1.6 Link between the exam page (`index.html`) and the practice page.
 - [ ] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
 
 ### Phase 2 — Postgres on Neon
@@ -109,3 +109,8 @@ Database tables (Phase 2):
   Next: Phase 1, task 1.1.
 - 2026-11-11: Decided: Neon used from the browser with the connection string locked by the site password
   (no Neon Auth / proxy). Started Phase 1.
+- 2026-11-11: Phase 1 tasks 1.1-1.6 done: site/bank.py (5,635 questions, 20 seeds/variant, ~30 MB, gzip
+  ~150 KB for the largest file), site/practice.html + practice.js (profiles Deniz/Toprak/Koray, 10-question
+  sessions, feedback + solution, summary with pictures), LocalStore, weak-skill weighting, links between the
+  exam and practice pages. kt-styles got card tones (.kt-card--success/--danger).
+  Next: 1.7 check the live site with the Koray profile, then Phase 2 (needs the parent: Neon, see 2.1).
