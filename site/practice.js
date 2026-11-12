@@ -108,6 +108,20 @@ async function buildSession(profile) {
             if (m > 0) [qs[k], qs[m]] = [qs[m], qs[k]];
         }
     }
+    // A skill missed twice in a row starts with up to 2 warm-ups (small steps), right before its question.
+    for (const g of index.generators) {
+        if (!g.warmup || (states.get(g.key)?.stuck ?? 0) < 2) continue;
+        const k = qs.findIndex((q) => q.gen === g.key);
+        if (k < 0) continue;
+        const warm = await fetch(g.warmup).then((r) => r.json());
+        const picks = [];
+        for (const v of shuffle([...new Set(warm.map((w) => w.variant))]).slice(0, 2)) {
+            const list = warm.filter((w) => w.variant === v && !seen.has(w.id));
+            const pool = list.length ? list : warm.filter((w) => w.variant === v);
+            picks.push({ ...pool[Math.floor(Math.random() * pool.length)], gen: g.key, isWarmup: true });
+        }
+        qs.splice(k, 0, ...picks);
+    }
     return qs;
 }
 
@@ -154,7 +168,7 @@ function bigger(container, factor) {
 function renderQuestion() {
     const q = session[pos];
     $("play-count").textContent = `Question ${pos + 1} of ${session.length}`;
-    $("play-part").textContent = PART[q.difficulty];
+    $("play-part").textContent = q.isWarmup ? "Warm-up" : PART[q.difficulty];
     $("play-bar").style.width = `${(100 * pos) / session.length}%`;
     $("q-text").innerHTML = q.text;
     $("q-fig").innerHTML = q.figure || "";
@@ -238,7 +252,8 @@ async function answer(i) {
 }
 
 async function adaptLater(q, correct, seconds) {
-    const k = session.findIndex((x, j) => j > pos && x.gen === q.gen);
+    if (q.isWarmup) return;
+    const k = session.findIndex((x, j) => j > pos && x.gen === q.gen && !x.isWarmup);
     if (k < 0) return;
     const cur = LEVELS.findIndex(([d, h]) => d === q.difficulty && h === q.harder);
     const step = correct ? (isGuess(q.difficulty, seconds) ? 0 : 1) : -1;

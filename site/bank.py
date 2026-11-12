@@ -10,6 +10,7 @@ Question.validate(), so every exported answer has passed the generator's indepen
     _site/bank/index.json            the skills: key, label, contest, keywords, skill, topics, file, count
     _site/bank/<key with __>.json    the questions of one generator
     _site/bank/<key>.teach.json      its "How to think about it" page, when the generator has teach()
+    _site/bank/<key>.warmup.json     its @warmup questions (id "<key>|warmup:<name>|<seed>|h0")
 """
 from __future__ import annotations
 
@@ -64,6 +65,24 @@ def export(g) -> list[dict]:
     return out
 
 
+def warmups(g) -> list[dict]:
+    out, seen = [], set()
+    for w in g.warmups:
+        for seed in range(10):
+            qid = f"{g.key}|warmup:{w.__name__}|{seed}|h0"
+            q = g.make_warmup(w, random.Random(zlib.crc32(qid.encode())))
+            sig = (q.text, q.after_figure, tuple(q.choices))
+            if sig in seen:
+                continue
+            seen.add(sig)
+            out.append({"id": qid, "variant": f"warmup:{w.__name__}", "harder": False, "difficulty": 1,
+                        "text": q.text, "after": q.after_figure or "", "figure": svg(q.figure),
+                        "choices": q.choices,
+                        "choice_figures": [svg(d) for d in q.choice_figures] if q.choice_figures else None,
+                        "answer": q.answer, "solution": q.solution})
+    return out
+
+
 def teach(g) -> list[dict]:
     """teach() items (see render._teach) as JSON: {"p"}, {"h"}, {"li"}, {"tip"}, {"table": rows}, {"svg"}."""
     out = []
@@ -91,6 +110,9 @@ def main() -> None:
             qs = export(g)
             name = g.key.replace("/", "__") + ".json"
             (OUT / name).write_text(json.dumps(qs, separators=(",", ":")))
+            warm = warmups(g)
+            if warm:
+                (OUT / name.replace(".json", ".warmup.json")).write_text(json.dumps(warm, separators=(",", ":")))
             page = teach(g)
             if page:
                 (OUT / name.replace(".json", ".teach.json")).write_text(json.dumps(page, separators=(",", ":")))
@@ -99,7 +121,8 @@ def main() -> None:
                           "level": _level(level), "keywords": g.meta.get("keywords", []),
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
                           "file": f"bank/{name}", "count": len(qs),
-                          "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None})
+                          "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None,
+                          "warmup": f"bank/{name.replace('.json', '.warmup.json')}" if warm else None})
             total += len(qs)
     (OUT / "index.json").write_text(json.dumps({"generators": index}, indent=1))
     size = sum(f.stat().st_size for f in OUT.iterdir()) // 1024

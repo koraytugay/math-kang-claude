@@ -15,15 +15,18 @@ const isGuess = (difficulty, seconds) => seconds != null && seconds < (MIN_SECON
 function skillStates(attempts) {
     const states = new Map();
     for (const a of attempts) {
-        const s = states.get(a.gen) || { box: 0, level: 0, last: 0, tries: 0 };
+        if (a.variant?.startsWith("warmup:")) continue;   // warm-ups never change the plan
+        const s = states.get(a.gen) || { box: 0, level: 0, last: 0, tries: 0, stuck: 0 };
         s.tries++;
         s.last = new Date(a.at).getTime();
         if (a.correct) {
             s.box = Math.min(GAP.length - 1, s.box + 1);
             if (!isGuess(a.difficulty, a.seconds)) s.level = Math.min(LEVELS.length - 1, s.level + 1);
+            s.stuck = 0;
         } else {
             s.box = 1;
             s.level = Math.max(0, s.level - 1);
+            s.stuck++;                                       // wrong in a row: 2+ means warm-ups first
         }
         s.due = s.last + GAP[s.box] * DAY;
         states.set(a.gen, s);
@@ -57,6 +60,6 @@ function planSkills(gens, states, n) {
 async function fetchAttempts(dbUrl, profileId) {
     const m = await import("https://cdn.jsdelivr.net/npm/@neondatabase/serverless@1.2.0/+esm");
     const sql = m.neon(dbUrl, { disableWarningInBrowsers: true });
-    return sql`select question_id as id, gen, difficulty, harder, correct, seconds, created_at as at
+    return sql`select question_id as id, gen, variant, difficulty, harder, correct, seconds, created_at as at
                from attempts where profile_id = ${profileId} order by id`;
 }

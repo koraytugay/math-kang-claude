@@ -95,7 +95,7 @@ Database tables (Phase 2):
       Only the first click counts (`correct`); store `second_try` too (new nullable column, `db/002_*.sql`).
 - [x] 4.2 **Guessing does not level up.** A right first answer faster than a minimum time (Part A 4 s, B 6 s,
       C 8 s) keeps the level (box still moves). Applies in smart.js, so PDFs follow too.
-- [ ] 4.3 **Warm-ups for a stuck skill.** When a child missed a skill twice in a row, the next session starts
+- [x] 4.3 **Warm-ups for a stuck skill.** When a child missed a skill twice in a row, the next session starts
       that skill with 1-2 warm-ups (export `@warmup` questions to the bank: `bank/<key>.warmup.json`).
       Warm-ups are recorded with `variant = "warmup:<name>"` and do not change the level.
 - [ ] 4.4 **Mistake labels.** Wrong options carry the mistake they stand for. Extend `numeric_choices` /
@@ -153,3 +153,6 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   do not level up, 4.3 warm-ups, 4.4 mistake labels, 4.5 hidden parent page. Old Phase 5 folded into 4.4.
 - 2026-11-12: 4.1 + 4.2 done. Hint = the generator's META["skill"] (the method, never the answer).
   db/002_second_try.sql applied. Guess thresholds in smart.js MIN_SECONDS. Next: 4.3 warm-ups.
+- 2026-11-12: 4.3 done: bank/<key>.warmup.json (5 generators have warm-ups); smart.js counts `stuck` (wrong
+  first tries in a row, warm-ups ignored); stuck >= 2 -> up to 2 warm-ups right before that skill's question.
+  Next: 4.5 hidden parent page, then 4.4 mistake labels.
