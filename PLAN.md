@@ -15,7 +15,7 @@ The PDF exams (`make_exam.py`, the GitHub Actions workflow, the exam page) keep 
 ## Decisions (made with the parent, 2026-11-11)
 
 - **Profiles:** `Deniz`, `Toprak`, `Koray`. Koray is the parent; **always test with Koray**, never with the
-  kids' profiles. No passwords for the kids (pick an avatar, "Who's practising?").
+  kids' profiles. No passwords for the kids; just their names, **no emojis/avatars** ("Who's practising?").
 - **Desktop only.** No phone/tablet work. Style with kt-styles (see CLAUDE.md / `~/github/koraytugay/kt-styles`);
   missing UI elements are added to kt-styles first.
 - **Generators stay Python; no rewrite to JS.** One source, two outputs: PDF (as now) and a pre-generated
@@ -90,7 +90,9 @@ Database tables (Phase 2):
 
 ### Phase 4 — Parent view (only Koray sees it)
 - [ ] 4.1 Parent view: skill table per kid (weak / getting there / strong), recent mistakes.
-- [ ] 4.2 "Print a PDF of the weak spots" (fills the exam workflow's `website` input with the weak generators).
+- [x] 4.2 Personal PDF exams: "For Deniz / For Toprak / For Koray (test)" on the exam page run smart.js on the
+      child's answers and send `plan:<Name>:<key@level,...>` in the workflow's `website` input;
+      `make_exam.py --plan` makes one question per item at that level ("Math Kangaroo Practice for Deniz").
 - (Gamification — points, streaks, badges, avatars, family goal — dropped by the parent on 2026-11-12.)
 
 ### Phase 5 — Explaining mistakes (later)
@@ -129,3 +131,5 @@ Database tables (Phase 2):
   5 weak, 3 due, 3 new, weak skills twice, then the rest; questions never seen first. Teaching pages exported
   to bank/*.teach.json (5 generators have one) and shown after a wrong answer.
   Next: Phase 4 parent view (4.1), or more teach() pages / warm-ups for skills the kids miss most.
+- 2026-11-12: Personal PDF exams (4.2) added; planning code moved to site/smart.js (shared by both pages).
+  Emojis removed from the profiles. Next: 4.1 parent view, or more teach() pages for the most-missed skills.

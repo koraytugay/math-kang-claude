@@ -166,11 +166,10 @@ function askPassword() {
             err.hidden = true;
             try {
                 const secrets = await Secrets.unlock($("password").value);
-                const t = secrets.github;
                 if ($("remember").checked) Secrets.save(secrets);
                 obs.disconnect();
                 closeModal(m);
-                done(t);
+                done(secrets);
             } catch (x) {
                 err.textContent = x.message;
                 err.hidden = false;
@@ -218,9 +217,10 @@ function status(text) { $("progress-text").textContent = text; }
 
 let running = false, pdfUrl = null;
 
-async function makeExam() {
+/** plan: null for the picked questions, or {name, items} for a personal exam ("key@level,..."). */
+async function makeExam(plan = null) {
     if (running) { openModal($("progress")); return; }
-    if (!token) token = await askPassword();
+    if (!token) token = (await askPassword())?.github || null;
     if (!token) return;
     running = true;
     $("make").textContent = "Making exam…";
@@ -245,9 +245,9 @@ async function makeExam() {
                 ref: "main",
                 inputs: {
                     questions: String(count() ?? 20),
-                    harder: String($("harder").checked),
-                    one_each: String($("one-each").checked),
-                    website: [...picked].join(","),
+                    harder: String(!plan && $("harder").checked),
+                    one_each: String(!plan && $("one-each").checked),
+                    website: plan ? `plan:${plan.name}:${plan.items}` : [...picked].join(","),
                 },
             }),
         });
@@ -308,7 +308,37 @@ $("all").onclick = () => toggle(allKeys(), true);
 $("none").onclick = () => toggle(allKeys(), false);
 $("count").oninput = refresh;
 $("one-each").onchange = refresh;
-$("make").onclick = makeExam;
+$("make").onclick = () => makeExam();
+
+// Personal exam: the same planning as the practice page (smart.js) on the child's answers in the database.
+async function examFor(id, name) {
+    if (running) { openModal($("progress")); return; }
+    let s = Secrets.saved();
+    if (!s?.db) s = await askPassword();
+    if (!s) return;
+    token = s.github;
+    let attempts;
+    try {
+        attempts = await fetchAttempts(s.db, id);
+    } catch (x) {
+        $("progress-title").textContent = "Something went wrong";
+        $("progress-busy").hidden = true;
+        $("progress-done").hidden = true;
+        $("run-link").hidden = true;
+        $("progress-error").textContent = `Could not read ${name}'s answers: ${x.message}`;
+        $("progress-error").hidden = false;
+        openModal($("progress"));
+        return;
+    }
+    const states = skillStates(attempts);
+    const gens = allKeys().map((key) => ({ key }));
+    const items = planSkills(gens, states, count() ?? 20)
+        .map((g) => `${g.key}@${states.get(g.key)?.level ?? 0}`).join(",");
+    makeExam({ name, items });
+}
+document.querySelectorAll("[data-profile]").forEach((b) => {
+    b.onclick = () => examFor(b.dataset.profile, b.dataset.name);
+});
 $("forget").onclick = (e) => {
     e.preventDefault();
     Secrets.forget();

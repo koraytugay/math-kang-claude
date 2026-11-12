@@ -93,7 +93,11 @@ jobs:
 
           # Questions chosen on the website, plus ticked contests
           SOURCES=()
-          if [ -n "$WEBSITE" ]; then SOURCES+=("$WEBSITE"); fi
+          if [ "${WEBSITE#plan:}" != "$WEBSITE" ]; then
+            ARGS+=("--plan" "${WEBSITE#plan:}")          # personal exam: name + planned skills
+          elif [ -n "$WEBSITE" ]; then
+            SOURCES+=("$WEBSITE")
+          fi
           # BEGIN contest-sources - written by `python check.py --catalog`, do not edit by hand
           if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi

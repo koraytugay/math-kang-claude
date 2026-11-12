@@ -10,6 +10,7 @@ Examples:
     python make_exam.py --from set-03/2002  # only questions from set-03 2002
     python make_exam.py --from "cube counting, hiding digits, 2024 Q19"   # pick by keyword / question
     python make_exam.py --topic perimeter   # only generators with that topic
+    python make_exam.py --plan "Deniz:set-03/.../y2002_q06@1,..."   # personal exam made by the website
 """
 from __future__ import annotations
 
@@ -116,10 +117,14 @@ def main():
     ap.add_argument("--hide-sources", action="store_true", help="don't print generator names in the key")
     ap.add_argument("--one-each", action="store_true",
                     help="exactly one question from each picked question (ignores -n)")
+    ap.add_argument("--plan", help="personal exam from the website: 'Name:key@level,key@level,...' - one "
+                                   "question per item, in that order; level 0-3 = Part A, B, C, C harder")
     args = ap.parse_args()
 
     seed = args.seed if args.seed is not None else random.randrange(10_000, 99_999)
     rng = random.Random(seed)
+    if args.plan:
+        return make_plan_exam(args, seed, rng)
     gens, missing = pick_generators(args)
     if not gens:
         sys.exit("No generators match. Run `python check.py` to see coverage.")
@@ -161,6 +166,39 @@ def main():
     print(f"Wrote {out}  ({len(questions)} questions from {len(gens)} generator(s), seed {seed})")
     if missing:
         print(f"Note: {len(missing)} pool question(s) have no generator yet (python check.py lists them).")
+
+
+LEVELS = [(1, False), (2, False), (3, False), (3, True)]   # same as site/smart.js
+
+
+def make_plan_exam(args, seed, rng) -> None:
+    """One question per planned skill, at the child's level for it (the website's smart.js plan)."""
+    name, _, items = args.plan.partition(":")
+    gens = load_generators()
+    questions, seen, used = [], set(), {}
+    for item in items.split(","):
+        key, _, lv = item.strip().partition("@")
+        g = gens.get(key)
+        if not g:
+            print(f"Note: unknown generator {key!r}, skipped.")
+            continue
+        difficulty, harder = LEVELS[min(max(int(lv or 0), 0), 3)]
+        vs = [v for v in g.variants if v._variant_difficulty == difficulty] or g.variants
+        for _ in range(20):                       # a different question if the same one came out
+            q = g.generate(rng, harder=harder, only_variant=rng.choice(vs).__name__, used=used)
+            if (q.text, q.after_figure) not in seen:
+                break
+        seen.add((q.text, q.after_figure))
+        questions.append(q)
+    if not questions:
+        sys.exit("The plan has no known generators.")
+    questions.sort(key=lambda q: q.difficulty)
+    out = Path(args.out) if args.out else get_next_exam_path()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    build_pdf(questions, str(out), title=f"Math Kangaroo Practice for {name}",
+              subtitle=f"Grade 3-4 · {len(questions)} questions · made from {name}'s practice · seed {seed}",
+              show_sources=not args.hide_sources)
+    print(f"Wrote {out}  ({len(questions)} questions for {name}, seed {seed})")
 
 
 if __name__ == "__main__":
