@@ -16,7 +16,7 @@ META = {
     "skill": "Lengths in m, dm, cm, mm: convert to one unit before adding or comparing",
     "topics": ["arithmetic", "measurement"],
     "keywords": ["length units", "m dm cm mm"],
-    "version": 2,
+    "version": 3,
 }
 
 MM = {"m": 1000, "dm": 100, "cm": 10, "mm": 1}
@@ -173,7 +173,7 @@ def not_equal(rng, harder):
     name = rng.choice(["Ana", "Ben", "Cleo", "Dan", "Eva", "Finn"])
     text = f"{name}'s new rug is {m_cm(mm)} long. Four of these lengths are the same as that."
     after = "Which one is <b>not</b> the same?"
-    sol = (f"{m_cm(mm)} = {mm // 10} cm = {mm} mm. But {bad} = "
-           + (f"{val(bad) // 10} cm" if val(bad) % 10 == 0 else f"{val(bad)} mm") + ".")
+    sol = (f"{m_cm(mm)} = {mm // 10} cm = {mm} mm. The odd one out is {bad}: that is "
+           + (f"{val(bad) // 10} cm" if val(bad) % 10 == 0 else f"{val(bad)} mm") + f", not {mm // 10} cm.")
     return Question(text=text, after_figure=after, choices=choices, answer=choices.index(bad), solution=sol,
                     check=lambda i: to_mm(choices[i]) != to_mm(m_cm(mm)))

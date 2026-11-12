@@ -14,7 +14,7 @@ META = {
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
     "keywords": ["common letters", "words"],
-    "version": 4,
+    "version": 5,
 }
 
 WORDS = ["KANGAROO", "PROBLEM", "MATHEMATICS", "ELEPHANT", "GIRAFFE", "BANANA", "TEACHER",
@@ -59,7 +59,7 @@ def common_letters(rng, harder):
     a, b = _pair(rng, 2, 5 if harder else 3)
     c = common(a, b)
     ans = len(c)
-    text = f"How many letters do the words {a} and {b} have in common?"
+    text = f"How many common letters do the words {a} and {b} have?"   # contest wording (no "different")
     sol = (f"Check each different letter of {a}: only {_letters(c)} are also in {b}, so {ans}. "
            f"A letter that appears twice still counts once.")
     mistakes = [repeats_counted(a, b), repeats_counted(b, a), ans + 1, ans - 1]
@@ -95,8 +95,8 @@ def only_in_first(rng, harder):
     text = (f"{name} writes the word {a}. Then {name} crosses out every letter that also appears "
             f"in the word {b}.")
     after = "How many different letters are <b>not</b> crossed out?"
-    sol = (f"Crossed out: {_letters(common(a, b))} (they are in {b}). Left: {_letters(only)}, "
-           f"so {ans} different letters" + (f" (a letter that is left twice counts once)." if left != ans else "."))
+    sol = (f"Crossed out: {_letters(common(a, b))} ({'it is' if len(common(a, b)) == 1 else 'they are'} in {b}). Left: {_letters(only)}, "
+           f"so {ans} different letter{'' if ans == 1 else 's'}" + (f" (a letter that is left twice counts once)." if left != ans else "."))
     mistakes = [left,                       # counted repeated letters
                 len(set(b) - set(a)),       # did it the other way round
                 len(common(a, b)), ans + 1, ans - 1]

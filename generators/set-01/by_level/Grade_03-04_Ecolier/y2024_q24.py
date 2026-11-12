@@ -25,7 +25,7 @@ META = {
     "skill": "Taking turns: what is still left depends on who went first - try the orders and keep track",
     "topics": ["logic", "counting"],
     "keywords": ["cookies on a tray", "who went first"],
-    "version": 1,
+    "version": 2,
 }
 
 # a cookie type is (shape, colour, size)
@@ -160,7 +160,7 @@ def given_order(rng, harder):
     text = (_story(names) + f"First {names[order[0]]} goes, then {names[order[1]]}, then {names[order[2]]}. "
             f"How many cookies does <b>{names[g]}</b> take?")
     alone = sum(n for t, n in tray.items() if t[RULES[g][0]] == RULES[g][1])
-    sol = (f"Cross out what the girls before {names[g]} take first. Of her cookies only {ans} are still on "
+    sol = (f"Cross out what the girls before {names[g]} take first. Of her cookies only {ans} {'is' if ans == 1 else 'are'} still on "
            f"the tray (she would get {alone} if she went first).")
     mistakes = [alone, ans + 1, ans - 1, ans + 2, sum(tray.values()) - ans]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m >= 0], rng, lo=0, order="asc")
@@ -177,7 +177,7 @@ def left_over(rng, harder):
     text = (_story(names) + "We do not know in which order they go. How many cookies are still on the tray "
             "after all three girls have taken theirs?")
     sol = (f"A cookie stays only if it is not a heart, not white and not large: the small dark round ones. "
-           f"There are {ans} of them - the order does not matter.")
+           f"There {'is' if ans == 1 else 'are'} {ans} of them - the order does not matter.")
     mistakes = [ans + 1, ans + 2, max(ans - 1, 0), 0, ans + tray[("round", "dark", "large")]]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=0, order="asc")
     lefts = {len(simulate(tray, o)[1]) for o in permutations(range(3))}

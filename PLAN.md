@@ -111,6 +111,12 @@ Not now (parent's choice): recording paper-exam results, more teach pages, a "re
 (the kids will tell the parent instead), new token/password, backups (Neon keeps data permanently; the
 restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 
+### Phase 5 — Quality
+- [x] 5.1 **Wording sweep** of every generator variant: things that can be read two ways (like "exactly 2
+      wagons"), unclear counting rules (ends included? start counted?), options/units that do not match the
+      question. Method: dump one question per variant (`scratch dump`), read all, fix generators (bump
+      version), `python check.py`, look at previews. Progress per contest in the Log.
+
 ## What the parent needs to provide
 - Phase 1: nothing.
 - Phase 2: done (Neon project `math-kang` / `morning-glitter-66992696`, database `neondb`, limited role
@@ -173,3 +179,14 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   in a row, start and end with a strong skill; after 2 misses in a row the next question is a strong or
   untried one. End screen: "You're getting stronger at" / "You tried something new" first, then
   "Worth another look". Never the exact same question again (seen ones only if a skill runs out).
+- 2026-11-12: 5.1 wording sweep: read one question per variant of all 35 generators (~175). No wrong answers.
+  Fixed two-way readings: 2003 Q9 ("outside is red" -> every cube you can see, also below and behind),
+  2007 Q3 ("letters in common" -> "different letters in common"). Fixed unclear solutions: 2003 Q10,
+  2002 Q1, 2003 Q18, 2007 Q21 (a/an), 2007 Q23, 2024 Q24 and 2007 Q3 (singular/plural). Versions bumped.
+  Only seed 11 per variant was read; plural/grammar slips in other seeds are still possible.
+- 2026-11-12: Second sweep (parent asked to double-check): 3,040 generated questions of the 8 changed
+  generators, every one re-checked with its independent answer check: 0 mismatches; only text was changed
+  (git diff). It caught two of my own slips (2003 Q10 solution rounded mm away; "a 8 x 8") and three older
+  ones (1 layers / they are in A / only 1 are) - all fixed. 2007 Q3 wording reverted to the contest's
+  "How many common letters ...?": noticing that a repeated letter counts once IS the skill, so the question
+  must not say "different". Rule: keep the contest's wording when the "ambiguity" is the trap being taught.

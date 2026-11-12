@@ -26,7 +26,7 @@ META = {
     "skill": "Find the missing square by its edges: lines must continue at the same places, not turned",
     "topics": ["spatial", "visual"],
     "keywords": ["missing square", "picture puzzle"],
-    "version": 2,
+    "version": 3,
 }
 
 CELL = 32          # points per square, in the picture and in the options
@@ -302,6 +302,21 @@ def _distinct(cands, avoid, n):
     return chosen
 
 
+def _why(wrong) -> str:
+    """'one is mirrored, 2 are turned, one has a line missing' from the wrong squares' labels."""
+    count = {}
+    for w, _ in wrong:
+        count[w] = count.get(w, 0) + 1
+    parts = []
+    for w, n in sorted(count.items()):
+        who = "one" if n == 1 else str(n)
+        if w == "a line is missing":
+            parts.append(f"{who} {'has' if n == 1 else 'have'} a line missing")
+        else:
+            parts.append(f"{who} {'is' if n == 1 else 'are'} {w}")
+    return ", ".join(parts)
+
+
 def _missing_square(rng, harder, turned_only):
     C, R, n = _size(harder)
     for _ in range(1000):
@@ -346,7 +361,7 @@ def _question(rng, harder, turned_only):
     sol = (f"Look where the lines of the picture reach the grey gap: {describe(e_true)}. "
            f"Only square {'ABCDE'[k]} has its lines in exactly those places"
            + (" without being turned." if not turned_only else " in this position.")
-           + " The others are " + ", ".join(sorted({w for w, _ in wrong})) + ".")
+           + " The others don't fit: " + _why(wrong) + ".")
     return Question(text=text, figure=picture_pic(curves, C, R, blanks=[gap]), after_figure=after,
                     choices=[f"square {c}" for c in "ABCDE"], answer=k,
                     choice_figures=[tile_pic(o) for o in opts], solution=sol,

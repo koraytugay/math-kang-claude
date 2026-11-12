@@ -19,7 +19,7 @@ META = {
     "skill": "Inside of a box of cubes: every length drops by 2; outside = total − inside",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["cube counting", "hidden cubes inside"],
-    "version": 2,
+    "version": 3,
 }
 
 NAMES = ["Chris", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -53,7 +53,8 @@ def blue_inside(rng, harder):
     name = rng.choice(NAMES)
     ans = (a - 2) * (b - 2) * (c - 2)
     text = (f"{name} built this brick ({_dims_text(a, b, c)}) from red and blue cubes of the same "
-            f"size. The outside of the brick is completely red, but all the cubes inside are blue.")
+            f"size. Every cube you can see from the outside (also from below and behind) is red, and all the "
+            f"cubes inside are blue.")
     after = f"How many blue cubes did {name} use?"
     sol = (f"Take away one layer on every side: the inside is {a - 2} × {b - 2} × {c - 2} = {ans}.")
     mistakes = [(a - 1) * (b - 1) * (c - 1), a * b * c - ans, (a - 2) * (b - 2), (a - 2) * (c - 2),
@@ -121,12 +122,12 @@ def how_deep(rng, harder):
     inner = (a - 2) * (b - 2) * (c - 2)
     name = rng.choice(NAMES)
     text = (f"{name} builds a brick {a} cubes long and {c} cubes tall from red and blue cubes. The "
-            f"outside is completely red and the inside is completely blue. {name} used exactly "
+            f"cubes you can see from the outside (also from below and behind) are red and all the cubes inside are blue. {name} used exactly "
             f"{inner} blue cubes.")
     after = "How many cubes deep is the brick?"
     sol = (f"The blue inside is {a - 2} long and {c - 2} tall, so one layer of it has "
            f"{a - 2} × {c - 2} = {(a - 2) * (c - 2)} cubes. {inner} ÷ {(a - 2) * (c - 2)} = {b - 2} "
-           f"layers of blue, plus the red front and back: {b}.")
+           f"layer{'' if b - 2 == 1 else 's'} of blue, plus the red front and back: {b}.")
     mistakes = [b - 2, b - 1, b + 1, inner // (a * c) if inner % (a * c) == 0 else -1, b + 2]
     choices, ai = numeric_choices(b, mistakes, rng, lo=1)
     return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,

@@ -20,7 +20,7 @@ META = {
     "skill": "Covering a shape with pieces of squares: count the squares, then turn the pieces",
     "topics": ["spatial", "geometry", "counting"],
     "keywords": ["covering shapes", "pieces that fit"],
-    "version": 2,
+    "version": 3,
 }
 
 NOTE = "The pieces may be turned and flipped over."
@@ -148,9 +148,9 @@ def two_pieces(rng, harder):
     labels = [f"{i + 1}+{j + 1}" for i, j in opts]
     k = opts.index(good)
     n = len(region)
-    sizes = ", ".join(f"{i + 1}: {len(p)}" for i, p in enumerate(pieces))
+    sizes = ", ".join(f"piece {i + 1} has {len(p)}" for i, p in enumerate(pieces))
     text = f"Which two of these pieces can be used to cover the empty area exactly? {NOTE}"
-    sol = (f"The empty area has {n} squares. Pieces have {sizes} squares. Only pieces "
+    sol = (f"The empty area has {n} squares. Counting squares: {sizes}. Only pieces "
            f"{good[0] + 1} and {good[1] + 1} also fit together in the right shape.")
     shown = [_show(p, rng) for p in pieces]
     return Question(text=text, figure=_pieces_fig(region, shown), choices=labels, answer=k,

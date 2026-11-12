@@ -16,7 +16,7 @@ META = {
     "skill": "Counting digits by groups (1-, 2-, 3-digit numbers); how many numbers are in a range",
     "topics": ["counting", "arithmetic", "patterns"],
     "keywords": ["counting digits", "writing numbers"],
-    "version": 1,
+    "version": 2,
 }
 
 
@@ -71,8 +71,9 @@ def count_zeros(rng, harder):
     tens = sum(1 for k in range(1, n + 1) if k % 10 == 0)
     extra = ans - tens
     sol = (f"A 0 at the end: 10, 20, ..., {n - n % 10}: {tens} numbers. "
-           + (f"Plus the zeros in the middle of 100-{min(n, 999)} (like 101 or 100 itself): {extra} more. "
-              if extra else "") + f"Total {ans}.")
+           + ((f"Plus the 0 in the middle of 100: 1 more. " if n == 100 else
+               f"Plus the zeros in the middle of the three-digit numbers (like the first 0 of 100, or 105): "
+               f"{extra} more. ") if extra else "") + f"Total {ans}.")
     mistakes = [tens, n // 10 - 1, ans + 1, ans - 1, tens + 1]
     choices, ai = numeric_choices(ans, [m for m in mistakes if m != ans], rng, lo=1)
     return Question(text=text, after_figure=after, choices=choices, answer=ai, solution=sol,

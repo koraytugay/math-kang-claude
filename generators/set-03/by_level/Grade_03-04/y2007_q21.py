@@ -19,7 +19,7 @@ META = {
     "skill": "Growing patterns: describe how each diagram is built, then count cells = total − black",
     "topics": ["patterns", "counting"],
     "keywords": ["growing patterns", "grid patterns"],
-    "version": 1,
+    "version": 2,
 }
 
 ORD = {1: "1st", 2: "2nd", 3: "3rd"}
@@ -121,7 +121,8 @@ def border_next(rng, harder):
     ans = n * n - len(b)
     text = (f"These diagrams follow a pattern: a black square with a white border around it. "
             f"How many white cells will the {which} have?")
-    sol = (f"The border of an {n} × {n} square has {n} + {n} + {n - 2} + {n - 2} = {ans} cells "
+    article = "an" if str(n).startswith("8") or n in (11, 18) else "a"
+    sol = (f"The border of {article} {n} × {n} square has {n} + {n} + {n - 2} + {n - 2} = {ans} cells "
            f"(or {n} × {n} − {k} × {k} = {ans}).")
     mistakes = [4 * n, n * n, ans + 4, ans - 4, k * k]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
