@@ -190,3 +190,9 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   ones (1 layers / they are in A / only 1 are) - all fixed. 2007 Q3 wording reverted to the contest's
   "How many common letters ...?": noticing that a repeated letter counts once IS the skill, so the question
   must not say "different". Rule: keep the contest's wording when the "ambiguity" is the trap being taught.
+- 2026-11-12: Parent: a second session right after the first should practise other skills. smart.js: skills
+  answered in the last 30 minutes are left out of the plan (weak ones too) and only fill up when there are
+  not enough others (also for personal PDFs). Found and fixed a real bug on the way: answers came back in row
+  order, not time order (answers uploaded later from the browser's offline queue looked like the newest), so
+  "last practised", scores and levels could be replayed in the wrong order. Now sorted by created_at (SQL)
+  and by time in skillStates. Browser test: two sessions back to back, 5 runs, 0 repeated skills.

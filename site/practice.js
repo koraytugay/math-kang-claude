@@ -46,7 +46,7 @@ class DbStore {
         await this.flush(p);
         return this.sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, seconds,
                                created_at as at
-                        from attempts where profile_id = ${p} order by id`;
+                        from attempts where profile_id = ${p} order by created_at, id`;
     }
     async insert(p, a) {
         await this.sql`insert into attempts (profile_id, question_id, gen, variant, difficulty, harder, chosen,
