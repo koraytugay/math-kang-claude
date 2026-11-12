@@ -48,6 +48,12 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 | 2007 Q23 | counting digits, writing numbers | Counting digits by groups (1-, 2-, 3-digit numbers); how many numbers are in a range | [PDF](output/previews/set-03/by_level/Grade_03-04/y2007_q23.pdf) |
 | 2007 Q24 | paper folding, fold and cut | Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric) | [PDF](output/previews/set-03/by_level/Grade_03-04/y2007_q24.pdf) |
 
+## Austrian Kangaroo 2023, Ecolier Grade 3-4
+
+| Question | Keywords | What it practises | Preview |
+|---|---|---|---|
+| 2023 Q12 | houses and streets, north south east west, two ways to split | One street splits all the houses into two groups: north + south = all houses = east + west | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q12.pdf) |
+
 ## Austrian Kangaroo 2024, Ecolier Grade 3-4
 
 | Question | Keywords | What it practises | Preview |

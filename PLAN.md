@@ -199,3 +199,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   order, not time order (answers uploaded later from the browser's offline queue looked like the newest), so
   "last practised", scores and levels could be replayed in the wrong order. Now sorted by created_at (SQL)
   and by time in skillStates. Browser test: two sessions back to back, 5 runs, 0 repeated skills.
+- 2026-11-12: New pool question Austria 2023 Q12 (houses and streets: north + south = east + west), with teach page and warm-ups.

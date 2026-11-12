@@ -41,6 +41,10 @@ on:
         description: 'Canada Math Kangaroo 2007, Grade 3-4: routes through forks, common letters, digit sum, working backwards, completing a rectangle, dates, cube counting, painted cube, growing patterns, counting digits, paper folding'
         type: boolean
         default: false
+      austria_2023:
+        description: 'Austrian Kangaroo 2023, Ecolier Grade 3-4: houses and streets'
+        type: boolean
+        default: false
       austria_2024:
         description: 'Austrian Kangaroo 2024, Ecolier Grade 3-4: puzzle-piece chains, two repeating patterns, hiding digits, frogs jumping, building with parts, cookies on a tray'
         type: boolean
@@ -102,6 +106,7 @@ jobs:
           if [ "${{ inputs.canada_2002 }}" = "true" ]; then SOURCES+=("set-03/2002"); fi
           if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
           if [ "${{ inputs.canada_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
+          if [ "${{ inputs.austria_2023 }}" = "true" ]; then SOURCES+=("set-01/2023"); fi
           if [ "${{ inputs.austria_2024 }}" = "true" ]; then SOURCES+=("set-01/2024"); fi
           if [ "${{ inputs.austria_2025 }}" = "true" ]; then SOURCES+=("set-01/2025"); fi
           # END contest-sources
