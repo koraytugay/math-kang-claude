@@ -59,3 +59,24 @@ def _expression_values(cards: tuple) -> frozenset:
     for order in set(permutations(cards)):
         vals |= _trees(order)
     return frozenset(vals)
+
+
+# ------------------------------------------------------------------ colouring circles joined by lines
+def colourings(n: int, edges, k: int, fixed: dict | None = None):
+    """Every way to give circles 0..n-1 one of k colours so that no line joins two equal colours.
+    `fixed` = {circle: colour} for circles that are already coloured. Plain brute force."""
+    fixed = fixed or {}
+    free = [v for v in range(n) if v not in fixed]
+    for combo in itertools.product(range(k), repeat=len(free)):
+        col = dict(fixed)
+        col.update(zip(free, combo))
+        if all(col[a] != col[b] for a, b in edges):
+            yield col
+
+
+def min_colours(n: int, edges) -> int:
+    """The smallest number of colours that works (brute force, trying 1, 2, 3, ... colours)."""
+    k = 1
+    while next(colourings(n, edges, k), None) is None:
+        k += 1
+    return k

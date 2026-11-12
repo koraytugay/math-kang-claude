@@ -173,3 +173,24 @@ def number_wheel(numbers, cuts=(), scale: float = 9, radius: float = 5.0, jagged
             pts.append((px, py))
         f.polyline(pts, width=1.2)
     return f.drawing()
+
+
+# ------------------------------------------------------------------ circles joined by lines
+def node_graph(pos, edges, labels=None, r: float = 0.24, max_px: float = 110, font_size: float = 10.5):
+    """Circles at `pos` (list of (x, y) in units, about 1 unit apart) joined by straight lines.
+    `labels` = {circle: text} written inside some circles."""
+    labels = labels or {}
+    xs, ys = [p[0] for p in pos], [p[1] for p in pos]
+    x0, y0 = min(xs) - r, min(ys) - r
+    f = Fig(max(xs) - x0 + r, max(ys) - y0 + r, max_px=max_px, margin=4, font_size=font_size)
+    P = [(x - x0, y - y0) for x, y in pos]
+    for a, b in edges:
+        (ax, ay), (bx, by) = P[a], P[b]
+        d = math.hypot(bx - ax, by - ay)
+        ux, uy = (bx - ax) / d, (by - ay) / d
+        f.line((ax + ux * r, ay + uy * r), (bx - ux * r, by - uy * r), width=1.1)
+    for i, (x, y) in enumerate(P):
+        f.circle(x, y, r, fill=colors.white, width=1.1)
+        if i in labels:
+            f.text(x, y, labels[i], size=font_size)
+    return f.drawing()

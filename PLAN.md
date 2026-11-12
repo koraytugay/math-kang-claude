@@ -200,3 +200,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
   "last practised", scores and levels could be replayed in the wrong order. Now sorted by created_at (SQL)
   and by time in skillStates. Browser test: two sessions back to back, 5 runs, 0 repeated skills.
 - 2026-11-12: New pool question Austria 2023 Q12 (houses and streets: north + south = east + west), with teach page and warm-ups.
+- 2026-11-12: New pool question Austria 2023 Q15 (fewest colours for circles joined by lines), teach page + warm-ups; shared solver kangaroo/solve.py colourings/min_colours and pictures.node_graph.
