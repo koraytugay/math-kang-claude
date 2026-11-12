@@ -136,3 +136,5 @@ Database tables (Phase 2):
   Emojis removed from the profiles. Next: 4.1 parent view, or more teach() pages for the most-missed skills.
 - 2026-11-12: Levels now move one step per answer (right up, wrong down), also for a skill's second question
   in the same session (practice.js adaptLater). Personal PDF exams use the same levels.
+- 2026-11-12: GitHub Pages source set to "GitHub Actions" (it was "Deploy from a branch", which served the
+  README). If the README ever shows again, check Settings -> Pages -> Source, then re-run "Publish website".
