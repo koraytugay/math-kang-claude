@@ -12,6 +12,16 @@ an exam is just `python make_exam.py`.
 - `feedback.md` — the parent's notes on generated questions. **Read it before touching a generator.**
 - `make_exam.py`, `check.py` — the two commands.
 
+## Menu (show this when the parent says hi, "what can I do?", "help" or seems unsure)
+Answer with this short list, in plain words:
+- **`/new-questions`** - "we solved a past exam and the kids struggled with some questions": tell me the exam
+  and the question numbers, I add them to practice, PDFs and exams.
+- **"Improve <question>"** or a note in `feedback.md` - fix or improve one question.
+- **"Make an exam"** - a PDF exam (or use the website: https://koraytugay.github.io/math-kang-claude/).
+- **"Continue PLAN.md"** - go on with the practice website plan.
+- Websites: practice https://koraytugay.github.io/math-kang-claude/practice.html, parent view
+  https://koraytugay.github.io/math-kang-claude/parent.html.
+
 ## Typical requests
 - **"Sync generators"** → run `python check.py`, pick MISSING entries (a few at a time unless told otherwise), write them.
 - **"We solved an exam" / `/new-questions`** → follow `.claude/skills/new-questions/SKILL.md`: ask only which
