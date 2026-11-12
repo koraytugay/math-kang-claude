@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Parent view</title>
+    <link rel="stylesheet" href="https://koraytugay.github.io/kt-styles/dist/kt.min.css">
+    <style>
+        /* layout glue only */
+        .mk-page { max-width: 1200px; }
+        .mk-lock { max-width: 420px; margin: var(--kt-space-8) auto 0; }
+        .mk-q { max-width: 560px; }
+    </style>
+</head>
+<body>
+<div class="kt-container mk-page">
+    <header class="kt-page-header">
+        <h1 class="kt-page-title">Parent view</h1>
+        <p class="kt-page-subtitle">How each child is doing, skill by skill. This page is not linked anywhere.</p>
+    </header>
+
+    <section id="lock" hidden>
+        <form class="kt-card kt-card--padded kt-stack mk-lock" id="lock-form">
+            <h2 class="kt-section-title kt-m-0">Password</h2>
+            <input class="kt-input" type="password" id="lock-password" autocomplete="current-password" placeholder="Password">
+            <label class="kt-check"><input type="checkbox" id="lock-remember" checked> Remember on this computer</label>
+            <div class="kt-alert kt-alert--danger" id="lock-error" hidden></div>
+            <div><button type="submit" class="kt-btn kt-btn--primary" id="lock-btn">Unlock</button></div>
+        </form>
+    </section>
+
+    <section id="view" hidden>
+        <nav class="kt-nav kt-nav--pill kt-nav--left" id="kids" aria-label="Children"></nav>
+        <div class="kt-loading" id="loading"><div class="kt-spinner"></div>Loading answers…</div>
+        <div id="content" hidden>
+            <div class="kt-stat-row" id="summary"></div>
+
+            <h2 class="kt-section-title kt-mt-6">Next session focuses on</h2>
+            <div class="kt-cluster kt-mt-2" id="focus"></div>
+
+            <h2 class="kt-section-title kt-mt-6">Skills</h2>
+            <div class="kt-table-wrap kt-mt-2"><table class="kt-table kt-table--compact">
+                <thead><tr><th>Skill</th><th>What it practises</th><th>Status</th><th>Level</th>
+                    <th class="kt-num">Answers</th><th class="kt-num">Right first try</th><th>Last</th><th>Due again</th></tr></thead>
+                <tbody id="skills"></tbody>
+            </table></div>
+
+            <h2 class="kt-section-title kt-mt-6">Recent mistakes</h2>
+            <div class="kt-table-wrap kt-mt-2"><table class="kt-table">
+                <thead><tr><th>When</th><th>Skill</th><th>Question</th><th>Picked</th><th>Answer</th><th>Second try</th><th>Seconds</th></tr></thead>
+                <tbody id="mistakes"></tbody>
+            </table></div>
+        </div>
+    </section>
+</div>
+<script src="secrets.js"></script>
+<script src="smart.js"></script>
+<script src="parent.js"></script>
+</body>
+</html>

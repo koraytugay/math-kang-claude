@@ -60,6 +60,7 @@ function planSkills(gens, states, n) {
 async function fetchAttempts(dbUrl, profileId) {
     const m = await import("https://cdn.jsdelivr.net/npm/@neondatabase/serverless@1.2.0/+esm");
     const sql = m.neon(dbUrl, { disableWarningInBrowsers: true });
-    return sql`select question_id as id, gen, variant, difficulty, harder, correct, seconds, created_at as at
+    return sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, second_try, seconds,
+                      created_at as at
                from attempts where profile_id = ${profileId} order by id`;
 }

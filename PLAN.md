@@ -103,7 +103,7 @@ Database tables (Phase 2):
       (index -> short text), export to the bank, show "This is what you get if you <mistake>" after a wrong
       answer, and store `chosen` (already there) so the parent page can group mistakes. Add labels to
       generators gradually, most-missed skills first.
-- [ ] 4.5 **Hidden parent page** `parent.html` (not linked anywhere; needs the site password like the rest):
+- [x] 4.5 **Hidden parent page** `parent.html` (not linked anywhere; needs the site password like the rest):
       per child each skill as *needs work / getting there / solid* (from smart.js states), recent mistakes
       with the option picked (and its mistake label), and what the next session will focus on.
 
@@ -156,3 +156,6 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-12: 4.3 done: bank/<key>.warmup.json (5 generators have warm-ups); smart.js counts `stuck` (wrong
   first tries in a row, warm-ups ignored); stuck >= 2 -> up to 2 warm-ups right before that skill's question.
   Next: 4.5 hidden parent page, then 4.4 mistake labels.
+- 2026-11-12: 4.5 done: site/parent.html + parent.js (not linked; password like the rest; noindex). Shows per
+  child: summary, next-session focus, skills table (status from the review box), recent mistakes with the
+  picked option. Next: 4.4 mistake labels (generators + kangaroo/choices.py).
