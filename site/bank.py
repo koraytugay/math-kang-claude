@@ -61,6 +61,7 @@ def export(g) -> list[dict]:
                     "choices": q.choices,
                     "choice_figures": [svg(d) for d in q.choice_figures] if q.choice_figures else None,
                     "answer": q.answer, "solution": q.solution,
+                    "mistakes": {str(i): t for i, t in q.meta.get("mistakes", {}).items()} or None,
                 })
     return out
 

@@ -98,7 +98,7 @@ Database tables (Phase 2):
 - [x] 4.3 **Warm-ups for a stuck skill.** When a child missed a skill twice in a row, the next session starts
       that skill with 1-2 warm-ups (export `@warmup` questions to the bank: `bank/<key>.warmup.json`).
       Warm-ups are recorded with `variant = "warmup:<name>"` and do not change the level.
-- [ ] 4.4 **Mistake labels.** Wrong options carry the mistake they stand for. Extend `numeric_choices` /
+- [x] 4.4 **Mistake labels.** Wrong options carry the mistake they stand for. Extend `numeric_choices` /
       `text_choices` (backwards compatible) to accept labels, add them to `Question.meta["mistakes"]`
       (index -> short text), export to the bank, show "This is what you get if you <mistake>" after a wrong
       answer, and store `chosen` (already there) so the parent page can group mistakes. Add labels to
@@ -159,3 +159,8 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-12: 4.5 done: site/parent.html + parent.js (not linked; password like the rest; noindex). Shows per
   child: summary, next-session focus, skills table (status from the review box), recent mistakes with the
   picked option. Next: 4.4 mistake labels (generators + kangaroo/choices.py).
+- 2026-11-12: 4.4 done (mechanism + first generators). kangaroo.choices: mistakes may be (value, "what you
+  did") pairs -> Choices list with .mistakes -> Question.meta["mistakes"] (registry) -> bank "mistakes".
+  Practice: first wrong click hint "Did you ...?", final feedback "X is what you get if you ...";
+  parent page shows it. Labelled so far: y2007_q04 (digit sum), y2025_q10 (runners). Label more
+  generators gradually, most-missed first (see the parent page). Phase 4 complete.

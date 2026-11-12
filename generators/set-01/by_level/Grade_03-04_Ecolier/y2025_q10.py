@@ -26,7 +26,7 @@ META = {
     "skill": "Running towards each other around a circle: between two meetings they cover one whole lap together",
     "topics": ["logic", "arithmetic", "spatial"],
     "keywords": ["runners on a circle", "meeting on a circle"],
-    "version": 4,
+    "version": 5,
 }
 
 PAIRS = [("Lisa", "Max"), ("Mia", "Tom"), ("Anna", "Ben"), ("Sara", "Leo"), ("Emma", "Sam"), ("Zoe", "Jack")]
@@ -128,7 +128,11 @@ def fast_laps(rng, harder):
     meets, lc, la = simulate(k * k, 1 if slow_cw else k - 1, k - 1 if slow_cw else 1)
     assert [m // k for m in meets] == idx
     laps_fast = la if slow_cw else lc
-    choices, ai = numeric_choices(ans, [k, 1, k + 1, k - 2, 2 * k], rng, lo=1, unit=TIMES, order="asc")
+    choices, ai = numeric_choices(ans, [(k, "count the meetings instead of the laps"),
+                                        (1, "think the fast runner goes around only once"),
+                                        (k + 1, "count the start as a meeting too"), k - 2,
+                                        (2 * k, "count both runners' laps together")],
+                                  rng, lo=1, unit=TIMES, order="asc")
     return Question(text=text, figure=circle_pic(letters, cw, acw), choices=choices, answer=ai,
                     solution=sol, check=value_check(choices, int(laps_fast)))
 
@@ -158,7 +162,9 @@ def skip_points(rng, harder):
         sol = (f"Each time, {slow} runs {s} of the {k} parts and {fast} runs the other {k - s}. "
                f"They meet {n_meet} times, so {fast} runs {n_meet} × {k - s} = {n_meet * (k - s)} parts "
                f"= {ans} times around.")
-        mistakes = [n_meet, k - s, slow_laps, n_meet - 1, ans + 1]
+        mistakes = [(n_meet, "count the meetings instead of the laps"),
+                    (k - s, "count the parts of one stretch instead of the laps"),
+                    (slow_laps, "count the slow runner's laps"), n_meet - 1, ans + 1]
         value = int(la if slow_cw else lc)
     else:
         text = intro + (f"They meet for the first time at point {order[0]} and keep on running. "
@@ -167,7 +173,9 @@ def skip_points(rng, harder):
         ans = n_meet
         sol = (f"{slow} moves {s} letters on from one meeting to the next: "
                f"{', '.join(order)}. That is {ans} meetings.")
-        mistakes = [k, k - 1, n_meet - 1, n_meet + 1, fast_laps_, k // s]
+        mistakes = [(k, "think they meet at every letter"), k - 1,
+                    (n_meet - 1, "forget to count the meeting at A"), (n_meet + 1, "count the start as a meeting too"),
+                    (fast_laps_, "count the laps instead of the meetings"), k // s]
         value = len(meets)
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1, unit=TIMES if ask_laps else "",
                                   order="asc")

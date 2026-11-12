@@ -212,9 +212,11 @@ async function answer(i) {
         buttons[i].disabled = true;
         buttons[i].setAttribute("aria-pressed", "true");
         buttons[i].classList.add("kt-card--danger");
+        // Hint: the mistake this option stands for when the generator knows it, else the skill's method.
         const skill = index.generators.find((g) => g.key === q.gen)?.skill;
+        const mistake = q.mistakes?.[i];
         $("retry").innerHTML = `<div class="kt-alert__title">Not quite. Try once more!</div>` +
-            (skill ? `Hint: ${skill}.` : "");
+            (mistake ? `Did you ${mistake}?` : skill ? `Hint: ${skill}.` : "");
         $("retry").hidden = false;
         return;
     }
@@ -244,7 +246,8 @@ async function answer(i) {
     const fb = $("feedback-text");
     fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
     const title = correct ? "Right!" : right ? "Right, on the second try!" : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
-    fb.innerHTML = `<div class="kt-alert__title">${title}</div>${q.solution}${saveNote}`;
+    const why = !correct && q.mistakes?.[chosen] ? `<div class="kt-mb-2">${"ABCDE"[chosen]} is what you get if you ${q.mistakes[chosen]}.</div>` : "";
+    fb.innerHTML = `<div class="kt-alert__title">${title}</div>${why}${q.solution}${saveNote}`;
     $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
     $("teach-btn").hidden = correct || !q.teach;
     $("feedback").hidden = false;

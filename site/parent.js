@@ -103,7 +103,8 @@ async function show(k) {
         tr.append(
             el("td", null, day(a.at)), el("td", null, g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen),
             el("td", "mk-q", q ? plain(q.text).slice(0, 160) + (plain(q.text).length > 160 ? "…" : "") : ""),
-            el("td", null, opt(a.chosen)), el("td", null, q ? opt(q.answer) : ""),
+            el("td", null, opt(a.chosen) + (q?.mistakes?.[a.chosen] ? ` - ${q.mistakes[a.chosen]}` : "")),
+            el("td", null, q ? opt(q.answer) : ""),
             el("td", null, a.second_try == null ? "" : a.second_try ? "right" : "wrong"),
             el("td", "kt-num", String(a.seconds ?? "")),
         );

@@ -95,6 +95,8 @@ class Generator:
         else:
             q.source = src
         q.variant = fn.__name__
+        if getattr(q.choices, "mistakes", None):           # labelled wrong options (kangaroo.choices)
+            q.meta.setdefault("mistakes", dict(q.choices.mistakes))
         q.validate()
         used[f"{self.key}.{fn.__name__}"] = used.get(f"{self.key}.{fn.__name__}", 0) + 1
         return q

@@ -19,7 +19,7 @@ META = {
     "skill": "Digit sums: find the next/previous number with the same digit sum",
     "topics": ["arithmetic", "patterns", "logic"],
     "keywords": ["digit sum", "next number"],
-    "version": 1,
+    "version": 2,
 }
 
 
@@ -64,9 +64,14 @@ def next_same_sum(rng, harder):
     text = (f"The numbers 34 and 142 have the same sum of digits (3 + 4 = 7 and 1 + 4 + 2 = 7). "
             f"What is the first number greater than {n} whose sum of digits is the same as for {n}?")
     sol = f"{_plus(n)} = {s}. Going up from {n}, the first number with digit sum {s} is {m} ({_plus(m)} = {s})."
-    mistakes = [_after(n, 2), _after(n, 3), n + 1, int(str(n)[::-1]) if int(str(n)[::-1]) > n else -1,
-                n + 9, n + 10]
-    choices, ai = numeric_choices(m, [x for x in mistakes if x != m], rng, lo=n + 1)
+    rev = int(str(n)[::-1])
+    mistakes = [(_after(n, 2), "skip the first one and take the next number you found"),
+                (_after(n, 3), "skip the first ones and take a later number"),
+                (n + 1, "just add 1 without checking the sum of digits"),
+                (rev if rev > n else -1, "turn the digits around"),
+                (n + 9, "jump by 9 and miss a closer number"),
+                (n + 10, "add 10 (that makes the sum of digits 1 bigger)")]
+    choices, ai = numeric_choices(m, [x for x in mistakes if x[0] != m], rng, lo=n + 1)
     return Question(text=text, choices=choices, answer=ai, solution=sol,
                     check=lambda i: first_from(n + 1, number_in(choices[i]), s, 1))
 
@@ -98,9 +103,10 @@ def smallest_with_sum(rng, harder):
     sol = (f"Use as few digits as possible: as many 9s as possible, with the smallest digit in front. "
            f"{m}: {_plus(m)} = {s}.")
     # every other number with this digit sum is bigger, so these are all wrong
-    alt = [int(str(m)[::-1]),       # small digit put at the end
-           _after(m), _after(m, 2), m + 1]
-    choices, ai = numeric_choices(m, [x for x in alt if x != m], rng, lo=1)
+    alt = [(int(str(m)[::-1]), "put the small digit at the end instead of the front"),
+           (_after(m), "find a number with that sum, but not the smallest one"),
+           (_after(m, 2), "find a number with that sum, but not the smallest one"), m + 1]
+    choices, ai = numeric_choices(m, [x for x in alt if (x[0] if isinstance(x, tuple) else x) != m], rng, lo=1)
     return Question(text=text, choices=choices, answer=ai, solution=sol,
                     check=lambda i: first_from(1, number_in(choices[i]), s, 1))
 
@@ -117,8 +123,10 @@ def before_same_sum(rng, harder):
     m, m2 = smaller
     text = f"What is the biggest number smaller than {n} whose sum of digits is the same as for {n}?"
     sol = f"{_plus(n)} = {s}. Counting down from {n}, the first number with digit sum {s} is {m}."
-    mistakes = [m2, n - 1, n - 9, n - 10, _after(n)]
-    choices, ai = numeric_choices(m, [x for x in mistakes if x != m], rng, lo=1)
+    mistakes = [(m2, "count down past the first one"), (n - 1, "just take 1 away without checking the sum"),
+                (n - 9, "jump down by 9 and miss a closer number"), n - 10,
+                (_after(n), "go up instead of down")]
+    choices, ai = numeric_choices(m, [x for x in mistakes if (x[0] if isinstance(x, tuple) else x) != m], rng, lo=1)
     return Question(text=text, choices=choices, answer=ai, solution=sol,
                     check=lambda i: number_in(choices[i]) < n and first_from(n - 1, number_in(choices[i]), s, -1))
 
@@ -141,7 +149,8 @@ def count_with_sum(rng, harder):
     else:
         rows = [len([m for m in nums if m // 100 == h]) for h in range(1, 10)]
         sol = (f"Count by the first digit: " + " + ".join(str(r) for r in rows if r) + f" = {ans}.")
-    mistakes = [ans + 1, ans - 1, s, s + 1, ans * 2]
+    mistakes = [(ans + 1, "count one number twice"), (ans - 1, "miss one number"),
+                (s, "give the sum of digits instead of counting the numbers"), s + 1, ans * 2]
     choices, ai = numeric_choices(ans, mistakes, rng, lo=1)
     return Question(text=text, choices=choices, answer=ai, solution=sol,
                     check=value_check(choices, sum(1 for ds in product(range(10), repeat=3 if harder else 2)
