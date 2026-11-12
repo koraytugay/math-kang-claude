@@ -205,3 +205,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-12: New pool question Austria 2023 Q19 (count the orders that keep 'not first' rules), teach page + warm-ups.
 - 2026-11-12: New pool question Austria 2023 Q22 (turning machine and printing machine: which order), teach page + warm-ups.
 - 2026-11-12: New pool question Austria 2023 Q23 (sums of neighbours in a ring: guess and go around), teach page + warm-ups.
+- 2026-11-12: New pool question Austria 2023 Q24 (one guess is right, the others have all but one right), teach page + warm-ups.

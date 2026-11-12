@@ -58,6 +58,7 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 | 2023 Q19 | counting orders, list them all, not first rules | Write down every possible order in a system (who is first, then second, ...) and cross out the ones that break a rule | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q19.pdf) |
 | 2023 Q22 | turning machine, quarter turns, machine order | Turning machine and printing machine: the corner mark counts all the turns, the picture only the turns after it was printed | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q22.pdf) |
 | 2023 Q23 | sums in a ring, guess and check, neighbour sums | Sums between neighbours in a ring: guess the number in one circle, go around the ring and check that it closes | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q23.pdf) |
+| 2023 Q24 | one guess is right, compare patterns, cells in common | One guess is right and each other guess has all but one right: test every option against all the others and count what they have in common | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q24.pdf) |
 
 ## Austrian Kangaroo 2024, Ecolier Grade 3-4
 

@@ -42,7 +42,7 @@ on:
         type: boolean
         default: false
       austria_2023:
-        description: 'Austrian Kangaroo 2023, Ecolier Grade 3-4: fill the shape, houses and streets, colouring circles, counting orders, turning machine, sums in a ring'
+        description: 'Austrian Kangaroo 2023, Ecolier Grade 3-4: fill the shape, houses and streets, colouring circles, counting orders, turning machine, sums in a ring, one guess is right'
         type: boolean
         default: false
       austria_2024:
