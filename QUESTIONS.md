@@ -52,6 +52,7 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 
 | Question | Keywords | What it practises | Preview |
 |---|---|---|---|
+| 2023 Q9 | fill the shape, jigsaw pieces, which piece fits | Filling a shape with pieces: start where there is least room (corner, narrow arm), match slanted edges, check with the number of squares | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q09.pdf) |
 | 2023 Q12 | houses and streets, north south east west, two ways to split | One street splits all the houses into two groups: north + south = all houses = east + west | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q12.pdf) |
 | 2023 Q15 | colouring circles, fewest colours, neighbours different | Fewest colours: find circles that are all joined to each other (a triangle needs 3), then colour step by step to show that many is enough | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2023_q15.pdf) |
 
