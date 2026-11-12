@@ -1,6 +1,9 @@
 # Plan: practice website (kids solve questions online, the site learns what they get wrong)
 
-**How to resume:** open Claude Code in this repo and say *"continue PLAN.md"*. The agent reads this file,
+**Status: finished (2026-11-12).** All tasks are done; this file is now the record of the design and the
+parent's decisions. New exam questions: use `/new-questions` (see CLAUDE.md).
+
+**How it was resumed while in progress:** open Claude Code in this repo and say *"continue PLAN.md"*. The agent reads this file,
 finds the first unchecked `[ ]` task, and goes on from there. Tick tasks `[x]` as they are done and add a
 line to the **Log** at the bottom (date, what was done, what is next). Keep this file the single source of
 truth for this project; decisions change here, not only in chat.

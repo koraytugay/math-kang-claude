@@ -18,7 +18,6 @@ Answer with this short list, in plain words:
   and the question numbers, I add them to practice, PDFs and exams.
 - **"Improve <question>"** or a note in `feedback.md` - fix or improve one question.
 - **"Make an exam"** - a PDF exam (or use the website: https://koraytugay.github.io/math-kang-claude/).
-- **"Continue PLAN.md"** - go on with the practice website plan.
 - Websites: practice https://koraytugay.github.io/math-kang-claude/practice.html, parent view
   https://koraytugay.github.io/math-kang-claude/parent.html.
 
@@ -64,6 +63,6 @@ Answer with this short list, in plain words:
 - Exams go to `output/exams/` (e.g. `001.pdf`) and previews to `output/previews/`, which are committed to git.
 
 ## Practice website (ongoing project)
-`PLAN.md` holds the plan, decisions and progress log for the online practice website (kids solve questions
-on the site, answers stored in Postgres, smart practice, gamification). When asked to "continue PLAN.md",
-read it, do the first unchecked task, tick it and add a Log line.
+The practice website is finished (all tasks in `PLAN.md` are done). `PLAN.md` stays as the record of its
+design and the parent's decisions (no points or counts for the kids, no exact repeats, keep contest traps,
+the scoring in site/smart.js). Read it before changing the website; add a Log line for changes.
