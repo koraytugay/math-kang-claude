@@ -8,8 +8,8 @@ truth for this project; decisions change here, not only in chat.
 ## Goal
 
 Deniz and Toprak (about 10, grade 3-4) open the website on the family desktop, pick their profile, and
-solve Math Kangaroo style questions on screen. Every answer is saved. The site gives more of what each child
-gets wrong, adapts the difficulty, explains mistakes, and rewards progress (points, streaks, badges).
+solve Math Kangaroo style questions on screen. Every answer is saved. The site is **personalized per child**:
+it gives more of what each child gets wrong, adapts the difficulty, and explains mistakes.
 The PDF exams (`make_exam.py`, the GitHub Actions workflow, the exam page) keep working unchanged.
 
 ## Decisions (made with the parent, 2026-11-11)
@@ -28,7 +28,9 @@ The PDF exams (`make_exam.py`, the GitHub Actions workflow, the exam page) keep 
   SELECT/INSERT/UPDATE on our tables, no DDL/DELETE), a strong passphrase, and Neon's point-in-time restore.
   (Earlier idea, not needed now: Neon Data API + Neon Auth, or a Cloudflare Worker proxy.)
 - **Write the website text to the kids** ("you"), never about them (see feedback memory / CLAUDE.md).
-- Siblings: no head-to-head leaderboard; personal goals + one shared family goal.
+- **No gamification and no counts** (parent, 2026-11-12): no points, scores, totals, "today" counters,
+  streaks or badges anywhere the kids see them; they can be discouraging. Feedback is right/wrong + the
+  solution, and the summary shows only "Look at these once more". Effort goes into personalization.
 
 ## Architecture
 
@@ -44,8 +46,8 @@ Bank entry (one question):
 answer, solution}` — `id = "<gen>|<variant>|<seed>|<h0/h1>"`, so the same id always rebuilds the same question.
 Per generator in index.json: `{key, label, contest, keywords, skill, topics, counts}`.
 
-Store interface (JS): `profiles()`, `recordAttempt(profile, attempt)`, `attempts(profile)`,
-`skillState(profile)`, `saveSkillState(profile, gen, state)`, `achievements(profile)`, `award(profile, code)`.
+Store interface (JS): `attempts(profile)`, `recordAttempt(profile, attempt)`; Phase 3 adds
+`skillState(profile)`, `saveSkillState(profile, gen, state)`.
 
 Database tables (Phase 2):
 - `profiles(id, name, avatar, is_parent)`
@@ -68,14 +70,14 @@ Database tables (Phase 2):
 - [x] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
 
 ### Phase 2 — Postgres on Neon
-- [ ] 2.1 Parent: Neon project/database for this site. Replace CHANGE_ME in `db/001_init.sql` (already
+- [x] 2.1 Parent: Neon project/database for this site. Replace CHANGE_ME in `db/001_init.sql` (already
       written) with a strong password and run it in the Neon SQL editor: tables + limited role `mk_site`.
-- [ ] 2.2 Lock file holds several secrets: extend `site/lock-token.mjs` + the page to `{github, db}`
+- [x] 2.2 Lock file holds several secrets: extend `site/lock-token.mjs` + the page to `{github, db}`
       (keep reading the old one-secret file). Parent runs it locally with `MK_TOKEN`, `MK_DB` (the
       `mk_site` connection string) and `MK_PASSWORD`, so the secrets never go through chat.
-- [ ] 2.3 Unlock on page open (one password for exams + practice), then the profile picker.
-- [ ] 2.4 `DbStore` implementing the Store interface; switch practice.js to it; keep LocalStore as offline fallback.
-- [ ] 2.5 One-time import of any LocalStore data from Phase 1 into the database.
+- [x] 2.3 Unlock on page open (one password for exams + practice), then the profile picker.
+- [x] 2.4 `DbStore` implementing the Store interface; switch practice.js to it; keep LocalStore as offline fallback.
+- [x] 2.5 One-time import of any LocalStore data from Phase 1 into the database.
 
 ### Phase 3 — Smart practice
 - [ ] 3.1 Per kid per skill (generator): Leitner box + due date. Wrong → box 1 (due tomorrow);
@@ -86,14 +88,10 @@ Database tables (Phase 2):
 - [ ] 3.4 After a wrong answer: show the solution, offer the generator's "How to think about it" page
       (`teach()`, export it to the bank) and its warm-ups.
 
-### Phase 4 — Gamification + parent view
-- [ ] 4.1 Points = contest points (3/4/5), daily streak, levels.
-- [ ] 4.2 Badges: per skill mastered, milestones (first Part C, 100 questions, 7-day streak).
-- [ ] 4.3 Kangaroo avatar that unlocks accessories with levels.
-- [ ] 4.4 Mock contest mode: timed, real Kangaroo scoring, personal best.
-- [ ] 4.5 Family goal: questions together per week.
-- [ ] 4.6 Parent view (Koray): skill table per kid, recent mistakes, "print PDF of weak spots"
-      (fills the exam workflow's `website` input with the weak generators).
+### Phase 4 — Parent view (only Koray sees it)
+- [ ] 4.1 Parent view: skill table per kid (weak / getting there / strong), recent mistakes.
+- [ ] 4.2 "Print a PDF of the weak spots" (fills the exam workflow's `website` input with the weak generators).
+- (Gamification — points, streaks, badges, avatars, family goal — dropped by the parent on 2026-11-12.)
 
 ### Phase 5 — Explaining mistakes (later)
 - [ ] 5.1 Label wrong options in generators with the mistake they represent (extend `numeric_choices`
@@ -101,8 +99,9 @@ Database tables (Phase 2):
 
 ## What the parent needs to provide
 - Phase 1: nothing.
-- Phase 2: a Neon database; run the SQL file the agent writes (creates tables + the `mk_site` role); then run
-  the lock script locally with the GitHub token, the `mk_site` connection string and a strong passphrase.
+- Phase 2: done (Neon project `math-kang` / `morning-glitter-66992696`, database `neondb`, limited role
+  `mk_site`; site password unlocks both secrets). To redo the lock: `MK_TOKEN=... MK_DB=... MK_PASSWORD=...
+  node site/lock-token.mjs` (the mk_site connection string is only in the parent's Neon account / the lock).
 
 ## Log
 - 2026-11-11: Plan written. Exam website (site/index.html) already live with password-locked token.
@@ -116,3 +115,11 @@ Database tables (Phase 2):
   Next: 1.7 check the live site with the Koray profile, then Phase 2 (needs the parent: Neon, see 2.1).
 - 2026-11-11: 1.7 done, practice page live (35 skills, 5,635 questions). db/001_init.sql written.
   Next: Phase 2, waiting for the parent (task 2.1).
+- 2026-11-12: Phase 2 done. Neon via CLI login: tables from db/001_init.sql; mk_site created with one
+  standalone SQL statement (roles made in the Neon console/CLI join neon_superuser - don't). mk_site can
+  select/insert (update on skill_state, achievements), cannot delete/create/drop (tested). token.json v2 =
+  {github, db} locked with the site password; secrets.js shared by both pages; practice page asks for the
+  password first, saves answers to Neon, keeps unsaved ones locally and uploads them later. Tested end to end
+  with Koray (Chrome via puppeteer-core in the scratchpad, not in the repo).
+- 2026-11-12: Parent: remove counts/points, drop gamification, focus on personalization. Done on the page;
+  plan updated (Phase 4 = parent view only). Next: Phase 3 (smart practice), task 3.1.

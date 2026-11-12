@@ -1,6 +1,7 @@
-// Practice page: a child picks their profile and solves 10 questions from the bank (bank/*.json,
-// made by site/bank.py). Answers are recorded through a Store; Phase 1 keeps them in the browser
-// (LocalStore), Phase 2 swaps in a database store with the same methods (see PLAN.md).
+// Practice page: the site password unlocks the database (secrets.js), a child picks their profile and
+// solves 10 questions from the bank (bank/*.json, made by site/bank.py). Answers go to Postgres on Neon
+// (DbStore). Answers that could not be saved, and Phase 1 answers kept in the browser (LocalStore), are
+// uploaded the next time (see PLAN.md).
 "use strict";
 
 const $ = (id) => document.getElementById(id);
@@ -17,8 +18,7 @@ const PROFILES = [
     { id: "koray", name: "Koray", avatar: "🧪", parent: true },   // the parent's test profile
 ];
 const SESSION = 10;
-const POINTS = { 1: 3, 2: 4, 3: 5 };
-const PART = { 1: "Part A · 3 points", 2: "Part B · 4 points", 3: "Part C · 5 points" };
+const PART = { 1: "Part A", 2: "Part B", 3: "Part C" };
 
 // ------------------------------------------------------------------ store
 class LocalStore {
@@ -34,7 +34,39 @@ class LocalStore {
         try { localStorage.setItem(this.key(p), JSON.stringify(d)); } catch { /* full or blocked */ }
     }
 }
-const store = new LocalStore();
+const local = new LocalStore();
+
+const NEON = "https://cdn.jsdelivr.net/npm/@neondatabase/serverless@1.2.0/+esm";
+class DbStore {
+    constructor(url) {
+        this.ready = import(NEON).then((m) => { this.sql = m.neon(url, { disableWarningInBrowsers: true }); });
+    }
+    async attempts(p) {
+        await this.ready;
+        await this.flush(p);
+        return this.sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, seconds,
+                               created_at as at
+                        from attempts where profile_id = ${p} order by id`;
+    }
+    async insert(p, a) {
+        await this.sql`insert into attempts (profile_id, question_id, gen, variant, difficulty, harder, chosen,
+                                             correct, seconds, created_at)
+                       values (${p}, ${a.id}, ${a.gen}, ${a.variant}, ${a.difficulty}, ${a.harder}, ${a.chosen},
+                               ${a.correct}, ${a.seconds}, ${a.at})`;
+    }
+    async recordAttempt(p, a) {
+        await this.ready;
+        try { await this.insert(p, a); } catch (e) { await local.recordAttempt(p, a); throw e; }
+    }
+    /** Upload answers that only exist in this browser (offline moments, Phase 1), then forget them. */
+    async flush(p) {
+        const waiting = await local.attempts(p);
+        if (!waiting.length) return;
+        for (const a of waiting) await this.insert(p, a);
+        try { localStorage.removeItem(local.key(p)); } catch { /* blocked */ }
+    }
+}
+let store = null;
 
 // ------------------------------------------------------------------ bank
 let index = null;
@@ -110,22 +142,19 @@ async function renderProfiles() {
     const box = $("profiles");
     box.innerHTML = "";
     for (const p of PROFILES) {
-        const attempts = await store.attempts(p.id);
-        const today = new Date().toDateString();
-        const todayN = attempts.filter((a) => new Date(a.at).toDateString() === today).length;
         const b = el("button", "kt-card kt-card--selectable");
         b.type = "button";
         b.setAttribute("aria-pressed", "false");
         const body = el("div", "kt-card__body kt-stack");
         body.append(el("div", "mk-avatar", p.avatar), el("div", "kt-card__title", p.name),
-            el("div", "kt-card__subtitle", `${attempts.length} questions so far · ${todayN} today`));
+            el("div", "kt-card__subtitle", "Start practising"));
         b.append(body);
         b.onclick = () => start(p);
         box.append(b);
     }
 }
 
-let profile = null, session = [], pos = 0, points = 0, started = 0, shownAt = 0, results = [];
+let profile = null, session = [], pos = 0, shownAt = 0, results = [];
 
 async function start(p) {
     profile = p;
@@ -135,7 +164,7 @@ async function start(p) {
     $("q-fig").innerHTML = ""; $("q-after").textContent = ""; $("q-options").innerHTML = "";
     $("feedback").hidden = true;
     session = await buildSession(p);
-    pos = 0; points = 0; results = []; started = Date.now();
+    pos = 0; results = [];
     renderQuestion();
 }
 
@@ -150,7 +179,6 @@ function renderQuestion() {
     const q = session[pos];
     $("play-count").textContent = `Question ${pos + 1} of ${session.length}`;
     $("play-part").textContent = PART[q.difficulty];
-    $("play-points").textContent = `${points} points`;
     $("play-bar").style.width = `${(100 * pos) / session.length}%`;
     $("q-text").innerHTML = q.text;
     $("q-fig").innerHTML = q.figure || "";
@@ -187,17 +215,20 @@ async function answer(i) {
         if (j === q.answer) b.classList.add("kt-card--success");
         if (j === i) { b.setAttribute("aria-pressed", "true"); if (!correct) b.classList.add("kt-card--danger"); }
     });
-    if (correct) points += POINTS[q.difficulty];
     results.push({ q, chosen: i, correct });
-    await store.recordAttempt(profile.id, {
-        id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
-        chosen: i, correct, seconds, at: new Date().toISOString(),
-    });
+    let saveNote = "";
+    try {
+        await store.recordAttempt(profile.id, {
+            id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
+            chosen: i, correct, seconds, at: new Date().toISOString(),
+        });
+    } catch {
+        saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
+    }
     const fb = $("feedback-text");
     fb.className = `kt-alert ${correct ? "kt-alert--success" : "kt-alert--danger"}`;
-    fb.innerHTML = `<div class="kt-alert__title">${correct ? `Right! +${POINTS[q.difficulty]} points` :
-        `Not this time. The answer is ${"ABCDE"[q.answer]}.`}</div>${q.solution}`;
-    $("play-points").textContent = `${points} points`;
+    fb.innerHTML = `<div class="kt-alert__title">${correct ? "Right!" :
+        `Not this time. The answer is ${"ABCDE"[q.answer]}.`}</div>${q.solution}${saveNote}`;
     $("next").textContent = pos + 1 < session.length ? "Next question" : "See your result";
     $("feedback").hidden = false;
     $("next").focus();
@@ -210,12 +241,7 @@ function next() {
 }
 
 function finish() {
-    const right = results.filter((r) => r.correct).length;
-    $("done-title").textContent = right === results.length ? `Perfect, ${profile.name}! 🎉` :
-        right >= results.length / 2 ? `Well done, ${profile.name}!` : `Good practice, ${profile.name}. Keep going!`;
-    $("done-right").textContent = `${right} / ${results.length}`;
-    $("done-points").textContent = points;
-    $("done-time").textContent = Math.max(1, Math.round((Date.now() - started) / 60000));
+    $("done-title").textContent = `Nice work, ${profile.name}!`;
     const box = $("done-mistakes");
     box.innerHTML = "";
     const wrong = results.filter((r) => !r.correct);
@@ -246,7 +272,42 @@ document.addEventListener("keydown", (e) => {
     else if (!$("feedback").hidden && e.key === "Enter" && document.activeElement !== $("next")) next();
 });
 
+// The password comes first; after that the device remembers it (unless "Remember" was unticked).
+function connect(secrets) {
+    store = new DbStore(secrets.db);
+    $("lock").hidden = true;
+    $("who").hidden = false;
+    renderProfiles().catch((e) => {
+        $("profiles").innerHTML = "";
+        const a = el("div", "kt-alert kt-alert--danger", `Could not reach the database: ${e.message}`);
+        $("profiles").append(a);
+    });
+}
+
+$("lock-form").onsubmit = async (e) => {
+    e.preventDefault();
+    $("lock-error").hidden = true;
+    $("lock-btn").disabled = true;
+    try {
+        const secrets = await Secrets.unlock($("lock-password").value);
+        if (!secrets.db) throw new Error("The locked file has no database yet.");
+        if ($("lock-remember").checked) Secrets.save(secrets);
+        connect(secrets);
+    } catch (x) {
+        $("lock-error").textContent = x.message;
+        $("lock-error").hidden = false;
+        $("lock-password").select();
+    } finally {
+        $("lock-btn").disabled = false;
+    }
+};
+
 fetch("bank/index.json", { cache: "no-store" })
     .then((r) => r.json())
-    .then((j) => { index = j; renderProfiles(); })
-    .catch(() => { $("profiles").innerHTML = '<div class="kt-alert kt-alert--danger">Could not load the questions.</div>'; });
+    .then((j) => {
+        index = j;
+        const saved = Secrets.saved();
+        if (saved?.db) connect(saved);
+        else { $("lock").hidden = false; $("lock-password").focus(); }
+    })
+    .catch(() => { $("lock").hidden = false; $("lock-error").textContent = "Could not load the questions."; $("lock-error").hidden = false; });

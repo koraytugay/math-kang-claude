@@ -8,11 +8,11 @@ const store = {
     set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
     del(k) { try { localStorage.removeItem(k); } catch { /* private mode */ } },
 };
-const TOKEN_KEY = "mk.token", PICK_KEY = "mk.picked", SHOW_KEY = "mk.show";
+const PICK_KEY = "mk.picked", SHOW_KEY = "mk.show";
 
 let cfg = null;              // questions.json
 let picked = new Set(JSON.parse(store.get(PICK_KEY) || "[]"));
-let token = store.get(TOKEN_KEY);
+let token = Secrets.saved()?.github || null;   // secrets.js
 let show = Number(store.get(SHOW_KEY) ?? 0);   // index of the contest shown, -1 = all
 
 // ------------------------------------------------------------------ gallery
@@ -149,25 +149,7 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") document.querySelectorAll(".kt-modal.is-open").forEach(closeModal);
 });
 
-// ------------------------------------------------------------------ password -> token
-const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-
-async function decryptToken(password) {
-    const r = await fetch("token.json", { cache: "no-store" });
-    if (!r.ok) throw new Error("This site has no locked token yet (token.json is missing).");
-    const box = await r.json();
-    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
-    const key = await crypto.subtle.deriveKey(
-        { name: "PBKDF2", hash: "SHA-256", salt: b64(box.salt), iterations: box.iter },
-        base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-    try {
-        const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(box.iv) }, key, b64(box.data));
-        return new TextDecoder().decode(plain);
-    } catch {
-        throw new Error("Wrong password.");
-    }
-}
-
+// ------------------------------------------------------------------ password -> token (secrets.js)
 function askPassword() {
     return new Promise((resolve) => {
         const m = $("unlock"), err = $("unlock-error");
@@ -183,8 +165,9 @@ function askPassword() {
             $("unlock-btn").disabled = true;
             err.hidden = true;
             try {
-                const t = await decryptToken($("password").value);
-                if ($("remember").checked) store.set(TOKEN_KEY, t);
+                const secrets = await Secrets.unlock($("password").value);
+                const t = secrets.github;
+                if ($("remember").checked) Secrets.save(secrets);
                 obs.disconnect();
                 closeModal(m);
                 done(t);
@@ -307,7 +290,7 @@ async function makeExam() {
         $("progress-busy").hidden = true;
         $("progress-done").hidden = false;
     } catch (x) {
-        if (x instanceof AuthError) { store.del(TOKEN_KEY); token = null; }
+        if (x instanceof AuthError) { Secrets.forget(); token = null; }
         $("progress-title").textContent = "Something went wrong";
         $("progress-busy").hidden = true;
         $("progress-error").textContent = x.message +
@@ -328,7 +311,7 @@ $("one-each").onchange = refresh;
 $("make").onclick = makeExam;
 $("forget").onclick = (e) => {
     e.preventDefault();
-    store.del(TOKEN_KEY);
+    Secrets.forget();
     token = null;
     e.target.textContent = "Forgotten. The password will be asked next time.";
 };

@@ -4,7 +4,8 @@
 //     node site/lock-token.mjs
 //
 // It asks for the token and the password (nothing is shown while you type), or takes them from
-// the MK_TOKEN and MK_PASSWORD environment variables. Only the locked
+// the MK_TOKEN and MK_PASSWORD environment variables. MK_DB (optional) is the Neon connection string
+// of the limited mk_site user; then both secrets are locked together as {"github", "db"}. Only the locked
 // token goes into token.json; the real token is never saved. The website unlocks it with the
 // same password (PBKDF2-SHA256 + AES-GCM, the browser's built-in crypto).
 import { writeFileSync } from "node:fs";
@@ -60,15 +61,22 @@ if (!fromEnv && (await ask("Password again: ")) !== password) {
     process.exit(1);
 }
 
+const db = (process.env.MK_DB || "").trim();
+if (db && !db.startsWith("postgres")) {
+    console.error("MK_DB does not look like a Postgres connection string.");
+    process.exit(1);
+}
+const plain = db ? JSON.stringify({ github: token, db }) : token;
+
 const salt = crypto.getRandomValues(new Uint8Array(16));
 const iv = crypto.getRandomValues(new Uint8Array(12));
 const data = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv },
-    await keyFor(password, salt, "encrypt"), new TextEncoder().encode(token)));
+    await keyFor(password, salt, "encrypt"), new TextEncoder().encode(plain)));
 
 // round trip, the same way the website does it
 const back = new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv },
     await keyFor(password, salt, "decrypt"), data));
-if (back !== token) throw new Error("round trip failed");
+if (back !== plain) throw new Error("round trip failed");
 
-writeFileSync(out, JSON.stringify({ v: 1, kdf: "PBKDF2-SHA256", iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(data) }, null, 1) + "\n");
+writeFileSync(out, JSON.stringify({ v: db ? 2 : 1, kdf: "PBKDF2-SHA256", iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(data) }, null, 1) + "\n");
 console.log(`Wrote ${out}. It only holds the locked token, so it is safe to commit.`);

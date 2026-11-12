@@ -8,6 +8,7 @@
     <style>
         /* layout glue only */
         .mk-page { max-width: 1000px; }
+        .mk-lock { max-width: 420px; margin: var(--kt-space-8) auto 0; }
         .mk-avatar { font-size: var(--kt-fs-3xl); line-height: 1; }
         .mk-qtext { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
         .mk-fig { text-align: center; margin: var(--kt-space-4) 0; }
@@ -24,8 +25,20 @@
         <p class="kt-page-subtitle"><a href="./">Make a PDF exam instead</a></p>
     </header>
 
+    <!-- password -->
+    <section id="lock" hidden>
+        <form class="kt-card kt-card--padded kt-stack mk-lock" id="lock-form">
+            <h2 class="kt-section-title kt-m-0">Password</h2>
+            <p>Type the password to start practising.</p>
+            <input class="kt-input" type="password" id="lock-password" autocomplete="current-password" placeholder="Password">
+            <label class="kt-check"><input type="checkbox" id="lock-remember" checked> Remember on this computer</label>
+            <div class="kt-alert kt-alert--danger" id="lock-error" hidden></div>
+            <div><button type="submit" class="kt-btn kt-btn--primary" id="lock-btn">Unlock</button></div>
+        </form>
+    </section>
+
     <!-- who is practising -->
-    <section id="who">
+    <section id="who" hidden>
         <h2 class="kt-section-title">Who's practising?</h2>
         <div class="kt-grid kt-grid--3 kt-mt-3" id="profiles"></div>
     </section>
@@ -39,7 +52,6 @@
                 <span class="kt-badge kt-badge--soft-info" id="play-part"></span>
             </div>
             <div class="kt-cluster">
-                <span class="kt-fw-bold" id="play-points"></span>
                 <button type="button" class="kt-btn kt-btn--ghost" id="quit">Stop</button>
             </div>
         </div>
@@ -63,11 +75,6 @@
     <!-- summary -->
     <section id="done" hidden>
         <h2 class="kt-section-title" id="done-title"></h2>
-        <div class="kt-stat-row kt-mt-3">
-            <div class="kt-stat"><div class="kt-stat__value" id="done-right"></div><div class="kt-stat__label">Right</div></div>
-            <div class="kt-stat"><div class="kt-stat__value" id="done-points"></div><div class="kt-stat__label">Points</div></div>
-            <div class="kt-stat"><div class="kt-stat__value" id="done-time"></div><div class="kt-stat__label">Minutes</div></div>
-        </div>
         <div class="kt-stack kt-mt-4" id="done-mistakes"></div>
         <div class="kt-cluster kt-mt-4">
             <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="again">Practise again</button>
@@ -75,6 +82,7 @@
         </div>
     </section>
 </div>
+<script src="secrets.js"></script>
 <script src="practice.js"></script>
 </body>
 </html>
