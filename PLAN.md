@@ -80,12 +80,12 @@ Database tables (Phase 2):
 - [x] 2.5 One-time import of any LocalStore data from Phase 1 into the database.
 
 ### Phase 3 — Smart practice
-- [ ] 3.1 Per kid per skill (generator): Leitner box + due date. Wrong → box 1 (due tomorrow);
+- [x] 3.1 Per kid per skill (generator): Leitner box + due date. Wrong → box 1 (due tomorrow);
       right → next box (1, 3, 7, 21 days).
-- [ ] 3.2 Adaptive difficulty per skill: level 1→2→3, then `harder`; 3 right in a row up, 2 wrong down.
-- [ ] 3.3 Session builder: ~60% due/weak skills, ~25% review, ~15% new or maintenance; never the same
+- [x] 3.2 Adaptive difficulty per skill: level 1→2→3, then `harder`; 3 right in a row up, 2 wrong down.
+- [x] 3.3 Session builder: ~60% due/weak skills, ~25% review, ~15% new or maintenance; never the same
       question id twice in a row; avoid repeats seen in the last 2 weeks.
-- [ ] 3.4 After a wrong answer: show the solution, offer the generator's "How to think about it" page
+- [x] 3.4 After a wrong answer: show the solution, offer the generator's "How to think about it" page
       (`teach()`, export it to the bank) and its warm-ups.
 
 ### Phase 4 — Parent view (only Koray sees it)
@@ -123,3 +123,9 @@ Database tables (Phase 2):
   with Koray (Chrome via puppeteer-core in the scratchpad, not in the repo).
 - 2026-11-12: Parent: remove counts/points, drop gamification, focus on personalization. Done on the page;
   plan updated (Phase 4 = parent view only). Next: Phase 3 (smart practice), task 3.1.
+- 2026-11-12: Phase 3 done (3.4 without warm-ups: only the teach page). The per-skill state is replayed from
+  the attempts table on every session (practice.js skillStates: Leitner box with GAP 0/1/3/7/21 days, level
+  A/B/C/harder: 3 right in a row up, 2 wrong down); the skill_state table is not used yet. planSkills: up to
+  5 weak, 3 due, 3 new, weak skills twice, then the rest; questions never seen first. Teaching pages exported
+  to bank/*.teach.json (5 generators have one) and shown after a wrong answer.
+  Next: Phase 4 parent view (4.1), or more teach() pages / warm-ups for skills the kids miss most.

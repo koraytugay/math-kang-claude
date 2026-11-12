@@ -68,6 +68,7 @@
             <div class="kt-alert" id="feedback-text"></div>
             <div class="kt-cluster kt-mt-3">
                 <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="next">Next question</button>
+                <button type="button" class="kt-btn kt-btn--lg" id="teach-btn" hidden>How to think about it</button>
             </div>
         </div>
     </section>
@@ -82,6 +83,20 @@
         </div>
     </section>
 </div>
+<!-- teaching page -->
+<div class="kt-modal kt-modal--lg" id="teach" role="dialog" aria-modal="true" aria-labelledby="teach-title">
+    <div class="kt-modal__dialog">
+        <div class="kt-modal__header">
+            <h2 class="kt-modal__title" id="teach-title">How to think about it</h2>
+            <button type="button" class="kt-btn kt-btn--ghost kt-btn--icon kt-modal__close" aria-label="Close">✕</button>
+        </div>
+        <div class="kt-modal__body kt-stack" id="teach-body"></div>
+        <div class="kt-modal__footer">
+            <button type="button" class="kt-btn kt-btn--primary kt-modal__close">Back to the question</button>
+        </div>
+    </div>
+</div>
+
 <script src="secrets.js"></script>
 <script src="practice.js"></script>
 </body>

@@ -76,63 +76,90 @@ async function bankFor(gen) {
     return files.get(gen.key);
 }
 
-// ------------------------------------------------------------------ choosing questions
-// Per skill (generator): the last 5 answers decide how weak it is; right answers in a row raise the level.
-function skillStats(attempts) {
-    const by = new Map();
+// ------------------------------------------------------------------ choosing questions (personal)
+// Every child has their own state per skill (generator), replayed from their answers in time order:
+//  - box: a review schedule. Wrong -> box 1 (back tomorrow); right -> next box. Box n is due GAP[n] days
+//    after the last answer, so known skills come back less and less often.
+//  - level: which questions to give. 3 right in a row -> one level up (Part A -> B -> C -> harder numbers);
+//    2 wrong in a row -> one level down.
+const DAY = 864e5, GAP = [0, 1, 3, 7, 21];
+const LEVELS = [[1, false], [2, false], [3, false], [3, true]];     // [difficulty, harder]
+
+function skillStates(attempts) {
+    const states = new Map();
     for (const a of attempts) {
-        if (!by.has(a.gen)) by.set(a.gen, []);
-        by.get(a.gen).push(a);
+        const s = states.get(a.gen) || { box: 0, level: 0, rightRun: 0, wrongRun: 0, last: 0, tries: 0 };
+        s.tries++;
+        s.last = new Date(a.at).getTime();
+        if (a.correct) {
+            s.box = Math.min(GAP.length - 1, s.box + 1);
+            s.wrongRun = 0;
+            if (++s.rightRun >= 3) { s.level = Math.min(LEVELS.length - 1, s.level + 1); s.rightRun = 0; }
+        } else {
+            s.box = 1;
+            s.rightRun = 0;
+            if (++s.wrongRun >= 2) { s.level = Math.max(0, s.level - 1); s.wrongRun = 0; }
+        }
+        s.due = s.last + GAP[s.box] * DAY;
+        states.set(a.gen, s);
     }
-    const out = new Map();
-    for (const [gen, list] of by) {
-        const recent = list.slice(-5);
-        let streak = 0;
-        for (let i = list.length - 1; i >= 0 && list[i].correct; i--) streak++;
-        out.set(gen, { tries: list.length, wrongRate: recent.filter((a) => !a.correct).length / recent.length, streak });
-    }
-    return out;
+    return states;
 }
 
-function weightedPick(items, weight, n) {
-    const pool = items.map((x) => ({ x, w: weight(x) })), out = [];
-    while (out.length < n && pool.length) {
-        let r = Math.random() * pool.reduce((s, p) => s + p.w, 0);
-        const i = pool.findIndex((p) => (r -= p.w) <= 0);
-        out.push(pool.splice(i < 0 ? pool.length - 1 : i, 1)[0].x);
-    }
-    return out;
+const shuffle = (xs) => { for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; } return xs; };
+
+/** Which skills to practise now, most useful first: weak, due for review, new, then the rest. */
+function planSkills(gens, states, n) {
+    const now = Date.now(), st = (g) => states.get(g.key);
+    const byDue = (a, b) => st(a).due - st(b).due;
+    const weak = shuffle(gens.filter((g) => st(g) && st(g).box <= 1)).sort(byDue);
+    const due = gens.filter((g) => st(g) && st(g).box >= 2 && st(g).due <= now).sort(byDue);
+    const fresh = shuffle(gens.filter((g) => !st(g)));
+    const later = gens.filter((g) => st(g) && st(g).box >= 2 && st(g).due > now).sort(byDue);
+
+    const plan = [];
+    const take = (list, k) => { for (const g of list) { if (k <= 0 || plan.length >= n) break; if (!plan.includes(g)) { plan.push(g); k--; } } };
+    take(weak, 5);              // what they get wrong comes first
+    take(due, 3);               // then what is due again
+    take(fresh, 3);             // and a few skills they have not tried yet
+    // A weak skill may come twice in one session (a second, different question).
+    for (const g of weak) if (plan.length < n && plan.filter((x) => x === g).length < 2) plan.push(g);
+    take(due, n); take(fresh, n); take(later, n); take(shuffle([...gens]), n);
+    return plan.slice(0, n);
 }
 
 async function buildSession(profile) {
     const attempts = await store.attempts(profile.id);
-    const stats = skillStats(attempts);
-    const recentIds = new Set(attempts.slice(-300).map((a) => a.id));
-    // Weak skills come first, skills never tried next, well-known skills now and then.
-    const weight = (g) => {
-        const s = stats.get(g.key);
-        return !s ? 3 : 1 + 6 * s.wrongRate + (s.streak >= 4 ? -0.6 : 0);
-    };
-    let gens = weightedPick(index.generators, weight, SESSION);
-    while (gens.length < SESSION) gens.push(index.generators[Math.floor(Math.random() * index.generators.length)]);
+    const states = skillStates(attempts);
+    const seen = new Set(attempts.map((a) => a.id));
+    const twoWeeks = Date.now() - 14 * DAY;
+    const recent = new Set(attempts.filter((a) => new Date(a.at).getTime() > twoWeeks).map((a) => a.id));
 
     const qs = [];
-    for (const g of gens) {
+    for (const g of planSkills(index.generators, states, SESSION)) {
         const bank = await bankFor(g);
-        const s = stats.get(g.key) || { streak: 0, wrongRate: 0 };
-        const level = s.wrongRate > 0.5 ? 1 : Math.min(3, 1 + Math.floor(s.streak / 2));
-        const harder = s.streak >= 6;
-        const fresh = (q) => !recentIds.has(q.id) && !qs.some((x) => x.id === q.id);
+        const [difficulty, harder] = LEVELS[states.get(g.key)?.level ?? 0];
+        const free = (q) => !qs.some((x) => x.id === q.id);
+        const atLevel = (q) => q.difficulty === difficulty && q.harder === harder;
         const tiers = [
-            bank.filter((q) => fresh(q) && q.difficulty === level && q.harder === harder),
-            bank.filter((q) => fresh(q) && q.difficulty === level),
-            bank.filter(fresh),
-            bank,
+            bank.filter((q) => free(q) && !seen.has(q.id) && atLevel(q)),      // new question, right level
+            bank.filter((q) => free(q) && !seen.has(q.id) && q.difficulty === difficulty),
+            bank.filter((q) => free(q) && !recent.has(q.id) && atLevel(q)),    // not in the last two weeks
+            bank.filter((q) => free(q) && !seen.has(q.id)),
+            bank.filter(free),
         ];
-        const list = tiers.find((t) => t.length);
-        qs.push({ ...list[Math.floor(Math.random() * list.length)], gen: g.key });
+        const list = tiers.find((t) => t.length) || bank;
+        qs.push({ ...list[Math.floor(Math.random() * list.length)], gen: g.key, teach: g.teach });
     }
-    return qs.sort((a, b) => a.difficulty - b.difficulty);    // Part A, then B, then C, like the contest
+    // Part A, then B, then C, like the contest; two questions of one skill are kept apart.
+    qs.sort((a, b) => a.difficulty - b.difficulty);
+    for (let k = 1; k < qs.length; k++) {
+        if (qs[k].gen === qs[k - 1].gen) {
+            const m = qs.findIndex((q, j) => j > k && q.gen !== qs[k].gen);
+            if (m > 0) [qs[k], qs[m]] = [qs[m], qs[k]];
+        }
+    }
+    return qs;
 }
 
 // ------------------------------------------------------------------ screens
@@ -229,7 +256,8 @@ async function answer(i) {
     fb.className = `kt-alert ${correct ? "kt-alert--success" : "kt-alert--danger"}`;
     fb.innerHTML = `<div class="kt-alert__title">${correct ? "Right!" :
         `Not this time. The answer is ${"ABCDE"[q.answer]}.`}</div>${q.solution}${saveNote}`;
-    $("next").textContent = pos + 1 < session.length ? "Next question" : "See your result";
+    $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
+    $("teach-btn").hidden = correct || !q.teach;
     $("feedback").hidden = false;
     $("next").focus();
 }
@@ -260,13 +288,50 @@ function finish() {
     show("done");
 }
 
+// ------------------------------------------------------------------ teaching page
+const teachPages = new Map();
+async function openTeach() {
+    const q = session[pos];
+    if (!teachPages.has(q.teach)) teachPages.set(q.teach, fetch(q.teach).then((r) => r.json()));
+    const body = $("teach-body");
+    body.innerHTML = "";
+    let list = null;
+    for (const it of await teachPages.get(q.teach)) {
+        if (it.li != null) {
+            if (!list) { list = el("ul", "kt-list"); body.append(list); }
+            const li = el("li"); li.innerHTML = it.li; list.append(li);
+            continue;
+        }
+        list = null;
+        if (it.h != null) { if (body.children.length) { const h = el("h3", "kt-section-title"); h.innerHTML = it.h; body.append(h); } else $("teach-title").innerHTML = it.h; }
+        else if (it.p != null) { const p = el("p"); p.innerHTML = it.p; body.append(p); }
+        else if (it.tip != null) { const t = el("div", "kt-alert kt-alert--info"); t.innerHTML = it.tip; body.append(t); }
+        else if (it.svg != null) { const f = el("div", "mk-fig"); f.innerHTML = it.svg; bigger(f, 1.3); body.append(f); }
+        else if (it.table) {
+            const wrap = el("div", "kt-table-wrap"), t = el("table", "kt-table");
+            it.table.forEach((row, r) => {
+                const tr = el("tr");
+                row.forEach((c) => { const td = el(r ? "td" : "th"); td.innerHTML = c; tr.append(td); });
+                t.append(tr);
+            });
+            wrap.append(t); body.append(wrap);
+        }
+    }
+    $("teach").classList.add("is-open");
+}
+$("teach").addEventListener("click", (e) => {
+    if (e.target === $("teach") || e.target.closest(".kt-modal__close")) $("teach").classList.remove("is-open");
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("teach").classList.remove("is-open"); });
+
 // ------------------------------------------------------------------ start
+$("teach-btn").onclick = openTeach;
 $("next").onclick = next;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles()));
 $("again").onclick = () => start(profile);
 $("switch").onclick = () => { show("who"); renderProfiles(); };
 document.addEventListener("keydown", (e) => {
-    if ($("play").hidden) return;
+    if ($("play").hidden || $("teach").classList.contains("is-open")) return;
     const k = e.key.toUpperCase();
     if ($("feedback").hidden && "ABCDE".includes(k) && k.length === 1) answer("ABCDE".indexOf(k));
     else if (!$("feedback").hidden && e.key === "Enter" && document.activeElement !== $("next")) next();

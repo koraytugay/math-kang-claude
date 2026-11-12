@@ -9,6 +9,7 @@ Question.validate(), so every exported answer has passed the generator's indepen
 
     _site/bank/index.json            the skills: key, label, contest, keywords, skill, topics, file, count
     _site/bank/<key with __>.json    the questions of one generator
+    _site/bank/<key>.teach.json      its "How to think about it" page, when the generator has teach()
 """
 from __future__ import annotations
 
@@ -63,6 +64,23 @@ def export(g) -> list[dict]:
     return out
 
 
+def teach(g) -> list[dict]:
+    """teach() items (see render._teach) as JSON: {"p"}, {"h"}, {"li"}, {"tip"}, {"table": rows}, {"svg"}."""
+    out = []
+    for it in g.teach():
+        if isinstance(it, str):
+            out.append({"p": it})
+        elif isinstance(it, tuple) and it[0] in ("h", "tip"):
+            out.append({it[0]: it[1]})
+        elif isinstance(it, tuple) and it[0] == "-":
+            out.append({"li": it[1]})
+        elif isinstance(it, tuple) and it[0] == "table":
+            out.append({"table": [[str(c) for c in row] for row in it[1]]})
+        else:
+            out.append({"svg": svg(it)})
+    return out
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     gens, pool = load_generators(), read_pool()
@@ -73,11 +91,15 @@ def main() -> None:
             qs = export(g)
             name = g.key.replace("/", "__") + ".json"
             (OUT / name).write_text(json.dumps(qs, separators=(",", ":")))
+            page = teach(g)
+            if page:
+                (OUT / name.replace(".json", ".teach.json")).write_text(json.dumps(page, separators=(",", ":")))
             index.append({"key": g.key, "label": f"{year} Q{int(g.name[7:9])}",
                           "contest": f"{cname} {year}", "pill": f"Set {set_.split('-')[-1]} · {year}",
                           "level": _level(level), "keywords": g.meta.get("keywords", []),
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
-                          "file": f"bank/{name}", "count": len(qs)})
+                          "file": f"bank/{name}", "count": len(qs),
+                          "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None})
             total += len(qs)
     (OUT / "index.json").write_text(json.dumps({"generators": index}, indent=1))
     size = sum(f.stat().st_size for f in OUT.iterdir()) // 1024
