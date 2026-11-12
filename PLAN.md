@@ -68,8 +68,8 @@ Database tables (Phase 2):
 - [ ] 1.7 Test with the Koray profile (screenshots), commit, push, check the live site.
 
 ### Phase 2 — Postgres on Neon
-- [ ] 2.1 Parent: Neon project/database for this site. Run `db/001_init.sql` in the Neon SQL editor
-      (agent writes it): tables + a limited role `mk_site` with its own password.
+- [ ] 2.1 Parent: Neon project/database for this site. Replace CHANGE_ME in `db/001_init.sql` (already
+      written) with a strong password and run it in the Neon SQL editor: tables + limited role `mk_site`.
 - [ ] 2.2 Lock file holds several secrets: extend `site/lock-token.mjs` + the page to `{github, db}`
       (keep reading the old one-secret file). Parent runs it locally with `MK_TOKEN`, `MK_DB` (the
       `mk_site` connection string) and `MK_PASSWORD`, so the secrets never go through chat.
