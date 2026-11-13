@@ -20,7 +20,8 @@ const bankFor = (g) => {
     return banks.get(g.key);
 };
 const day = (t) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-const plain = (html) => { const d = el("div"); d.innerHTML = html; return d.textContent; };
+// Text only; a space where a paragraph, list item or line ends (so "rule.Next rule" stays apart).
+const plain = (html) => { const d = el("div"); d.innerHTML = html.replace(/<\/(p|li)>|<br\s*\/?>/gi, " $&"); return d.textContent.replace(/\s+/g, " ").trim(); };
 
 /** needs work / getting there / solid, from the score (smart.js). */
 function status(s) {
