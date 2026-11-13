@@ -28,7 +28,7 @@ META = {
     "skill": "Two repeating patterns together: find the block where both start again, count in it, multiply",
     "topics": ["patterns", "counting", "arithmetic"],
     "keywords": ["two repeating patterns", "shirts and cards"],
-    "version": 2,
+    "version": 3,
 }
 
 # Black-and-white printing: T-shirt patterns and card shapes instead of colours.
@@ -61,8 +61,9 @@ def _lst(p):
 
 
 def _text(n, p1, p2):
-    return (f"{n} children stand in a row. Each child wears a T-shirt and holds a card with a shape on it. "
-            f"The T-shirts repeat like this: {_lst(p1)} The cards repeat like this: {_lst(p2)} ")
+    return (f"{n} children stand in a row. Each child wears a T-shirt and holds a card with a shape on it.\n"
+            f"- The T-shirts repeat like this: {_lst(p1)}\n"
+            f"- The cards repeat like this: {_lst(p2)}\n\n")
 
 
 def _ask(x, y):

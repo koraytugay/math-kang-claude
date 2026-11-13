@@ -30,6 +30,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 
 from check import CONTESTS, _contests, _level  # noqa: E402
+from kangaroo import layout  # noqa: E402
 from kangaroo.registry import load_generators, read_pool  # noqa: E402
 
 OUT = ROOT / "_site" / "bank"
@@ -58,7 +59,7 @@ def export(g) -> list[dict]:
                 seen.add(sig)
                 out.append({
                     "id": qid, "variant": v.__name__, "harder": harder, "difficulty": q.difficulty,
-                    "text": q.text, "after": q.after_figure or "", "figure": svg(q.figure),
+                    "text": layout.html(q.text, not q.after_figure), "after": layout.html(q.after_figure or "", False), "figure": svg(q.figure),
                     "choices": q.choices,
                     "choice_figures": [svg(d) for d in q.choice_figures] if q.choice_figures else None,
                     "answer": q.answer, "solution": q.solution,
@@ -78,7 +79,7 @@ def warmups(g) -> list[dict]:
                 continue
             seen.add(sig)
             out.append({"id": qid, "variant": f"warmup:{w.__name__}", "harder": False, "difficulty": 1,
-                        "text": q.text, "after": q.after_figure or "", "figure": svg(q.figure),
+                        "text": layout.html(q.text, not q.after_figure), "after": layout.html(q.after_figure or "", False), "figure": svg(q.figure),
                         "choices": q.choices,
                         "choice_figures": [svg(d) for d in q.choice_figures] if q.choice_figures else None,
                         "answer": q.answer, "solution": q.solution})

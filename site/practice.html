@@ -10,6 +10,10 @@
         .mk-page { max-width: 1000px; }
         .mk-lock { max-width: 420px; margin: var(--kt-space-8) auto 0; }
         .mk-qtext { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
+        .mk-rich p { margin: 0 0 0.6em; }
+        .mk-rich ul { margin: 0 0 0.6em; padding-left: 1.4em; }
+        .mk-rich li { margin: 0.15em 0; }
+        .mk-rich > :last-child { margin-bottom: 0; }
         .mk-fig { text-align: center; margin: var(--kt-space-4) 0; }
         .mk-fig svg, .mk-opt svg { max-width: 100%; height: auto; }
         .mk-fig svg { display: block; margin: 0 auto; }
@@ -57,9 +61,9 @@
         <div class="kt-progress kt-mb-4"><div class="kt-progress__bar" id="play-bar" style="width: 0%"></div></div>
 
         <div class="kt-card kt-card--padded">
-            <div class="mk-qtext" id="q-text"></div>
+            <div class="mk-qtext mk-rich" id="q-text"></div>
             <div class="mk-fig" id="q-fig"></div>
-            <div class="mk-qtext" id="q-after"></div>
+            <div class="mk-qtext mk-rich" id="q-after"></div>
         </div>
         <div class="kt-grid kt-mt-4" style="--kt-grid-min: 170px" id="q-options"></div>
         <div class="kt-alert kt-alert--warning kt-mt-4" id="retry" hidden></div>

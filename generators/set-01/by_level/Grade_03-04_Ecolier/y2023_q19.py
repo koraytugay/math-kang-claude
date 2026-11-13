@@ -20,7 +20,7 @@ META = {
              "and cross out the ones that break a rule",
     "topics": ["logic", "counting"],
     "keywords": ["counting orders", "list them all", "not first rules"],
-    "version": 1,
+    "version": 2,
 }
 
 BOYS = ["Hermann", "Felix", "Clemens", "Tom", "Max", "Leo", "Ben", "Paul"]
@@ -116,6 +116,11 @@ def _tree(names, rules):
     return out
 
 
+def _rules(rules, n):
+    """The rules as a bulleted list (see kangaroo.layout), then the question in a new paragraph."""
+    return "\n" + "\n".join(f"- {rule_text(r, n)}" for r in rules) + "\n\n"
+
+
 def _fmt(order):
     return ", ".join(order)
 
@@ -134,8 +139,8 @@ def not_rules(rng, harder):
         if 1 <= ans and len({r[2] for r in rules}) >= 2 and clean(rules):
             break
     story, verb = rng.choice(STORIES)
-    text = (intro(story, names) + " " + " ".join(rule_text(r, n) for r in rules) +
-            f" How many different orders are there for the children to {verb}?")
+    text = (intro(story, names) + _rules(rules, n) +
+            f"How many different orders are there for the children to {verb}?")
     total = len(list(permutations(names)))
     per = total // n
     sol = (f"Write down all {total} orders, for example sorted by who is first. Then cross out every order "
@@ -171,8 +176,8 @@ def which_order(rng, harder):
     pool = one if len(one) >= 4 else bad
     wrong = rng.sample(pool, 4)
     story, verb = rng.choice(STORIES)
-    text = (intro(story, names) + " " + " ".join(rule_text(r, n) for r in rules) +
-            " In which order can they be?")
+    text = (intro(story, names) + _rules(rules, n) +
+            "In which order can they be?")
     choices, ai = text_choices(_fmt(right), [(_fmt(o), "miss one of the rules") for o in wrong], rng)
     sol = f"Check each order against every rule. Only {_fmt(right)} keeps all of them."
     return Question(text=text, choices=choices, answer=ai, solution=sol,
@@ -196,9 +201,8 @@ def four_children(rng, harder):
         if 2 <= ans <= (12 if harder else 8):
             break
     story, verb = rng.choice(STORIES)
-    text = (intro(story, names) + " " +
-            " ".join(rule_text(r, n) for r in rules) +
-            f" How many different orders are there for the children to {verb}?")
+    text = (intro(story, names) + _rules(rules, n) +
+            f"How many different orders are there for the children to {verb}?")
     sol = (f"Go step by step: first use the strongest rule (a fixed place or 'right after'), then try the "
            f"others in a system. Exactly {ans} orders keep all the rules.")
     total = len(list(permutations(names)))
@@ -228,8 +232,8 @@ def who_is(rng, harder):
     order = good[0]
     p = rng.randrange(n)
     story, verb = rng.choice(STORIES)
-    text = (intro(story, names) + " " + " ".join(rule_text(r, n) for r in rules) +
-            f" Who is the {POS[p]}?")
+    text = (intro(story, names) + _rules(rules, n) +
+            f"Who is the {POS[p]}?")
     extra = [x for x in BOYS + GIRLS if x not in names]
     wrong = [(x, "mix up the places") for x in names if x != order[p]]
     wrong += [(x, "pick a name that is not in the story") for x in rng.sample(extra, 5 - n)]
@@ -275,8 +279,8 @@ def one_more_rule(rng, harder):
     while len(wrong) < 4:
         wrong.append(rng.choice([w for w in wrong2 if w not in wrong]))
     story, verb = rng.choice(STORIES)
-    text = (intro(story, names) + " " + " ".join(rule_text(x, n) for x in rules) +
-            " Which extra sentence makes sure that there is exactly <b>one</b> possible order?")
+    text = (intro(story, names) + _rules(rules, n) +
+            "Which extra sentence makes sure that there is exactly <b>one</b> possible order?")
     labels = [(rule_text(w, n), "check only one order" if res[w] >= 2 else "make a rule that leaves no order at all")
               for w in wrong]
     choices, ai = text_choices(rule_text(r, n), labels, rng)
@@ -358,8 +362,8 @@ def w_check_order(rng, harder):
     good = _tree(names, rules)
     right = rng.choice(good)
     bad = [o for o in permutations(names) if o not in good]
-    text = ("Hermann, Felix and Clemens enter a room one after the other. Hermann is not the first. "
-            "Felix is not the second. Clemens is not the third. In which order can they enter?")
+    text = ("Hermann, Felix and Clemens enter a room one after the other.\n"
+            "- Hermann is not the first.\n- Felix is not the second.\n- Clemens is not the third.\n\nIn which order can they enter?")
     choices, ai = text_choices(_fmt(right), [(_fmt(o), "miss one of the rules") for o in bad], rng)
     return Question(text=text, choices=choices, answer=ai,
                     solution=f"{_fmt(right)}: Hermann is not first, Felix is not second, Clemens is not third.",

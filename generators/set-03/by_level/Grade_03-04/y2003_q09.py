@@ -19,7 +19,7 @@ META = {
     "skill": "Inside of a box of cubes: every length drops by 2; outside = total − inside",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["cube counting", "hidden cubes inside"],
-    "version": 3,
+    "version": 4,
 }
 
 NAMES = ["Chris", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -141,10 +141,11 @@ def thick_wall(rng, harder):
     a, b, c = (rng.randint(lo, hi) for _ in range(3))
     name = rng.choice(NAMES)
     ans = (a - 4) * (b - 4) * (c - 4)
-    text = (f"{name} builds a brick {_dims_text(a, b, c)} from red and blue cubes. All the cubes you "
-            f"can see from the outside are red. The cubes just below them are <b>also</b> red, so "
-            f"on every side (top, bottom, front, back, left and right) there are two layers of red "
-            f"cubes. All the other cubes, in the middle, are blue.")
+    text = (f"{name} builds a brick {_dims_text(a, b, c)} from red and blue cubes.\n"
+            f"- All the cubes you can see from the outside are red.\n"
+            f"- The cubes just below them are <b>also</b> red, so on every side (top, bottom, front, "
+            f"back, left and right) there are two layers of red cubes.\n"
+            f"- All the other cubes, in the middle, are blue.")
     after = "How many blue cubes are there?"
     sol = (f"Each length loses two red cubes at each end, so it drops by 4: "
            f"{a - 4} × {b - 4} × {c - 4} = {ans}.")

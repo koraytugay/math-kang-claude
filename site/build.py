@@ -20,7 +20,7 @@ from pathlib import Path
 import pymupdf
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import cm, inch
-from reportlab.platypus import Paragraph, SimpleDocTemplate
+from reportlab.platypus import SimpleDocTemplate
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 
 from check import CONTESTS, _contests, _level  # noqa: E402
 from kangaroo.registry import load_generators, read_pool  # noqa: E402
-from kangaroo.render import BASE, _question_block, clean  # noqa: E402
+from kangaroo.render import _question_block  # noqa: E402
 
 OUT = ROOT / "_site"
 REPO = "koraytugay/math-kang-claude"
@@ -48,8 +48,7 @@ def png(q, path: Path) -> None:
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=(letter[0], 30 * inch), leftMargin=2 * cm, rightMargin=2 * cm,
                             topMargin=1 * cm, bottomMargin=1 * cm)
-    block = _question_block(q, "", doc.width)
-    block[0] = Paragraph(clean(q.text), BASE)       # no question number, so no hanging indent
+    block = _question_block(q, None, doc.width)     # no question number, so no hanging indent
     doc.build(block)
     page = pymupdf.open(stream=buf.getvalue(), filetype="pdf")[0]
     box = pymupdf.Rect()

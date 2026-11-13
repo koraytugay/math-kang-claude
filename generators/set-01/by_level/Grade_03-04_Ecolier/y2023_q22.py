@@ -26,7 +26,7 @@ META = {
              "only the turns after it was printed",
     "topics": ["spatial", "logic"],
     "keywords": ["turning machine", "quarter turns", "machine order"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Else", "Mia", "Tom", "Anna", "Leo", "Sara"]
@@ -105,11 +105,13 @@ def legend(machines=("R", "S")):
 
 
 def _picture_text(machines):
-    t = ("Machine R turns a square sheet of paper a quarter turn clockwise. Machine S prints a club "
-         "in the middle (see the pictures). ")
+    t = (f"There are {'three' if 'L' in machines else 'two'} machines for square sheets of paper "
+         "(see the pictures):\n"
+         "- Machine R turns the sheet a quarter turn clockwise.\n"
+         "- Machine S prints a club in the middle.\n")
     if "L" in machines:
-        t += "Machine L turns the sheet a quarter turn anticlockwise. "
-    return t
+        t += "- Machine L turns the sheet a quarter turn anticlockwise.\n"
+    return t + "\n"
 
 
 # ------------------------------------------------------------------ variants

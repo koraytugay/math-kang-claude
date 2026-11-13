@@ -290,9 +290,9 @@ function finish() {
     if (wrong.length) box.append(el("h3", "kt-section-title", "Worth another look"));
     for (const r of wrong) {
         const c = el("div", "kt-card kt-card--padded");
-        const t = el("div"); t.innerHTML = r.q.text;
+        const t = el("div", "mk-rich"); t.innerHTML = r.q.text;
         if (r.q.figure) { const f = el("div", "mk-fig"); f.innerHTML = r.q.figure; c.append(t, f); }
-        if (r.q.after) { const a = el("div"); a.innerHTML = r.q.after; c.append(a); }
+        if (r.q.after) { const a = el("div", "mk-rich"); a.innerHTML = r.q.after; c.append(a); }
         const s = el("div", "kt-mt-2 kt-text-secondary");
         s.innerHTML = `You chose ${"ABCDE"[r.chosen]}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
         if (!c.contains(t)) c.append(t);

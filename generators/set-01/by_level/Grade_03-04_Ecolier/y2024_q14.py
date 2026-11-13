@@ -26,7 +26,7 @@ META = {
     "skill": "Counting chains systematically: list what fits after what, then branch like a tree",
     "topics": ["counting", "logic"],
     "keywords": ["puzzle-piece chains", "counting with a tree"],
-    "version": 3,
+    "version": 4,
 }
 
 SHAPES = ["round", "square", "tri"]
@@ -163,10 +163,11 @@ def _intro(theme, name, k, lengths):
     t = THEMES[theme]
     ls = sorted(lengths)
     ln = ", ".join(str(x) for x in ls[:-1]) + f" or {ls[-1]}" if len(ls) > 1 else str(ls[0])
-    return (f"{name} has these pieces: {t['first']}, {t['last']} and {k} {t['mid'][1]} with numbers. "
-            f"A peg fits only into a hole of the <b>same shape</b>, and the pieces cannot be turned around. "
-            f"A {t['thing'][0]} is {t['First']}, then {ln} numbered {t['mid'][1]}, then {t['Last']}. "
-            f"Each piece can be used only once. ")
+    return (f"{name} has these pieces: {t['first']}, {t['last']} and {k} {t['mid'][1]} with numbers.\n"
+            f"- A peg fits only into a hole of the <b>same shape</b>.\n"
+            f"- The pieces cannot be turned around.\n"
+            f"- A {t['thing'][0]} is {t['First']}, then {ln} numbered {t['mid'][1]}, then {t['Last']}.\n"
+            f"- Each piece can be used only once.\n\n")
 
 
 def _random_set(rng, k, n_shapes):

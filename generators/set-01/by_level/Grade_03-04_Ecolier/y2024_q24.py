@@ -25,7 +25,7 @@ META = {
     "skill": "Taking turns: what is still left depends on who went first - try the orders and keep track",
     "topics": ["logic", "counting"],
     "keywords": ["cookies on a tray", "who went first"],
-    "version": 2,
+    "version": 3,
 }
 
 # a cookie type is (shape, colour, size)
@@ -137,9 +137,9 @@ def _names(rng):
 
 
 def _story(names, tray_text=True):
-    lines = "<br/>".join(f"{names[i]} takes {RULES[i][2]} that are still on the tray." for i in range(3))
+    lines = "\n".join(f"- {names[i]} takes {RULES[i][2]} that are still on the tray." for i in range(3))
     return ("This tray of cookies lies in the kitchen. Some cookies are dark (chocolate), some are white. "
-            "Three girls take cookies from the tray, one after the other:<br/>" + lines + "<br/>")
+            "Three girls take cookies from the tray, one after the other:\n" + lines + "\n\n")
 
 
 def _list(names, idx):

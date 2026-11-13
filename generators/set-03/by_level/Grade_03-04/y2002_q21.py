@@ -23,7 +23,7 @@ META = {
     "skill": "Reach a target with + − × ÷ using each card once; know when it is impossible",
     "topics": ["arithmetic", "logic"],
     "keywords": ["make a target number", "card calculations"],
-    "version": 2,
+    "version": 3,
 }
 
 NAMES = ["Alex", "Martha", "Fred", "Mia", "Leo", "Sara", "Tom", "Nina", "Omar", "Lily"]
@@ -149,8 +149,8 @@ def who_cannot(rng, harder):
     pair_opt = f"{names[pair[0]]} and {names[pair[1]]}"
     choices = names + [all_opt, pair_opt]
     correct = {0: all_opt, 1: names[fail[0]] if fail else "", 2: pair_opt}[len(fail)]
-    text = (f"The digits from 1 to 9 are written on 9 cards. "
-            + "; ".join(f"{n} has {cards_str(h)}" for n, h in zip(names, hands)) + ". "
+    text = (f"The digits from 1 to 9 are written on 9 cards.\n"
+            + "".join(f"- {n} has {cards_str(h)}.\n" for n, h in zip(names, hands)) + "\n"
             f"Each of them uses some of +, −, ×, ÷ (and brackets) and each of their own cards "
             f"exactly once.")
     after = f"Who <b>cannot</b> get {t} as the result?"

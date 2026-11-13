@@ -46,6 +46,10 @@ Answer with this short list, in plain words:
      Shared solvers live in `kangaroo/solve.py`, `polyomino.covers`, `cubes.buried`/`exposed_faces`,
      `numbers.written`. `validate()` demands exactly one passing option, and it must be the answer.
    - Emphasise the key word of a reversed question in **bold**: `<b>not</b>`, `<b>cannot</b>`.
+   - Layout (`kangaroo/layout.py`, PDF and website): a blank line (`"\n\n"`) starts a paragraph, a line
+     starting `"- "` is a bullet. Put rules/clues the kids must keep in mind (3+ facts) in a bulleted list after
+     a lead sentence (never start the text with a bullet). The last question sentence is put on its own line
+     automatically.
    - Optional, for questions the kids find very hard: a `teach()` function returning the items of a
      "How to think about it" page (paragraphs, `("h", ...)`, `("-", ...)`, `("tip", ...)`, `("table", rows)`,
      Drawings — see `render._teach`), and a few `@warmup` questions (same signature as a variant) that build

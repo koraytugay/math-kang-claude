@@ -22,7 +22,7 @@ META = {
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
     "keywords": ["logic clues", "who has what"],
-    "version": 1,
+    "version": 2,
 }
 
 NAMES = ["Julien", "Manon", "Nicolas", "Fabienne", "Lucas", "Emma", "Omar", "Mia", "Leo",
@@ -179,8 +179,8 @@ def statement_check(th, people, items, clues, choices, want_true):
 
 
 def _intro(th, people, items, clues):
-    return (f"{join_and(people)} {th['intro']} {join_and([th['article'](i) for i in items])}. "
-            + ". ".join(c[0] for c in clues) + ".")
+    return (f"{join_and(people)} {th['intro']} {join_and([th['article'](i) for i in items])}.\n"
+            + "\n".join(f"- {c[0]}." for c in clues))
 
 
 def _solution(th, truth):

@@ -23,7 +23,7 @@ META = {
     "skill": "One street splits all the houses into two groups: north + south = all houses = east + west",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["houses and streets", "north south east west", "two ways to split"],
-    "version": 1,
+    "version": 2,
 }
 
 STREET = colors.Color(0.55, 0.55, 0.55)
@@ -129,6 +129,12 @@ def _says(side, n):
     return f"{side.capitalize()} of street {STREET_OF[side]} there {s} {n} {HOUSES[0] if n == 1 else HOUSES[1]}."
 
 
+def _facts(*facts, lead="Two streets cross in a village (see the map).\n"):
+    """The facts as a bulleted list (see kangaroo.layout), then the question in a new paragraph.
+    lead: a sentence before the list (it only says what the map shows)."""
+    return lead + "\n".join(f"- {f}" for f in facts) + "\n\n"
+
+
 # ------------------------------------------------------------------ variants
 @variant(difficulty=1)
 def cross_streets(rng, harder):
@@ -144,8 +150,8 @@ def cross_streets(rng, harder):
     pair = OPP[ask]                                   # same street as the asked side
     other = [s for s in given if s != pair]
     order = [other[0], pair, other[1]]
-    text = (" ".join(_says(s, counts[s]) for s in order) +
-            f" How many houses are there {ask} of street {STREET_OF[ask]}?")
+    text = (_facts(*(_says(s, counts[s]) for s in order)) +
+            f"How many houses are there {ask} of street {STREET_OF[ask]}?")
     a, b = other
     total = counts[a] + counts[b]
     ans = total - counts[pair]
@@ -171,7 +177,7 @@ def whole_village(rng, harder):
     else:
         both, extra = ("east", "west"), rng.choice(["north", "south"])
     order = [both[0], extra, both[1]]
-    text = (" ".join(_says(s, c[s]) for s in order) + " No house stands on a street. "
+    text = (_facts(*(_says(s, c[s]) for s in order), "No house stands on a street.") +
             "How many houses are there in the village altogether?")
     ans = c[both[0]] + c[both[1]]
     sol = (f"Every house is either {both[0]} or {both[1]} of street {STREET_OF[both[0]]}, so the village has "
@@ -228,8 +234,9 @@ def same_both_sides(rng, harder):
     v = Village(nw, ne, sw, se, rng)
     n, s = v.count("north"), v.count("south")
     ew = rng.choice(["east", "west"])
-    text = (f"{_says('north', n)} {_says('south', s)} West of street B there are just as many houses as "
-            f"east of street B. How many houses are there {ew} of street B?")
+    text = (_facts(_says('north', n), _says('south', s),
+                   "West of street B there are just as many houses as east of street B.") +
+            f"How many houses are there {ew} of street B?")
     ans = (n + s) // 2
     sol = (f"The village has {n} + {s} = {n + s} houses. Street B cuts them into two equal groups: "
            f"{n + s} ÷ 2 = {ans}.")
@@ -250,8 +257,8 @@ def one_corner(rng, harder):
     v = Village(nw, ne, sw, se, rng)
     n, s, e = v.count("north"), v.count("south"), v.count("east")
     k = v.corner("north", "east")
-    text = (f"{_says('north', n)} {_says('south', s)} {_says('east', e)} "
-            f"{k} of the houses are north of street A <b>and</b> east of street B. "
+    text = (_facts(_says('north', n), _says('south', s), _says('east', e),
+                   f"{k} of the houses are north of street A <b>and</b> east of street B.") +
             f"How many houses are south of street A <b>and</b> west of street B?")
     total = n + s
     w = total - e
@@ -277,9 +284,11 @@ def three_streets(rng, harder):
             break
     v = Village(cells[0], cells[1], cells[2], cells[3], rng, mid=(cells[4], cells[5]))
     n, s, w, e = v.count("north"), v.count("south"), v.count("west"), v.count("eastC")
-    text = (f"Streets B and C both go from north to south (see map). {_says('north', n)} {_says('south', s)} "
-            f"West of street B there {'is' if w == 1 else 'are'} {w} {'house' if w == 1 else 'houses'}. "
-            f"East of street C there {'is' if e == 1 else 'are'} {e} {'house' if e == 1 else 'houses'}. "
+    text = (f"Streets B and C both go from north to south (see map).\n"
+            + _facts(_says('north', n), _says('south', s),
+                     f"West of street B there {'is' if w == 1 else 'are'} {w} {'house' if w == 1 else 'houses'}.",
+                     f"East of street C there {'is' if e == 1 else 'are'} {e} {'house' if e == 1 else 'houses'}.",
+                     lead="") +
             f"How many houses are there between street B and street C?")
     total = n + s
     ans = total - w - e
@@ -351,7 +360,7 @@ def w_one_street(rng, harder):
     """One street: north + south = all houses."""
     v = Village(*[rng.randint(1, 5) for _ in range(4)], rng)
     n, s = v.count("north"), v.count("south")
-    text = (f"{_says('north', n)} {_says('south', s)} No house stands on a street. "
+    text = (_facts(_says('north', n), _says('south', s), "No house stands on a street.") +
             f"How many houses are there in the village?")
     ans = n + s
     sol = f"Every house is north or south of street A: {n} + {s} = {ans}."

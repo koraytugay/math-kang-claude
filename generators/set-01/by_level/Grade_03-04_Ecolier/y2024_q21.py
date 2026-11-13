@@ -23,7 +23,7 @@ META = {
     "skill": "Two jumps that keep every row and column count: the second jump must undo the first",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["frogs jumping", "rows and columns"],
-    "version": 1,
+    "version": 2,
 }
 
 ORIGINAL = frozenset({(0, 0), (0, 2), (1, 0), (1, 1), (2, 1), (2, 2)})   # (row, column), row 0 = top
@@ -115,7 +115,7 @@ def grid_pic(F, n, labels=None, scale=26):
 
 def _story(n, k):
     return (f"There are exactly {k} frogs in each row and in each column of this {n} × {n} pond. "
-            f"A frog can jump to a <b>neighbouring</b> field (left, right, up or down) if it is empty. ")
+            f"A frog can jump to a <b>neighbouring</b> field (left, right, up or down) if it is empty.\n\n")
 
 
 def _setup(rng, harder, n3=True):

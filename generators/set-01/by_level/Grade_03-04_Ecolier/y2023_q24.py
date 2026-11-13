@@ -26,7 +26,7 @@ META = {
              "all the others and count what they have in common",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["one guess is right", "compare patterns", "cells in common"],
-    "version": 1,
+    "version": 2,
 }
 
 GREY = colors.Color(0.55, 0.55, 0.55)
@@ -86,7 +86,7 @@ def which_pattern(rng, harder):
     ai = opts.index(right)
     name = rng.choice(NAMES)
     text = (f"{name} colours exactly {k} cells of a {n} × {n} grid grey. Five friends guess which cells "
-            f"{name} coloured: the patterns A to E. {name} says: \"One of you is right. Each of the others guessed "
+            f"{name} coloured: the patterns A to E.\n\n{name} says: \"One of you is right. Each of the others guessed "
             f"exactly {k - 1} cells correctly.\" Which pattern did {name} colour?")
     sol = (f"Compare each pattern with all the others. Pattern {LETTERS[ai]} has exactly {k - 1} grey cells in "
            f"common with every other pattern, so it is the right one.")
@@ -116,7 +116,7 @@ def lock_code(rng, harder):
             break
     name = rng.choice(NAMES)
     text = (f"{name} sets a secret code with {k} digits on a bike lock. Five friends guess the code: "
-            f"{', '.join(opts[:-1])} and {opts[-1]}. {name} says: \"One of you is right. Each of the others has "
+            f"{', '.join(opts[:-1])} and {opts[-1]}.\n\n{name} says: \"One of you is right. Each of the others has "
             f"exactly {k - 1} digits right, in the right place.\" What is the code?")
     sol = (f"Compare each guess with all the others, digit by digit. Only {right} has exactly {k - 1} digits in "
            f"the same places as every other guess.")
@@ -171,7 +171,7 @@ def not_a_guess(rng, harder):
     rng.shuffle(cands)
     ai = cands.index(right)
     name = rng.choice(NAMES)
-    text = (f"{name} colours exactly {k} cells of a {n} × {n} grid grey. Three friends guess (top row). {name} "
+    text = (f"{name} colours exactly {k} cells of a {n} × {n} grid grey. Three friends guess (top row).\n\n{name} "
             f"says: \"Nobody is right, but each of you guessed exactly {k - 1} cells correctly.\" Which of the "
             f"patterns A to E did {name} colour?")
     sol = (f"Check each pattern against all three guesses: pattern {LETTERS[ai]} has exactly {k - 1} cells in "

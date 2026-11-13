@@ -23,7 +23,7 @@ META = {
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
     "keywords": ["flag silhouettes", "what cannot change"],
-    "version": 3,
+    "version": 4,
 }
 
 NAMES = ["Karla", "Mia", "Leo", "Sara", "Tom", "Nina"]
@@ -240,7 +240,7 @@ def too_wide(rng, harder):
     pics = [possible_shape(rng, w, h) for _ in range(4)]
     k = rng.randint(0, 4)
     pics.insert(k, wide_shape(rng, w, h))
-    text = (_intro(name) + f" Spread out flat, the flag is {w} squares wide and {h} squares tall "
+    text = (_intro(name) + f"\n\nSpread out flat, the flag is {w} squares wide and {h} squares tall "
             f"(see the picture).")
     after = "Which shadow <b>cannot</b> be right?"
     sol = (f"Turning or folding can only make the flag look narrower. Picture {'ABCDE'[k]} reaches more "
@@ -269,7 +269,7 @@ def count_possible(rng, harder):
     n_bad = rng.randint(1, 4)
     items = _mixed(rng, w, h, n_bad)
     ans = 5 - n_bad
-    text = (_intro(name) + f" Flat, the flag is {w} squares wide and {h} squares tall (see the picture). "
+    text = (_intro(name) + f"\n\nFlat, the flag is {w} squares wide and {h} squares tall (see the picture). "
             f"Some of the drawings are wrong.")
     after = "How many of the five drawings can be right?"
     wrong = ["ABCDE"[i] for i, (_, bad) in enumerate(items) if bad]
@@ -290,7 +290,7 @@ def only_one_right(rng, harder):
     name = rng.choice(NAMES)
     items = _mixed(rng, w, h, 4)
     k = next(i for i, (_, bad) in enumerate(items) if not bad)
-    text = (_intro(name) + f" Flat, the flag is {w} squares wide and {h} squares tall (see the picture). "
+    text = (_intro(name) + f"\n\nFlat, the flag is {w} squares wide and {h} squares tall (see the picture). "
             f"Four of the drawings are wrong.")
     after = "Which drawing can be right?"
     sol = (f"Check two things: the pole edge must be covered all the way, and nothing may reach more "

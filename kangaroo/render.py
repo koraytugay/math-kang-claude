@@ -9,6 +9,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import (KeepTogether, PageBreak, Paragraph, SimpleDocTemplate,
                                 Spacer, Table, TableStyle)
 
+from .layout import blocks
 from .question import LETTERS, Question
 
 POINTS = {1: 3, 2: 4, 3: 5}
@@ -22,6 +23,8 @@ PART_H = ParagraphStyle("part", parent=BASE, fontName="Times-BoldItalic", spaceB
                         spaceAfter=6)
 QTEXT = ParagraphStyle("q", parent=BASE, leftIndent=0.7 * cm, firstLineIndent=-0.7 * cm)
 INDENT = ParagraphStyle("qi", parent=BASE, leftIndent=0.7 * cm)
+QPARA = ParagraphStyle("qp", parent=INDENT, spaceBefore=4)        # later paragraphs of a question
+QBULLET = ParagraphStyle("qb", parent=INDENT, leftIndent=1.2 * cm, bulletIndent=0.8 * cm, spaceBefore=1)
 OPT = ParagraphStyle("opt", parent=BASE)
 SMALL = ParagraphStyle("small", parent=BASE, fontSize=10.5, leading=13)
 
@@ -106,12 +109,41 @@ def _teach(items, width):
     return out
 
 
-def _question_block(q: Question, label: str, width: float):
-    block = [Paragraph(f"<b>{label}</b>&nbsp;&nbsp;{clean(q.text)}", QTEXT)]
+def _text(text: str, label: str | None, indent: bool, split_question: bool) -> list:
+    """Question text as Paragraphs (see kangaroo.layout).
+    label: question number on the first line (hanging indent), or None.
+    indent=False: flush left (single-question pictures without a number)."""
+    shift = 0 if indent else 0.7 * cm
+    def style(base):
+        if not shift:
+            return base
+        return ParagraphStyle(base.name + "_flat", parent=base, leftIndent=base.leftIndent - shift,
+                              bulletIndent=max(0, base.bulletIndent - shift))
+    out = []
+    for kind, s in blocks(text, split_question):
+        s = clean(s)
+        if not out and label is not None:
+            if kind == "p":
+                out.append(Paragraph(f"<b>{label}</b>&nbsp;&nbsp;{s}", QTEXT))
+                continue
+            out.append(Paragraph(f"<b>{label}</b>", QTEXT))    # starts with a bullet
+        if kind == "li":
+            out.append(Paragraph(s, style(QBULLET), bulletText="\u2022"))
+        else:
+            out.append(Paragraph(s, style(QPARA if out else INDENT)))
+    return out
+
+
+def _question_block(q: Question, label: str | None, width: float):
+    """label=None: no question number and no hanging indent (single-question pictures)."""
+    numbered = label is not None
+    block = _text(q.text, label, numbered, split_question=not q.after_figure)
     if q.figure is not None:
         block += [Spacer(1, 4), _figure(q.figure), Spacer(1, 2)]
     if q.after_figure:
-        block.append(Paragraph(clean(q.after_figure), INDENT))
+        if q.figure is None:
+            block.append(Spacer(1, 4))
+        block += _text(q.after_figure, None, numbered, split_question=False)
     block += [Spacer(1, 3), _options(q, width), Spacer(1, 12)]
     return block
 
