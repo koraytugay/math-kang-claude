@@ -171,18 +171,19 @@ function renderQuestion() {
     $("skip").hidden = false;
     firstChoice = null;
 
+    // kt-choices: pictures in a row (key on top), short answers in a row, long answers one per line.
     const opts = $("q-options");
+    const plainLen = (c) => c.replace(/<[^>]*>/g, "").length;
+    const row = q.choice_figures || Math.max(...q.choices.map(plainLen)) <= 14;
+    opts.className = `kt-choices kt-mt-4${row ? " kt-choices--row" : ""}`;
     opts.innerHTML = "";
     q.choices.forEach((c, i) => {
-        const b = el("button", "kt-card kt-card--selectable mk-opt");
+        const b = el("button", `kt-choice${q.choice_figures ? " kt-choice--stacked" : ""}`);
         b.type = "button";
-        b.setAttribute("aria-pressed", "false");
-        const body = el("div", "kt-card__body");
-        body.append(el("span", "kt-fw-bold mk-opt-text", "ABCDE"[i] + "."));
-        const content = el("span", "mk-opt-text");
+        b.append(el("span", "kt-choice__key", "ABCDE"[i]));
+        const content = el("span", "kt-choice__label mk-opt-text");
         if (q.choice_figures) { content.innerHTML = q.choice_figures[i]; bigger(content, 1.6); } else content.innerHTML = c;
-        body.append(content);
-        b.append(body);
+        b.append(content);
         b.onclick = () => answer(i);
         opts.append(b);
     });
@@ -203,7 +204,7 @@ async function answer(i) {
         firstChoice = i;
         buttons[i].disabled = true;
         buttons[i].setAttribute("aria-pressed", "true");
-        buttons[i].classList.add("kt-card--danger");
+        buttons[i].classList.add("kt-choice--danger");
         // Hint: the mistake this option stands for when the generator knows it, else the skill's method.
         const skill = index.generators.find((g) => g.key === q.gen)?.skill;
         const mistake = q.mistakes?.[i];
@@ -236,8 +237,8 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     $("skip").hidden = true;
     buttons.forEach((b, j) => {
         b.disabled = true;
-        if (j === q.answer) b.classList.add("kt-card--success");
-        if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-card--danger"); }
+        if (j === q.answer) b.classList.add("kt-choice--success");
+        if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-choice--danger"); }
     });
     results.push({ q, chosen, correct });
     // The same skill later in this session: next level up after a right answer, down after a wrong one.
