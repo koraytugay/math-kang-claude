@@ -168,6 +168,7 @@ function renderQuestion() {
     $("q-after").innerHTML = q.after;
     $("feedback").hidden = true;
     $("retry").hidden = true;
+    $("skip").hidden = false;
     firstChoice = null;
 
     const opts = $("q-options");
@@ -214,13 +215,29 @@ async function answer(i) {
 
     const correct = firstChoice === null && right;     // only the first try counts
     const secondTry = firstChoice === null ? null : right;
-    const chosen = firstChoice ?? i;
+    await settle(q, firstChoice ?? i, correct, secondTry, i, right);
+}
+
+// "I'm not sure": counts as not knowing it - for the skill it is the same as a wrong answer.
+// Saved as chosen = SKIPPED and correct = false, so the parent page can show it as "Skipped".
+const SKIPPED = -1;
+async function skip() {
+    const q = session[pos];
+    if (!$("feedback").hidden) return;
+    await settle(q, SKIPPED, false, null, null, false);
+}
+
+/** Show the answer, save the attempt and the feedback. picked: the option clicked last (null: skipped). */
+async function settle(q, chosen, correct, secondTry, picked, right) {
+    const buttons = [...$("q-options").children];
+    const skipped = picked === null;
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     $("retry").hidden = true;
+    $("skip").hidden = true;
     buttons.forEach((b, j) => {
         b.disabled = true;
         if (j === q.answer) b.classList.add("kt-card--success");
-        if (j === i) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-card--danger"); }
+        if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-card--danger"); }
     });
     results.push({ q, chosen, correct });
     // The same skill later in this session: next level up after a right answer, down after a wrong one.
@@ -235,8 +252,10 @@ async function answer(i) {
         saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
     }
     const fb = $("feedback-text");
-    fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
-    const title = correct ? "Right!" : right ? "Right, on the second try!" : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
+    fb.className = `kt-alert ${right ? "kt-alert--success" : skipped ? "kt-alert--info" : "kt-alert--danger"}`;
+    const title = correct ? "Right!" : right ? "Right, on the second try!"
+        : skipped ? `That's OK - here is how it works. The answer is ${"ABCDE"[q.answer]}.`
+        : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
     const why = !correct && q.mistakes?.[chosen] ? `<div class="kt-mb-2">${"ABCDE"[chosen]} is what you get if you ${q.mistakes[chosen]}.</div>` : "";
     fb.innerHTML = `<div class="kt-alert__title">${title}</div>${why}${q.solution}${saveNote}`;
     $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
@@ -294,7 +313,8 @@ function finish() {
         if (r.q.figure) { const f = el("div", "mk-fig"); f.innerHTML = r.q.figure; c.append(t, f); }
         if (r.q.after) { const a = el("div", "mk-rich"); a.innerHTML = r.q.after; c.append(a); }
         const s = el("div", "kt-mt-2 kt-text-secondary");
-        s.innerHTML = `You chose ${"ABCDE"[r.chosen]}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
+        const yours = r.chosen === SKIPPED ? "You were not sure" : `You chose ${"ABCDE"[r.chosen]}`;
+        s.innerHTML = `${yours}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
         if (!c.contains(t)) c.append(t);
         c.append(s);
         box.append(c);
@@ -341,6 +361,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("teach")
 // ------------------------------------------------------------------ start
 $("teach-btn").onclick = openTeach;
 $("next").onclick = next;
+$("skip").onclick = skip;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles()));
 $("again").onclick = () => start(profile);
 $("switch").onclick = () => { show("who"); renderProfiles(); };

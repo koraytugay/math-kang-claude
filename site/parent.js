@@ -75,6 +75,7 @@ async function show(k) {
     for (const { g, s } of rows) {
         const mine = real.filter((a) => a.gen === g.key);
         const right = mine.filter((a) => a.correct).length;
+        const skipped = mine.filter((a) => a.chosen < 0).length;
         const tr = el("tr");
         const [label, cls] = status(s);
         const badge = el("span", cls, label);
@@ -83,15 +84,22 @@ async function show(k) {
             el("td"), el("td", null, s ? LEVEL_NAME[s.level] : ""),
             el("td", "kt-num", mine.length ? String(mine.length) : ""),
             el("td", "kt-num", mine.length ? `${Math.round((100 * right) / mine.length)}%` : ""),
+            el("td", "kt-num"),
             el("td", null, s ? day(s.last) : ""),
             el("td", "kt-num", s ? String(s.score) : ""),
         ];
         cells[2].append(badge);
+        if (skipped) cells[6].append(el("span", "kt-badge kt-badge--orange", String(skipped)));
         tr.append(...cells);
         body.append(tr);
     }
 
-    // recent mistakes (first try wrong), newest first
+    // recent mistakes (first try wrong) and skips ("I'm not sure"), newest first
+    const skippedCell = () => {
+        const td = el("td");
+        td.append(el("span", "kt-badge kt-badge--orange", "Skipped - not sure"));
+        return td;
+    };
     const mb = $("mistakes");
     mb.innerHTML = "";
     const wrong = real.filter((a) => !a.correct).slice(-20).reverse();
@@ -105,7 +113,8 @@ async function show(k) {
         tr.append(
             el("td", null, day(a.at)), el("td", null, g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen),
             el("td", "mk-q", q ? plain(q.text).slice(0, 160) + (plain(q.text).length > 160 ? "…" : "") : ""),
-            el("td", null, opt(a.chosen) + (q?.mistakes?.[a.chosen] ? ` - ${q.mistakes[a.chosen]}` : "")),
+            a.chosen < 0 ? skippedCell()
+                : el("td", null, opt(a.chosen) + (q?.mistakes?.[a.chosen] ? ` - ${q.mistakes[a.chosen]}` : "")),
             el("td", null, q ? opt(q.answer) : ""),
             el("td", null, a.second_try == null ? "" : a.second_try ? "right" : "wrong"),
             el("td", "kt-num", String(a.seconds ?? "")),
