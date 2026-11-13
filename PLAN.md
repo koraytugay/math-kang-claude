@@ -207,3 +207,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-12: New pool question Austria 2023 Q23 (sums of neighbours in a ring: guess and go around), teach page + warm-ups.
 - 2026-11-12: New pool question Austria 2023 Q24 (one guess is right, the others have all but one right), teach page + warm-ups.
 - 2026-11-13: Question layout (site + PDF): question text may use blank lines (paragraphs) and "- " lines (bullets), see kangaroo/layout.py; the final question sentence gets its own paragraph automatically. Rules/clues turned into bullet lists in 12 generators (cookies, pets, orders, houses, caterpillar, T-shirts, machines, digit cards, guesses, frogs, flag, thick wall).
+- 2026-11-13: Removed the "Make a PDF exam instead" link from the practice page.
