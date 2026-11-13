@@ -210,3 +210,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-13: Removed the "Make a PDF exam instead" link from the practice page.
 - 2026-11-13: Practice: "I'm not sure - skip this question" button. A skip is saved as chosen = -1, correct = false (counts like a wrong answer for the skill: score, level down, same skill easier later in the session, "worth another look"). Parent page: orange "Skipped - not sure" badge in "Recent mistakes and skips" and a Skipped count per skill.
 - 2026-11-13: Practice answers use the new kt-styles choices (.kt-choice: letter key, no corner mark): pictures and short answers in a row, long answers one per line.
+- 2026-11-13: Skip now simply moves on: no answer or solution is shown (also not in the end summary, which says "You skipped this one"). Still saved as a skip (counts like not knowing it).

@@ -221,17 +221,32 @@ async function answer(i) {
 
 // "I'm not sure": counts as not knowing it - for the skill it is the same as a wrong answer.
 // Saved as chosen = SKIPPED and correct = false, so the parent page can show it as "Skipped".
+// It just moves on: no answer, no solution (also not in the summary at the end).
 const SKIPPED = -1;
+let skipping = false;
 async function skip() {
     const q = session[pos];
-    if (!$("feedback").hidden) return;
-    await settle(q, SKIPPED, false, null, null, false);
+    if (!$("feedback").hidden || skipping) return;
+    skipping = true;
+    $("skip").disabled = true;
+    [...$("q-options").children].forEach((b) => { b.disabled = true; });
+    const seconds = Math.round((Date.now() - shownAt) / 1000);
+    results.push({ q, chosen: SKIPPED, correct: false });
+    await adaptLater(q, false, seconds);
+    try {
+        await store.recordAttempt(profile.id, {
+            id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
+            chosen: SKIPPED, correct: false, second_try: null, seconds, at: new Date().toISOString(),
+        });
+    } catch { /* kept in this browser, saved next time */ }
+    skipping = false;
+    $("skip").disabled = false;
+    next();
 }
 
-/** Show the answer, save the attempt and the feedback. picked: the option clicked last (null: skipped). */
+/** Show the answer, save the attempt and the feedback. picked: the option clicked last. */
 async function settle(q, chosen, correct, secondTry, picked, right) {
     const buttons = [...$("q-options").children];
-    const skipped = picked === null;
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     $("retry").hidden = true;
     $("skip").hidden = true;
@@ -253,10 +268,8 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
         saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
     }
     const fb = $("feedback-text");
-    fb.className = `kt-alert ${right ? "kt-alert--success" : skipped ? "kt-alert--info" : "kt-alert--danger"}`;
-    const title = correct ? "Right!" : right ? "Right, on the second try!"
-        : skipped ? `That's OK - here is how it works. The answer is ${"ABCDE"[q.answer]}.`
-        : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
+    fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
+    const title = correct ? "Right!" : right ? "Right, on the second try!" : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
     const why = !correct && q.mistakes?.[chosen] ? `<div class="kt-mb-2">${"ABCDE"[chosen]} is what you get if you ${q.mistakes[chosen]}.</div>` : "";
     fb.innerHTML = `<div class="kt-alert__title">${title}</div>${why}${q.solution}${saveNote}`;
     $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
@@ -314,8 +327,8 @@ function finish() {
         if (r.q.figure) { const f = el("div", "mk-fig"); f.innerHTML = r.q.figure; c.append(t, f); }
         if (r.q.after) { const a = el("div", "mk-rich"); a.innerHTML = r.q.after; c.append(a); }
         const s = el("div", "kt-mt-2 kt-text-secondary");
-        const yours = r.chosen === SKIPPED ? "You were not sure" : `You chose ${"ABCDE"[r.chosen]}`;
-        s.innerHTML = `${yours}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
+        s.innerHTML = r.chosen === SKIPPED ? "You skipped this one. Try it again another time!"
+            : `You chose ${"ABCDE"[r.chosen]}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
         if (!c.contains(t)) c.append(t);
         c.append(s);
         box.append(c);
