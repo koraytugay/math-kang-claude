@@ -61,6 +61,8 @@
         .mk-flag { border-radius: var(--kt-radius-full); padding: 6px 14px; font-weight: var(--kt-weight-semibold); font-size: var(--kt-fs-md);
                    background: var(--kt-surface-sunken); color: var(--kt-text-muted); }
         .mk-flag--done { background: var(--kt-success); color: #fff; }
+        .mk-flag--big { border: 2px solid var(--kt-gold); font-size: var(--kt-fs-lg); }
+        .mk-bar__fill--weekend { background: repeating-linear-gradient(45deg, var(--kt-teal), var(--kt-teal) 14px, var(--kt-green) 14px, var(--kt-green) 28px); }
 
         .mk-stickers { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--kt-space-4); }
         .mk-sticker {
@@ -112,6 +114,13 @@
         <div id="content" hidden>
             <h2 class="mk-h2">Team Kangaroo so far</h2>
             <div class="mk-stats" id="stats"></div>
+
+            <h2 class="mk-h2">Weekend goal</h2>
+            <div class="mk-goal">
+                <div class="mk-goal__top"><span id="wk-title"></span><span id="wk-count"></span></div>
+                <div class="mk-bar"><div class="mk-bar__fill mk-bar__fill--weekend" id="wk-bar"></div></div>
+                <div class="mk-goal__note" id="wk-note"></div>
+            </div>
 
             <h2 class="mk-h2">Next goal</h2>
             <div class="mk-goal">

@@ -12,7 +12,11 @@ const el = (tag, cls, text) => {
 
 const CONTEST = new Date(2027, 2, 21);              // Sunday, March 21, 2027 (local time)
 const KIDS = ["deniz", "toprak"];                   // the parent's test profile does not count
-const GOALS = [25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000];
+// The plan (parent, 2026-11-14): ~12 study weekends x ~75 questions together + the first 100 = 1,000 on contest
+// day; 1,250 is the ultimate goal. Many small flags on the way, so a new one comes every weekend.
+const GOALS = [100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];
+const BIG_GOALS = { 1000: "🎯 Contest goal", 1250: "🌈 Ultimate goal" };
+const WEEKEND_GOAL = 75;
 const CHEERS = [
     "Every question makes your brain a little stronger.",
     "Mistakes are how you learn. Keep hopping!",
@@ -41,9 +45,28 @@ function tick() {
     return days;
 }
 
+// ------------------------------------------------------------------ weekends
+/** Saturday 00:00 (ms) of the weekend this moment is in, or null on a weekday. */
+function weekendOf(d) {
+    const day = d.getDay();                         // 0 Sunday, 6 Saturday
+    if (day !== 0 && day !== 6) return null;
+    const sat = midnight(d);
+    sat.setDate(sat.getDate() - (day === 0 ? 1 : 0));
+    return sat.getTime();
+}
+/** This weekend on Saturday or Sunday, otherwise the one just before. */
+function lastWeekend() {
+    const d = midnight(new Date());
+    while (weekendOf(d) == null) d.setDate(d.getDate() - 1);
+    return weekendOf(d);
+}
+const isWeekend = () => weekendOf(new Date()) != null;
+
 // ------------------------------------------------------------------ numbers (both kids together)
 function numbers(byKid, gens) {
-    const n = { answered: 0, right: 0, learned: 0, partC: 0, days: 0, streak: 0, solid: 0, skills: gens.length };
+    const n = { answered: 0, right: 0, learned: 0, partC: 0, days: 0, streak: 0, solid: 0, skills: gens.length,
+                weekend: 0, bestWeekend: 0, weekends75: 0 };
+    const perWeekend = new Map();
     const dates = new Set();
     const solid = new Set();
     for (const attempts of byKid) {
@@ -61,9 +84,16 @@ function numbers(byKid, gens) {
             if (later) { counted.add(a.id); n.learned++; }
         }
         for (const a of attempts) dates.add(midnight(new Date(a.at)).getTime());
+        for (const a of real) {
+            const w = weekendOf(new Date(a.at));
+            if (w != null && a.chosen >= 0) perWeekend.set(w, (perWeekend.get(w) || 0) + 1);
+        }
         for (const [key, s] of skillStates(attempts)) if (s.status === "solid") solid.add(key);
     }
     n.days = dates.size;
+    n.weekend = perWeekend.get(lastWeekend()) || 0;
+    n.bestWeekend = Math.max(0, ...perWeekend.values());
+    n.weekends75 = [...perWeekend.values()].filter((x) => x >= WEEKEND_GOAL).length;
     n.solid = solid.size;
     // practice days in a row, up to today (or up to yesterday: today may still come)
     let d = midnight(new Date()).getTime();
@@ -79,7 +109,11 @@ const STICKERS = [
     ["💯", "Hundred club", "Answer 100 questions", (n) => n.answered >= 100],
     ["🚀", "Rocket", "Answer 250 questions", (n) => n.answered >= 250],
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
-    ["👑", "Kangaroo royalty", "Answer 1000 questions", (n) => n.answered >= 1000],
+    ["👑", "Kangaroo royalty", "Answer 1000 questions: the contest goal", (n) => n.answered >= 1000],
+    ["🌈", "Ultimate kangaroo", "Answer 1250 questions: the ultimate goal", (n) => n.answered >= 1250],
+    ["🏕️", "Weekend warrior", `${WEEKEND_GOAL} questions in one weekend`, (n) => n.bestWeekend >= WEEKEND_GOAL],
+    ["🎢", "Super weekend", "100 questions in one weekend", (n) => n.bestWeekend >= 100],
+    ["🗓️", "Five great weekends", `Reach the weekend goal on 5 weekends`, (n) => n.weekends75 >= 5],
     ["🌱", "Brain sprout", "Learn from 5 mistakes", (n) => n.learned >= 5],
     ["🌳", "Brain tree", "Learn from 25 mistakes", (n) => n.learned >= 25],
     ["🧠", "Mega brain", "Learn from 100 mistakes", (n) => n.learned >= 100],
@@ -157,22 +191,33 @@ function render(n, daysLeft) {
         countUp(v, value);
     }
 
-    // goals: the next one, a progress bar, and how many a day would get there by contest day
+    // this weekend (or the last one, on a weekday)
+    const wk = isWeekend();
+    $("wk-title").textContent = wk ? "🏕️ This weekend" : "🏕️ Last weekend";
+    $("wk-count").textContent = `${n.weekend} / ${WEEKEND_GOAL}`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        $("wk-bar").style.width = `${Math.max(2, Math.min(1, n.weekend / WEEKEND_GOAL) * 100)}%`;
+    }));
+    $("wk-note").textContent = n.weekend >= WEEKEND_GOAL
+        ? (wk ? "Weekend goal reached! 🎉 Amazing teamwork!" : "You reached the weekend goal! 🎉 Next weekend, again?")
+        : wk ? `${WEEKEND_GOAL - n.weekend} more this weekend to reach the goal. You can do it!`
+            : `The goal for every weekend: ${WEEKEND_GOAL} questions together.`;
+
+    // goals: the next flag, a progress bar, and the two big goals
     const next = GOALS.find((g) => g > n.answered) ?? GOALS.at(-1);
     const prev = [...GOALS].reverse().find((g) => g <= n.answered) ?? 0;
-    $("goal-title").textContent = `🏁 ${next.toLocaleString()} questions`;
+    $("goal-title").textContent = `🏁 ${BIG_GOALS[next] ? BIG_GOALS[next] + ": " : ""}${next.toLocaleString()} questions`;
     $("goal-count").textContent = `${n.answered.toLocaleString()} / ${next.toLocaleString()}`;
     const share = Math.min(1, (n.answered - prev) / (next - prev || 1));
     requestAnimationFrame(() => requestAnimationFrame(() => { $("goal-bar").style.width = `${Math.max(2, share * 100)}%`; }));
     const togo = next - n.answered;
-    $("goal-note").textContent = togo <= 0 ? "Every goal reached. Wow!"
-        : daysLeft > 0
-            ? `Only ${togo.toLocaleString()} more to go! That's about ${Math.max(1, Math.ceil(togo / daysLeft))} a day until the contest.`
-            : `Only ${togo.toLocaleString()} more to go!`;
+    $("goal-note").textContent = togo <= 0 ? "Every goal reached, even the ultimate one. WOW!"
+        : n.answered >= 1000 ? `Contest goal reached! Only ${togo.toLocaleString()} more to the ultimate goal!`
+            : `Only ${togo.toLocaleString()} more to the next flag! Contest goal: 1,000 · Ultimate goal: 1,250.`;
     const flags = $("flags");
     flags.innerHTML = "";
-    for (const g of GOALS) flags.append(el("span", `mk-flag ${n.answered >= g ? "mk-flag--done" : ""}`,
-        `${n.answered >= g ? "✅ " : ""}${g.toLocaleString()}`));
+    for (const g of GOALS) flags.append(el("span", `mk-flag ${n.answered >= g ? "mk-flag--done" : ""} ${BIG_GOALS[g] ? "mk-flag--big" : ""}`,
+        `${n.answered >= g ? "✅ " : ""}${BIG_GOALS[g] ? BIG_GOALS[g] + " " : ""}${g.toLocaleString()}`));
 
     if (stickerBook(n)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;
