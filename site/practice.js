@@ -17,6 +17,7 @@ const PROFILES = [
     { id: "toprak", name: "Toprak" },
     { id: "koray", name: "Koray", parent: true },   // the parent's test profile
 ];
+const TEST_PROFILE = "koray";    // the parent's test profile opens each question with the right answer picked
 const BATCH = 10;                // sessions are endless: the next BATCH questions are picked as they run out
 const BREAK_EVERY = 15, BREAK_MINUTES = 25;   // then a soft "want a break?" (they can just go on)
 const PART = { 1: "Part A", 2: "Part B", 3: "Part C" };
@@ -233,6 +234,7 @@ function renderQuestion() {
         opts.append(b);
     });
     shownAt = Date.now();
+    if (profile.id === TEST_PROFILE) select(q.answer);   // the parent's test account: right answer picked
 }
 
 let firstChoice = null;          // the wrong first answer of the current question, or null
