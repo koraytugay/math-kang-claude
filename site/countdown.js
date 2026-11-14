@@ -14,7 +14,7 @@ const CONTEST = new Date(2027, 2, 21);              // Sunday, March 21, 2027 (l
 const KIDS = ["deniz", "toprak"];                   // the parent's test profile does not count
 // The plan (parent, 2026-11-14): ~12 study weekends x ~75 questions together + the first 100 = 1,000 on contest
 // day; 1,250 is the ultimate goal. Many small flags on the way, so a new one comes every weekend.
-const GOALS = [100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];
+const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];   // one row of flags
 const BIG_GOALS = { 1000: "🎯 Contest goal", 1250: "🌈 Ultimate goal" };
 const WEEKEND_GOAL = 75;
 const CHEERS = [
@@ -216,8 +216,12 @@ function render(n, daysLeft) {
             : `Only ${togo.toLocaleString()} more to the next flag! Contest goal: 1,000 · Ultimate goal: 1,250.`;
     const flags = $("flags");
     flags.innerHTML = "";
-    for (const g of GOALS) flags.append(el("span", `mk-flag ${n.answered >= g ? "mk-flag--done" : ""} ${BIG_GOALS[g] ? "mk-flag--big" : ""}`,
-        `${n.answered >= g ? "✅ " : ""}${BIG_GOALS[g] ? BIG_GOALS[g] + " " : ""}${g.toLocaleString()}`));
+    for (const g of GOALS) {
+        const f = el("span", `mk-flag${n.answered >= g ? " mk-flag--done" : ""}`,
+            `${n.answered >= g ? "✅" : BIG_GOALS[g]?.split(" ")[0] ?? ""} ${g.toLocaleString()}`.trim());
+        if (BIG_GOALS[g]) f.title = BIG_GOALS[g].slice(3);
+        flags.append(f);
+    }
 
     if (stickerBook(n)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;

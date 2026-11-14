@@ -57,11 +57,10 @@
             background: repeating-linear-gradient(45deg, var(--kt-gold), var(--kt-gold) 14px, var(--kt-orange) 14px, var(--kt-orange) 28px);
         }
         .mk-goal__note { font-size: var(--kt-fs-lg); color: var(--kt-text-secondary); }
-        .mk-flags { display: flex; flex-wrap: wrap; gap: var(--kt-space-2); margin-top: var(--kt-space-4); }
-        .mk-flag { border-radius: var(--kt-radius-full); padding: 6px 14px; font-weight: var(--kt-weight-semibold); font-size: var(--kt-fs-md);
+        .mk-flags { display: flex; justify-content: space-between; gap: var(--kt-space-2); margin-top: var(--kt-space-4); }
+        .mk-flag { white-space: nowrap; border-radius: var(--kt-radius-full); padding: 6px 12px; font-weight: var(--kt-weight-semibold); font-size: var(--kt-fs-md);
                    background: var(--kt-surface-sunken); color: var(--kt-text-muted); }
         .mk-flag--done { background: var(--kt-success); color: #fff; }
-        .mk-flag--big { border: 2px solid var(--kt-gold); font-size: var(--kt-fs-lg); }
         .mk-bar__fill--weekend { background: repeating-linear-gradient(45deg, var(--kt-teal), var(--kt-teal) 14px, var(--kt-green) 14px, var(--kt-green) 28px); }
 
         .mk-stickers { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--kt-space-4); }
