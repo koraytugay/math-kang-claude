@@ -138,7 +138,6 @@ function renderSessions(real) {
         const first = new Date(s[0].at), end = new Date(s.at(-1).at);
         const live = Date.now() - end < LIVE_GAP;
         const n = (f) => String(s.filter(f).length);
-        const skills = [...new Set(s.map((a) => index.generators.find((g) => g.key === a.gen)?.label ?? a.gen))];
         const when = el("td", null, `${day(first)}, ${clock(first)} - ${clock(end)} `);
         if (live) when.append(el("span", "kt-badge kt-badge--soft-success", "now"));
         const tr = el("tr");
@@ -148,13 +147,17 @@ function renderSessions(real) {
             el("td", "kt-num", n((a) => a.correct)),
             el("td", "kt-num", n((a) => !a.correct && a.second_try)),
             el("td", "kt-num", n((a) => !a.correct && !a.second_try && a.chosen >= 0)),
-            el("td", "kt-num", n((a) => a.chosen < 0)),
-            el("td", "kt-text-secondary", skills.join(", ")));
+            el("td", "kt-num", n((a) => a.chosen < 0)));
+        for (let lv = 0; lv < LEVELS.length; lv++) {
+            const at = s.filter((a) => levelOf(a.difficulty, a.harder) === lv);
+            const right = at.filter((a) => a.correct).length;
+            tr.append(el("td", "kt-num", at.length ? `${at.length} (${right})` : ""));
+        }
         body.append(tr);
     }
     if (!sessions.length) {
         const tr = el("tr"), td = el("td", "kt-text-secondary", "No answers yet.");
-        td.colSpan = 8; tr.append(td); body.append(tr);
+        td.colSpan = 11; tr.append(td); body.append(tr);
     }
 }
 
