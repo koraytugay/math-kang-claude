@@ -201,7 +201,6 @@ function bigger(container, factor) {
 
 function renderQuestion() {
     const q = session[pos];
-    $("play-count").textContent = `Question ${pos + 1}`;
     $("play-part").textContent = q.isWarmup ? "Warm-up" : PART[q.difficulty];
     refillSoon();
     $("q-text").innerHTML = q.text;
@@ -286,7 +285,7 @@ async function answer(i) {
     await settle(q, firstChoice ?? i, correct, secondTry, i, right);
 }
 
-// "I'm not sure": counts as not knowing it - for the skill it is the same as a wrong answer.
+// "Skip question": counts as not knowing it - for the skill it is the same as a wrong answer.
 // Saved as chosen = SKIPPED and correct = false, so the parent page can show it as "Skipped".
 // It just moves on: no answer, no solution (also not in the summary at the end).
 const SKIPPED = -1;
