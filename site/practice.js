@@ -169,7 +169,10 @@ function renderQuestion() {
     $("feedback").hidden = true;
     $("retry").hidden = true;
     $("skip").hidden = false;
+    $("check").hidden = false;
     firstChoice = null;
+    selected = null;
+    $("check").disabled = true;
 
     // kt-choices: pictures in a row (key on top), short answers in a row, long answers one per line.
     const opts = $("q-options");
@@ -184,13 +187,33 @@ function renderQuestion() {
         const content = el("span", "kt-choice__label mk-opt-text");
         if (q.choice_figures) { content.innerHTML = q.choice_figures[i]; bigger(content, 1.6); } else content.innerHTML = c;
         b.append(content);
-        b.onclick = () => answer(i);
+        b.onclick = () => select(i);
         opts.append(b);
     });
     shownAt = Date.now();
 }
 
-let firstChoice = null;          // the wrong first click of the current question, or null
+let firstChoice = null;          // the wrong first answer of the current question, or null
+let selected = null;             // the option picked but not checked yet, or null
+
+// Two steps, so a click while scrolling never counts: a click only picks an option (it can be changed),
+// "Check my answer" locks it in.
+function select(i) {
+    if (!$("feedback").hidden) return;
+    const buttons = [...$("q-options").children];
+    if (buttons[i].disabled) return;
+    selected = i;
+    buttons.forEach((b, j) => { if (!b.disabled) b.setAttribute("aria-pressed", String(j === i)); });
+    $("check").disabled = false;
+}
+
+function check() {
+    if (selected === null) return;
+    const i = selected;
+    selected = null;
+    $("check").disabled = true;
+    answer(i);
+}
 
 async function answer(i) {
     const q = session[pos];
@@ -229,6 +252,8 @@ async function skip() {
     if (!$("feedback").hidden || skipping) return;
     skipping = true;
     $("skip").disabled = true;
+    $("check").disabled = true;
+    selected = null;
     [...$("q-options").children].forEach((b) => { b.disabled = true; });
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     results.push({ q, chosen: SKIPPED, correct: false });
@@ -250,6 +275,7 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     $("retry").hidden = true;
     $("skip").hidden = true;
+    $("check").hidden = true;
     buttons.forEach((b, j) => {
         b.disabled = true;
         if (j === q.answer) b.classList.add("kt-choice--success");
@@ -376,13 +402,18 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("teach")
 $("teach-btn").onclick = openTeach;
 $("next").onclick = next;
 $("skip").onclick = skip;
+$("check").onclick = check;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles()));
 $("again").onclick = () => start(profile);
 $("switch").onclick = () => { show("who"); renderProfiles(); };
 document.addEventListener("keydown", (e) => {
     if ($("play").hidden || $("teach").classList.contains("is-open")) return;
     const k = e.key.toUpperCase();
-    if ($("feedback").hidden && "ABCDE".includes(k) && k.length === 1) answer("ABCDE".indexOf(k));
+    const onButton = document.activeElement?.tagName === "BUTTON";   // Enter on a button clicks it already
+    if ($("feedback").hidden && "ABCDE".includes(k) && k.length === 1) {
+        const i = "ABCDE".indexOf(k);
+        if (i < $("q-options").children.length) select(i);
+    } else if ($("feedback").hidden && e.key === "Enter" && !onButton) check();
     else if (!$("feedback").hidden && e.key === "Enter" && document.activeElement !== $("next")) next();
 });
 

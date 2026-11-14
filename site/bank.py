@@ -43,7 +43,17 @@ def svg(drawing) -> str | None:
         return None
     s = renderSVG.drawToString(drawing)
     s = s[s.index("<svg"):]
-    return re.sub(r"\s+", " ", s)
+    s = re.sub(r"\s+", " ", s)
+    # reportlab rounds the viewBox and the flip down to whole points and clips to the drawing with a
+    # shared id="clip" (several figures on one page then use the first one's box): figures lost a sliver
+    # at the edges. Use the exact size, no clip, and a little room for strokes on the border.
+    w, h, pad = float(drawing.width), float(drawing.height), 2.0
+    s = re.sub(r"<clipPath id=\"clip\">.*?</clipPath>", "", s, count=1)
+    s = s.replace(' style="clip-path: url(#clip)"', "", 1)
+    s = re.sub(r"transform=\"scale\(1,-1\) translate\(0,-[\d.]+\)\"", f'transform="scale(1,-1) translate(0,-{h:g})"', s, count=1)
+    s = re.sub(r"<svg width=\"[\d.]+\" height=\"[\d.]+\"", f'<svg width="{w + 2 * pad:g}" height="{h + 2 * pad:g}"', s, count=1)
+    s = re.sub(r"viewBox=\"[^\"]*\"", f'viewBox="{-pad:g} {-pad:g} {w + 2 * pad:g} {h + 2 * pad:g}"', s, count=1)
+    return s
 
 
 def export(g) -> list[dict]:
