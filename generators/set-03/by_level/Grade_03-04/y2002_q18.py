@@ -22,7 +22,7 @@ META = {
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
     "keywords": ["logic clues", "who has what"],
-    "version": 2,
+    "version": 3,
 }
 
 NAMES = ["Julien", "Manon", "Nicolas", "Fabienne", "Lucas", "Emma", "Omar", "Mia", "Leo",
@@ -53,24 +53,6 @@ THEMES = {
             "no legs": ("has a pet with no legs at all", "has a pet with legs"),
         },
         "neg_item": lambda p, it: f"{p} doesn't like {plural(it)}",
-    },
-    "instruments": {
-        "items": {
-            "piano": {"keys"}, "guitar": {"strings"}, "violin": {"strings", "bow"},
-            "drum": {"sticks"}, "flute": {"blow"}, "trumpet": {"blow"}, "harp": {"strings"},
-            "xylophone": {"sticks"},
-        },
-        "has": lambda p, it: f"{p} plays the {it}",
-        "article": lambda it: "the " + it,
-        "intro": "each play a different instrument:",
-        "props": {
-            "strings": ("plays an instrument with strings", "plays an instrument without strings"),
-            "blow": ("blows into the instrument", "does not blow into the instrument"),
-            "sticks": ("plays with sticks", "never uses sticks"),
-            "keys": ("presses keys", "plays an instrument without keys"),
-            "bow": ("uses a bow", "does not need a bow"),
-        },
-        "neg_item": lambda p, it: f"{p} doesn't play the {it}",
     },
     "birthdays": {
         "items": {
