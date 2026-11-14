@@ -33,7 +33,7 @@ from kangaroo.render import _question_block  # noqa: E402
 OUT = ROOT / "_site"
 REPO = "koraytugay/math-kang-claude"
 WORKFLOW = "generate-exam.yml"
-STATIC = ["index.html", "app.js", "token.json", "practice.html", "practice.js", "secrets.js", "smart.js", "parent.html", "parent.js"]
+STATIC = ["index.html", "app.js", "token.json", "practice.html", "practice.js", "secrets.js", "smart.js", "parent.html", "parent.js", "countdown.html", "countdown.js"]
 
 
 def example(g):
