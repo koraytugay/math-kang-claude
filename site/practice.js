@@ -209,8 +209,7 @@ function renderQuestion() {
     $("q-after").innerHTML = q.after;
     $("feedback").hidden = true;
     $("retry").hidden = true;
-    $("skip").hidden = false;
-    $("check").hidden = false;
+    $("skip-row").hidden = false;
     firstChoice = null;
     selected = null;
     $("check").disabled = true;
@@ -317,8 +316,7 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     const buttons = [...$("q-options").children];
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     $("retry").hidden = true;
-    $("skip").hidden = true;
-    $("check").hidden = true;
+    $("skip-row").hidden = true;          // the empty row's margin would double the gap above the feedback
     buttons.forEach((b, j) => {
         b.disabled = true;
         if (j === q.answer && right) b.classList.add("kt-choice--success");   // wrong: the answer stays hidden
