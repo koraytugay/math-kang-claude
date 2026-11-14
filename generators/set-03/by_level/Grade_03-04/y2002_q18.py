@@ -9,6 +9,10 @@ Julien-goldfish; the false statement is "Fabienne has a dog".)
 Core skill: combining clues that describe a *property* (furry, four legs, ...)
 rather than naming the item, and eliminating possibilities step by step.
 
+Only logic, no general knowledge (parent, v4): every property a clue uses is
+stated in the question ("About these pets: Only the cat and the dog are furry."), so a kid never
+has to know which pet has a shell or which months are in spring.
+
 The puzzle is built backwards: pick a secret matching, collect true clues,
 keep adding clues until a brute-force solver finds exactly one solution, then
 drop clues that are not needed. So every puzzle has exactly one solution.
@@ -22,13 +26,14 @@ META = {
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
     "keywords": ["logic clues", "who has what"],
-    "version": 3,
+    "version": 4,
 }
 
 NAMES = ["Julien", "Manon", "Nicolas", "Fabienne", "Lucas", "Emma", "Omar", "Mia", "Leo",
          "Sofia", "Noah", "Aisha", "Ben", "Chloe", "Ravi", "Hana", "Tom", "Zoe", "Ivan", "Nora"]
 
 # Each theme: items {name: properties}, how to say "X has item", property phrases (yes, no),
+# the facts that state each property ("Only the cat is furry." / "Only the cat and the dog are furry."),
 # and how to introduce the puzzle.
 THEMES = {
     "pets": {
@@ -53,6 +58,14 @@ THEMES = {
             "no legs": ("has a pet with no legs at all", "has a pet with legs"),
         },
         "neg_item": lambda p, it: f"{p} doesn't like {plural(it)}",
+        "the": lambda it: "the " + it, "noun": "pets",
+        "facts": {
+            "furry": ("is furry", "are furry"), "four legs": ("has four legs", "have four legs"),
+            "bird": ("is a bird", "are birds"), "flies": ("can fly", "can fly"),
+            "water": ("lives in water", "live in water"), "shell": ("has a shell", "have a shell"),
+            "two legs": ("has two legs", "have two legs"), "barks": ("barks", "bark"),
+            "no legs": ("has no legs", "have no legs"),
+        },
     },
     "birthdays": {
         "items": {
@@ -71,6 +84,14 @@ THEMES = {
             "J": ("was born in a month that starts with J", "was born in a month that doesn't start with J"),
         },
         "neg_item": lambda p, it: f"{p} was not born in {it}",
+        "the": lambda it: it, "noun": "months",
+        "facts": {
+            "winter": ("is a winter month", "are winter months"),
+            "summer": ("is a summer month", "are summer months"),
+            "spring": ("is a spring month", "are spring months"),
+            "autumn": ("is an autumn month", "are autumn months"),
+            "J": ("starts with J", "start with J"),
+        },
     },
 }
 
@@ -102,20 +123,20 @@ def build_puzzle(rng, n, allow_direct):
         for p in people:
             for pr in useful:
                 if pr in props[truth[p]]:
-                    cands.append((f"{p} {th['props'][pr][0]}", lambda a, p=p, pr=pr: pr in props[a[p]], 3))
+                    cands.append((f"{p} {th['props'][pr][0]}", lambda a, p=p, pr=pr: pr in props[a[p]], 3, pr))
                 else:
-                    cands.append((f"{p} {th['props'][pr][1]}", lambda a, p=p, pr=pr: pr not in props[a[p]], 2))
+                    cands.append((f"{p} {th['props'][pr][1]}", lambda a, p=p, pr=pr: pr not in props[a[p]], 2, pr))
             for it in items:
                 if truth[p] != it:
-                    cands.append((th["neg_item"](p, it), lambda a, p=p, it=it: a[p] != it, 1))
+                    cands.append((th["neg_item"](p, it), lambda a, p=p, it=it: a[p] != it, 1, None))
                 elif allow_direct:
-                    cands.append((th["has"](p, it), lambda a, p=p, it=it: a[p] == it, 1))
+                    cands.append((th["has"](p, it), lambda a, p=p, it=it: a[p] == it, 1, None))
         for p, q in permutations(people, 2):
             if p < q:
                 for pr in useful:
                     if pr in props[truth[p]] and pr in props[truth[q]]:
                         cands.append((f"{p} and {q} both {th['props'][pr][0].replace('has ', 'have ', 1).replace('owns ', 'own ', 1).replace('was ', 'were ', 1).replace('plays ', 'play ', 1).replace('blows ', 'blow ', 1).replace('presses ', 'press ', 1).replace('uses ', 'use ', 1)}",
-                                      lambda a, p=p, q=q, pr=pr: pr in props[a[p]] and pr in props[a[q]], 2))
+                                      lambda a, p=p, q=q, pr=pr: pr in props[a[p]] and pr in props[a[q]], 2, pr))
         rng.shuffle(cands)
         cands.sort(key=lambda c: -c[2] - rng.random() * 2)
         all_assign = [dict(zip(people, perm)) for perm in permutations(items)]
@@ -138,7 +159,13 @@ def build_puzzle(rng, n, allow_direct):
             continue
         # present clues in a mixed but readable order
         rng.shuffle(chosen)
-        return th, people, items, truth, [(c[0], c[1]) for c in chosen]
+        facts = []
+        for pr in th["facts"]:
+            if any(c[3] == pr for c in chosen):
+                have = [th["the"](it) for it in items if pr in props[it]]
+                verb = th["facts"][pr][0 if len(have) == 1 else 1]
+                facts.append(f"Only {join_and(have)} {verb}.")
+        return th, people, items, truth, [(c[0], c[1]) for c in chosen], facts
     raise RuntimeError("could not build a puzzle")
 
 
@@ -160,9 +187,11 @@ def statement_check(th, people, items, clues, choices, want_true):
     return check
 
 
-def _intro(th, people, items, clues):
-    return (f"{join_and(people)} {th['intro']} {join_and([th['article'](i) for i in items])}.\n"
-            + "\n".join(f"- {c[0]}." for c in clues))
+def _intro(th, people, items, clues, facts):
+    text = f"{join_and(people)} {th['intro']} {join_and([th['article'](i) for i in items])}.\n\n"
+    if facts:
+        text += f"About these {th['noun']}:\n" + "\n".join(f"- {f}" for f in facts) + "\n\nClues:\n"
+    return text + "\n".join(f"- {c[0]}." for c in clues)
 
 
 def _solution(th, truth):
@@ -172,7 +201,7 @@ def _solution(th, truth):
 @variant(difficulty=1)
 def who_has(rng, harder):
     """Find who has one particular thing (or say it can't be determined - but it always can)."""
-    th, people, items, truth, clues = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
+    th, people, items, truth, clues, facts = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
     target = rng.choice(items)
     owner = next(p for p, it in truth.items() if it == target)
     q = th["has"]("Who", target) + "?"
@@ -198,19 +227,19 @@ def who_has(rng, harder):
     def check(i):
         owners = {p for a in solve(people, items, clues) for p in people if a[p] == target}
         return len(owners) > 1 if i == 4 else owners == {choices[i]}
-    return Question(text=_intro(th, people, items, clues), after_figure=q, choices=choices,
+    return Question(text=_intro(th, people, items, clues, facts), after_figure=q, choices=choices,
                     answer=ans, solution=sol, check=check)
 
 
 @variant(difficulty=2)
 def which_true(rng, harder):
     """Exactly one of five statements is true."""
-    th, people, items, truth, clues = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
+    th, people, items, truth, clues, facts = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
     p = rng.choice(people)
     correct = th["has"](p, truth[p])
     wrong = [th["has"](x, it) for x in people for it in items if truth[x] != it]
     choices, ai = text_choices(correct, wrong, rng)
-    return Question(text=_intro(th, people, items, clues), after_figure="Which statement is true?",
+    return Question(text=_intro(th, people, items, clues, facts), after_figure="Which statement is true?",
                     choices=choices, answer=ai, solution=_solution(th, truth),
                     check=statement_check(th, people, items, clues, choices, want_true=True))
 
@@ -219,7 +248,7 @@ def which_true(rng, harder):
 def which_not_true(rng, harder):
     """The original: four true statements and one false one."""
     n = 5 if harder else 4
-    th, people, items, truth, clues = build_puzzle(rng, n, allow_direct=False)
+    th, people, items, truth, clues, facts = build_puzzle(rng, n, allow_direct=False)
     true_st = [th["has"](p, truth[p]) for p in people]
     trues = rng.sample(true_st, 4)
     # the false statement swaps two people's things - a tempting mistake
@@ -227,7 +256,7 @@ def which_not_true(rng, harder):
     false = th["has"](p, truth[q])
     opts = trues + [false]
     rng.shuffle(opts)
-    return Question(text=_intro(th, people, items, clues),
+    return Question(text=_intro(th, people, items, clues, facts),
                     after_figure="Which statement is <b>not</b> true?", choices=opts,
                     answer=opts.index(false), solution=_solution(th, truth),
                     check=statement_check(th, people, items, clues, opts, want_true=False))
