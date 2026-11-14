@@ -95,7 +95,8 @@ async function show(k) {
         body.append(tr);
     }
 
-    // the exact questions to study together: first try wrong or skipped, not yet marked as studied
+    // the exact questions to study together: first try wrong or skipped, not yet marked as studied, and not
+    // learned since (a later question of the same skill right on the first try, not a quick guess)
     const done = await studiedSet(k.id);
     if (ticket !== showing) return;
     const once = new Set();                     // the same exact question missed twice: one card (the newest)
@@ -105,7 +106,9 @@ async function show(k) {
         const g = gens.find((x) => x.key === a.gen);
         const q = g ? (await bankFor(g)).find((x) => x.id === a.id) : null;
         if (ticket !== showing) return;
-        cards.push(studyCard(k, a, g, q, done.has(a.id)));
+        const learned = real.find((b) => b.gen === a.gen && b.correct && new Date(b.at) > new Date(a.at)
+            && !isGuess(b.difficulty, b.seconds));
+        cards.push(studyCard(k, a, g, q, done.has(a.id), learned));
     }
     $("study").replaceChildren(...cards.filter((c) => !c.dataset.studied));
     $("studied").replaceChildren(...cards.filter((c) => c.dataset.studied));
@@ -142,7 +145,7 @@ async function markStudied(profileId, qid, on) {
 function countStudy() {
     const open = $("study").querySelectorAll(".mk-card").length, closed = $("studied").children.length;
     $("study-title").textContent = `To study together (${open})`;
-    $("studied-title").textContent = `Studied together (${closed})`;
+    $("studied-title").textContent = `Done (${closed})`;
     $("studied-box").hidden = !closed;
 }
 
@@ -153,18 +156,20 @@ function bigger(container, factor) {
     });
 }
 
-/** One question as the child saw it: text, figure, options (picked red, answer green), why, solution. */
-function studyCard(k, a, g, q, studied) {
+/**
+ * One question as the child saw it, to solve together: no answer and no pick shown. Pick an option and
+ * "Check", or "Show answer"; then the solution. learned: a later right answer of the same skill.
+ */
+function studyCard(k, a, g, q, studied, learned) {
     const card = el("div", "kt-card kt-card--padded kt-stack mk-card");
-    if (studied) card.dataset.studied = "1";
+    if (studied || learned) card.dataset.studied = "1";
     const head = el("div", "kt-cluster");
     head.append(el("span", "kt-fw-bold", `${day(a.at)} · ${g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen}`),
         el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[[1, 2, 3].indexOf(a.difficulty) + (a.harder ? 1 : 0)] || ""));
-    if (a.chosen < 0) head.append(el("span", "kt-badge kt-badge--orange", "Skipped - not sure"));
+    if (a.chosen < 0) head.append(el("span", "kt-badge kt-badge--orange", "Skipped"));
     else head.append(el("span", a.second_try ? "kt-badge kt-badge--soft-warning" : "kt-badge kt-badge--soft-danger",
         a.second_try ? "Wrong, then right on the second try" : a.second_try === false ? "Wrong twice" : "Wrong"));
-    if (a.variant?.startsWith("warmup:")) head.append(el("span", "kt-badge", "Warm-up"));
-    if (a.seconds != null) head.append(el("span", "kt-text-secondary", `${a.seconds} s`));
+    if (learned) head.append(el("span", "kt-badge kt-badge--soft-success", `Got a similar one right on ${day(learned.at)}`));
     card.append(head);
     if (!q) {
         card.append(el("div", "kt-text-secondary", "This question is no longer in the question bank (the generator changed)."));
@@ -174,42 +179,72 @@ function studyCard(k, a, g, q, studied) {
         if (q.after) { const t2 = el("div", "mk-qtext mk-rich"); t2.innerHTML = q.after; card.append(t2); }
         const row = q.choice_figures || Math.max(...q.choices.map((c) => plain(c).length)) <= 14;
         const opts = el("div", `kt-choices${row ? " kt-choices--row" : ""}`);
+        const buttons = [];
+        let selected = null, over = false;
         q.choices.forEach((c, i) => {
             const b = el("button", `kt-choice${q.choice_figures ? " kt-choice--stacked" : ""}`);
-            b.type = "button"; b.disabled = true;
-            if (i === q.answer) b.classList.add("kt-choice--success");
-            if (i === a.chosen && i !== q.answer) { b.classList.add("kt-choice--danger"); b.setAttribute("aria-pressed", "true"); }
+            b.type = "button";
+            b.setAttribute("aria-pressed", "false");
             b.append(el("span", "kt-choice__key", LETTER[i]));
             const lab = el("span", "kt-choice__label");
             if (q.choice_figures) { lab.innerHTML = q.choice_figures[i]; bigger(lab, 1.3); } else lab.innerHTML = c;
             b.append(lab);
+            b.onclick = () => {
+                if (over || b.disabled) return;
+                selected = i;
+                buttons.forEach((x, j) => { if (!x.disabled) x.setAttribute("aria-pressed", String(j === i)); });
+                check.disabled = false;
+            };
+            buttons.push(b);
             opts.append(b);
         });
         card.append(opts);
-        const facts = el("div", "mk-rich");
-        const why = a.chosen >= 0 && q.mistakes?.[a.chosen] ? `<p>${LETTER[a.chosen]} is what you get if you ${q.mistakes[a.chosen]}.</p>` : "";
-        facts.innerHTML = (a.chosen >= 0 ? `<p>Picked <b>${LETTER[a.chosen]}</b>, the answer is <b>${LETTER[q.answer]}</b>.</p>` : `<p>The answer is <b>${LETTER[q.answer]}</b>.</p>`)
-            + why + (g?.skill ? `<p class="kt-text-secondary">Skill: ${g.skill}.</p>` : "");
-        card.append(facts);
-        const sol = el("details");
-        sol.append(el("summary", null, "Solution"));
-        const st = el("div", "mk-rich kt-mt-2"); st.innerHTML = q.solution; sol.append(st);
-        card.append(sol);
+        const note = el("div", "kt-alert");
+        note.hidden = true;
+        const check = el("button", "kt-btn kt-btn--primary", "Check answer");
+        check.type = "button"; check.disabled = true;
+        const reveal = el("button", "kt-btn kt-ml-auto", "Show answer");
+        reveal.type = "button";
+        const finish = (title, cls) => {
+            over = true;
+            buttons.forEach((x, j) => { x.disabled = true; if (j === q.answer) x.classList.add("kt-choice--success"); });
+            note.className = `kt-alert ${cls}`;
+            note.innerHTML = `<div class="kt-alert__title">${title}</div>${q.solution}`;
+            note.hidden = false;
+            check.hidden = true; reveal.hidden = true;
+        };
+        check.onclick = () => {
+            if (selected === null) return;
+            const i = selected;
+            selected = null; check.disabled = true;
+            if (i === q.answer) return finish("Right!", "kt-alert--success");
+            buttons[i].disabled = true;
+            buttons[i].classList.add("kt-choice--danger");
+            note.className = "kt-alert kt-alert--warning";
+            note.innerHTML = `<div class="kt-alert__title">Not quite - try again.</div>`
+                + (q.mistakes?.[i] ? `Did you ${q.mistakes[i]}?` : g?.skill ? `Hint: ${g.skill}.` : "");
+            note.hidden = false;
+        };
+        reveal.onclick = () => finish(`The answer is ${LETTER[q.answer]}.`, "kt-alert--info");
+        const tools = el("div", "kt-cluster");
+        tools.append(check, reveal);
+        card.append(tools, note);
     }
-    const btn = el("button", studied ? "kt-btn" : "kt-btn kt-btn--primary", studied ? "Undo - study again" : "Studied together");
+    if (learned) return card;                   // done by itself, nothing to undo
+    const btn = el("button", studied ? "kt-btn" : "kt-btn", studied ? "Undo - study again" : "Studied together");
     btn.type = "button";
     btn.onclick = async () => {
         btn.disabled = true;
         try {
             await markStudied(k.id, a.id, !card.dataset.studied);
-            if (card.dataset.studied) { delete card.dataset.studied; btn.className = "kt-btn kt-btn--primary"; btn.textContent = "Studied together"; $("study").querySelector(":scope > .kt-text-secondary")?.remove(); $("study").prepend(card); }
+            if (card.dataset.studied) { delete card.dataset.studied; btn.className = "kt-btn"; btn.textContent = "Studied together"; $("study").querySelector(":scope > .kt-text-secondary")?.remove(); $("study").prepend(card); }
             else { card.dataset.studied = "1"; btn.className = "kt-btn"; btn.textContent = "Undo - study again"; $("studied").prepend(card); }
             if (!$("study").children.length) $("study").append(el("div", "kt-text-secondary", "Nothing to study right now."));
             countStudy();
         } catch (e) { alert(`Could not save: ${e.message}`); }
         btn.disabled = false;
     };
-    const foot = el("div"); foot.append(btn); card.append(foot);
+    const foot = el("div", "kt-mt-2"); foot.append(btn); card.append(foot);
     return card;
 }
 
