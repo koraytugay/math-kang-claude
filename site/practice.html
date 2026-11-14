@@ -26,9 +26,9 @@
         .mk-dot--second { background: var(--kt-success-soft); border: 3px solid var(--kt-success); }
         .mk-dot--learn { border: 2px solid var(--kt-border-strong); }
         .mk-dot--skip { background: var(--kt-border); }
-        /* messages to the kids (feedback, "try once more", break hint): the size of the question text, no bold */
-        #feedback-text, #retry, #break { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
-        #feedback-text .kt-alert__title, #retry .kt-alert__title, #break .kt-alert__title { font-size: inherit; font-weight: 400; }
+        /* one text size for everything the kids read (question, messages, summary); bold only for headings */
+        #play, #done { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
+        #play .kt-alert__title, #done .kt-alert__title { font-weight: 400; }
     </style>
 </head>
 <body>

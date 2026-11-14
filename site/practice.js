@@ -421,8 +421,8 @@ function finish() {
     const fresh = [...new Set(real.filter((r) => !sessionStates.has(r.q.gen)).map((r) => name(r.q.gen)))]
         .filter((n) => n && !stronger.includes(n));
     const good = [];
-    if (stronger.length) good.push(`<div><b>You're getting stronger at:</b> ${stronger.join(", ")}.</div>`);
-    if (fresh.length) good.push(`<div><b>You tried something new:</b> ${fresh.join(", ")}.</div>`);
+    if (stronger.length) good.push(`<div>You're getting stronger at: ${stronger.join(", ")}.</div>`);
+    if (fresh.length) good.push(`<div>You tried something new: ${fresh.join(", ")}.</div>`);
     if (good.length) { const g = el("div", "kt-alert kt-alert--success"); g.innerHTML = good.join(""); box.append(g); }
     const wrong = results.filter((r) => !r.correct);
     if (wrong.length) box.append(el("h3", "kt-section-title", "Worth another look"));

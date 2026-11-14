@@ -225,3 +225,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-14: Feedback text the same size as the question text (cheer semibold, not big and bold).
 - 2026-11-14: Kid messages ("Not quite. Try once more!" + hint, feedback, break hint) at question-text size, no bold.
 - 2026-11-14: End summary buttons: "Keep practising" (back to the same session and its circles, next question) and "Start over" (a new session); "Switch profile" removed (the start page still has the profiles).
+- 2026-11-14: One text size (fs-lg) for everything the kids read on the practice page (question, messages, end summary), no bold except headings. kt-styles alerts now inherit the surrounding text size (they were always fs-sm).
