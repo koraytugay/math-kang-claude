@@ -56,7 +56,6 @@
                 <button type="button" class="kt-btn kt-btn--ghost" id="quit">Stop</button>
             </div>
         </div>
-        <div class="kt-progress kt-mb-4"><div class="kt-progress__bar" id="play-bar" style="width: 0%"></div></div>
 
         <div class="kt-card kt-card--padded">
             <div class="mk-qtext mk-rich" id="q-text"></div>
@@ -72,6 +71,11 @@
 
         <div class="kt-mt-4" id="feedback" hidden>
             <div class="kt-alert" id="feedback-text"></div>
+            <div class="kt-alert kt-alert--info kt-mt-3" id="break" hidden>
+                <div class="kt-alert__title">Great work - you've been practising for a while!</div>
+                Take a break if you like, or keep going.
+                <div class="kt-mt-2"><button type="button" class="kt-btn" id="break-stop">Stop for now</button></div>
+            </div>
             <div class="kt-cluster kt-mt-3">
                 <button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="next">Next question</button>
                 <button type="button" class="kt-btn kt-btn--lg" id="teach-btn" hidden>How to think about it</button>

@@ -34,6 +34,9 @@ The PDF exams (`make_exam.py`, the GitHub Actions workflow, the exam page) keep 
 - **No gamification and no counts** (parent, 2026-11-12): no points, scores, totals, "today" counters,
   streaks or badges anywhere the kids see them; they can be discouraging. Feedback is right/wrong + the
   solution, and the summary shows only "Look at these once more". Effort goes into personalization.
+  Updated 2026-11-14 (parent): **encouraging words only** - "Three in a row!", "Good comeback!", "Part C -
+  brilliant!" - still no points, totals or badges, nothing the brothers can compare. Sessions are endless
+  (batches of 10 picked as they go) with a soft "want a break?" every 15 questions or 25 minutes.
 
 ## Architecture
 
@@ -213,3 +216,4 @@ restore window of the free plan is 6 hours, and mk_site cannot delete anything).
 - 2026-11-13: Skip now simply moves on: no answer or solution is shown (also not in the end summary, which says "You skipped this one"). Still saved as a skip (counts like not knowing it).
 - 2026-11-14: Kids misclicked while scrolling, so answering is two steps: a click (or a letter key) only picks an option, "Check my answer" (or Enter) locks it in. Kept the start at Part A: levels are per question and already move up after each right answer. Figures were cut slightly at the sides: bank.py now writes the exact SVG size (reportlab rounded it down) with a 2pt margin, and drops the shared id="clip" clip path.
 - 2026-11-14: Practice got stuck on "Getting your questions ready…" after Stop and picking the profile again. Any error while building a session now shows "Could not get the questions ready" with a Try again button (20 s timeout), failed bank downloads are no longer cached, and a newer profile click wins. Also: the practice page did not load second_try, so a right second try counted like a wrong answer in its scoring (the parent page was right).
+- 2026-11-14: Endless practice sessions: the next 10 are picked in the background 3 questions before the end (skills from the last 30 minutes wait, as before; warm-ups once per session). No progress bar, "Question N". Soft break hint every 15 questions / 25 minutes with "Stop for now". Encouraging words in the feedback title (streak of 3/5/8+, back on track after two misses, a skill missed before now right, Part C right, second-try comeback); no numbers or points.

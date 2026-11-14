@@ -17,7 +17,8 @@ const PROFILES = [
     { id: "toprak", name: "Toprak" },
     { id: "koray", name: "Koray", parent: true },   // the parent's test profile
 ];
-const SESSION = 10;
+const BATCH = 10;                // sessions are endless: the next BATCH questions are picked as they run out
+const BREAK_EVERY = 15, BREAK_MINUTES = 25;   // then a soft "want a break?" (they can just go on)
 const PART = { 1: "Part A", 2: "Part B", 3: "Part C" };
 
 // ------------------------------------------------------------------ store
@@ -82,14 +83,15 @@ async function bankFor(gen) {
 }
 
 // ------------------------------------------------------------------ choosing questions: see smart.js
-async function buildSession(profile) {
+// exclude: ids already in this session. The first batch also keeps the states for the summary.
+async function buildSession(profile, exclude = [], first = true) {
     const attempts = await store.attempts(profile.id);
     const states = skillStates(attempts);
-    sessionStates = states;
-    const seen = new Set(attempts.map((a) => a.id));
+    if (first) sessionStates = states;
+    const seen = new Set([...attempts.map((a) => a.id), ...exclude]);
 
     const qs = [];
-    for (const g of planSkills(index.generators, states, SESSION)) {
+    for (const g of planSkills(index.generators, states, BATCH)) {
         const bank = await bankFor(g);
         const [difficulty, harder] = LEVELS[states.get(g.key)?.level ?? 0];
         const free = (q) => !qs.some((x) => x.id === q.id);
@@ -107,6 +109,7 @@ async function buildSession(profile) {
     // A skill missed twice in a row starts with up to 2 warm-ups (small steps), right before its question.
     for (const g of index.generators) {
         if (!g.warmup || (states.get(g.key)?.stuck ?? 0) < 2) continue;
+        if (!first && session.some((q) => q.isWarmup && q.gen === g.key)) continue;   // once per session
         const k = qs.findIndex((q) => q.gen === g.key);
         if (k < 0) continue;
         const warm = await fetch(g.warmup).then((r) => r.json());
@@ -171,8 +174,18 @@ async function start(p) {
         return;
     }
     $("skip-row").hidden = false;
-    pos = 0; results = [];
+    pos = 0; results = []; refill = null; startedAt = Date.now(); lastBreak = { at: startedAt, n: 0 };
     renderQuestion();
+}
+let refill = null, startedAt = 0, lastBreak = { at: 0, n: 0 };
+/** The next batch, picked in the background a few questions before the session runs out. */
+function refillSoon() {
+    if (refill || session.length - pos > 3) return;
+    const who = profile;
+    refill = buildSession(who, session.map((q) => q.id), false)
+        .then((more) => { if (who === profile) session.push(...more); })
+        .catch((e) => console.error(e))
+        .finally(() => { refill = null; });
 }
 let starting = 0;
 const withTimeout = (promise, ms) => Promise.race([promise,
@@ -187,9 +200,9 @@ function bigger(container, factor) {
 
 function renderQuestion() {
     const q = session[pos];
-    $("play-count").textContent = `Question ${pos + 1} of ${session.length}`;
+    $("play-count").textContent = `Question ${pos + 1}`;
     $("play-part").textContent = q.isWarmup ? "Warm-up" : PART[q.difficulty];
-    $("play-bar").style.width = `${(100 * pos) / session.length}%`;
+    refillSoon();
     $("q-text").innerHTML = q.text;
     $("q-fig").innerHTML = q.figure || "";
     $("q-fig").hidden = !q.figure;
@@ -324,11 +337,15 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     }
     const fb = $("feedback-text");
     fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
-    const title = correct ? "Right!" : right ? "Right, on the second try!" : `Not this time. The answer is ${"ABCDE"[q.answer]}.`;
+    const title = cheer(q, correct, right);
     const why = !correct && q.mistakes?.[chosen] ? `<div class="kt-mb-2">${"ABCDE"[chosen]} is what you get if you ${q.mistakes[chosen]}.</div>` : "";
     fb.innerHTML = `<div class="kt-alert__title">${title}</div>${why}${q.solution}${saveNote}`;
-    $("next").textContent = pos + 1 < session.length ? "Next question" : "Finish";
+    $("next").textContent = "Next question";
     $("teach-btn").hidden = correct || !q.teach;
+    // A soft break hint every BREAK_EVERY questions or BREAK_MINUTES minutes; they can just go on.
+    const breakTime = results.length - lastBreak.n >= BREAK_EVERY || Date.now() - lastBreak.at >= BREAK_MINUTES * 60e3;
+    $("break").hidden = !breakTime;
+    if (breakTime) lastBreak = { at: Date.now(), n: results.length };
     $("feedback").hidden = false;
     $("next").focus();
 }
@@ -346,6 +363,28 @@ async function adaptLater(q, correct, seconds) {
     if (list.length) session[k] = { ...list[Math.floor(Math.random() * list.length)], gen: q.gen, teach: session[k].teach };
 }
 
+// Encouraging words, never numbers or points (parent, 2026-11-14): streaks of right answers, a hard part,
+// a comeback after misses, a skill that was tricky before. Warm-ups only get a plain "Right!".
+const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
+function cheer(q, correct, right) {
+    if (!right) return `Not this time. The answer is ${"ABCDE"[q.answer]}. ${pick(["Mistakes help you learn!",
+        "Now you know the trick for next time.", "Read the solution - it is worth it."])}`;
+    if (!correct) return pick(["Right, on the second try - good comeback!", "Right, on the second try! You didn't give up."]);
+    if (q.isWarmup) return "Right!";
+    const real = results.filter((r) => !r.q.isWarmup);
+    let streak = 0;
+    for (let k = real.length - 1; k >= 0 && real[k].correct; k--) streak++;   // includes this answer
+    const before = real.slice(0, -1);
+    if (streak === 3) return "Three in a row!";
+    if (streak === 5) return "Five in a row - you're on fire!";
+    if (streak >= 8 && streak % 4 === 0) return "Unstoppable! Keep it going!";
+    if (before.length >= 2 && before.slice(-2).every((r) => !r.correct)) return "Back on track - well done!";
+    if ((sessionStates.get(q.gen)?.wrongs ?? 0) > 0 && !before.some((r) => r.q.gen === q.gen))
+        return pick(["This one was tricky before - now you've got it!", "You beat a tricky one!"]);
+    if (q.difficulty === 3) return pick(["Part C - the hard one. Brilliant!", "A Part C question - great thinking!"]);
+    return pick(["Right!", "Well done!", "Nice!", "Correct - good thinking!"]);
+}
+
 // Two misses in a row: the next question is one from a skill the child is good at (if one is left).
 function next() {
     const recentRes = results.filter((r) => !r.q.isWarmup).slice(-2);
@@ -357,7 +396,16 @@ function next() {
     }
     pos++;
     if (pos < session.length) { renderQuestion(); return; }
-    finish();
+    // ran out before the background batch arrived: wait for it (or pick one now)
+    $("feedback").hidden = true;
+    $("q-text").textContent = "Getting more questions ready…";
+    $("q-fig").innerHTML = ""; $("q-after").textContent = ""; $("q-options").innerHTML = "";
+    $("skip-row").hidden = true;
+    refillSoon();
+    Promise.resolve(refill).then(() => {
+        $("skip-row").hidden = false;
+        if (pos < session.length) renderQuestion(); else finish();
+    });
 }
 
 function finish() {
@@ -430,6 +478,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("teach")
 // ------------------------------------------------------------------ start
 $("teach-btn").onclick = openTeach;
 $("next").onclick = next;
+$("break-stop").onclick = finish;
 $("skip").onclick = skip;
 $("check").onclick = check;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles()));
