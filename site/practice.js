@@ -44,8 +44,8 @@ class DbStore {
     async attempts(p) {
         await this.ready;
         await this.flush(p);
-        return this.sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, seconds,
-                               created_at as at
+        return this.sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, second_try,
+                               seconds, created_at as at
                         from attempts where profile_id = ${p} order by created_at, id`;
     }
     async insert(p, a) {
@@ -72,7 +72,12 @@ let store = null;
 let index = null;
 const files = new Map();
 async function bankFor(gen) {
-    if (!files.has(gen.key)) files.set(gen.key, fetch(gen.file).then((r) => r.json()));
+    if (!files.has(gen.key)) {
+        // a failed download is not kept, so "Try again" really fetches it again
+        const got = fetch(gen.file).then((r) => { if (!r.ok) throw new Error(`${gen.file}: ${r.status}`); return r.json(); });
+        got.catch(() => files.delete(gen.key));
+        files.set(gen.key, got);
+    }
     return files.get(gen.key);
 }
 
@@ -144,10 +149,34 @@ async function start(p) {
     $("q-text").textContent = "Getting your questions ready…";
     $("q-fig").innerHTML = ""; $("q-after").textContent = ""; $("q-options").innerHTML = "";
     $("feedback").hidden = true;
-    session = await buildSession(p);
+    $("retry").hidden = true;
+    $("skip-row").hidden = true;
+    const mine = ++starting;                       // a later click on a profile wins
+    try {
+        const built = await withTimeout(buildSession(p), 20000);
+        if (mine !== starting) return;
+        session = built;
+    } catch (e) {
+        if (mine !== starting) return;
+        console.error(e);
+        $("q-text").innerHTML = "";
+        const box = el("div", "kt-alert kt-alert--danger");
+        box.append(el("div", "kt-alert__title", "Could not get the questions ready."),
+            el("div", "kt-mb-2", "Check the internet connection and try again."));
+        const again = el("button", "kt-btn kt-btn--primary", "Try again");
+        again.type = "button";
+        again.onclick = () => start(p);
+        box.append(again);
+        $("q-text").append(box);
+        return;
+    }
+    $("skip-row").hidden = false;
     pos = 0; results = [];
     renderQuestion();
 }
+let starting = 0;
+const withTimeout = (promise, ms) => Promise.race([promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timed out")), ms))]);
 
 function bigger(container, factor) {
     container.querySelectorAll("svg").forEach((s) => {
