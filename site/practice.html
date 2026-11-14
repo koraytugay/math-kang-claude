@@ -18,6 +18,16 @@
         .mk-fig svg, .kt-choice svg { max-width: 100%; height: auto; }
         .mk-fig svg { display: block; margin: 0 auto; }
         .mk-opt-text { font-size: var(--kt-fs-lg); }
+        /* one circle per answer: right green, right on the 2nd try light green, wrong an empty ring
+           (a learning opportunity, never red), skipped grey */
+        .mk-dots { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 18px; }
+        .mk-dot { width: 18px; height: 18px; border-radius: 50%; box-sizing: border-box; }
+        .mk-dot--right { background: var(--kt-success); }
+        .mk-dot--second { background: var(--kt-success-soft); border: 3px solid var(--kt-success); }
+        .mk-dot--learn { border: 2px solid var(--kt-border-strong); }
+        .mk-dot--skip { background: var(--kt-border); }
+        .mk-cheer { font-size: var(--kt-fs-2xl); font-weight: 700; line-height: 1.3; }
+        .mk-cheer + div { margin-top: var(--kt-space-2); font-size: var(--kt-fs-lg); }
     </style>
 </head>
 <body>
@@ -47,10 +57,7 @@
     <!-- a question -->
     <section id="play" hidden>
         <div class="kt-split kt-mb-3">
-            <div class="kt-cluster">
-                <span class="kt-chip" id="play-who"></span>
-                <span class="kt-badge kt-badge--soft-info" id="play-part"></span>
-            </div>
+            <div class="mk-dots" id="dots" aria-label="Your answers so far"></div>
             <div class="kt-cluster">
                 <button type="button" class="kt-btn kt-btn--ghost" id="quit">Stop</button>
             </div>

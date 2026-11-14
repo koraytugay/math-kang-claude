@@ -20,7 +20,6 @@ const PROFILES = [
 const TEST_PROFILE = "koray";    // the parent's test profile opens each question with the right answer picked
 const BATCH = 10;                // sessions are endless: the next BATCH questions are picked as they run out
 const BREAK_EVERY = 15, BREAK_MINUTES = 25;   // then a soft "want a break?" (they can just go on)
-const PART = { 1: "Part A", 2: "Part B", 3: "Part C" };
 
 // ------------------------------------------------------------------ store
 class LocalStore {
@@ -148,7 +147,8 @@ let profile = null, session = [], pos = 0, shownAt = 0, results = [], sessionSta
 
 async function start(p) {
     profile = p;
-    $("play-who").textContent = p.name;
+    try { history.replaceState(null, "", `?profile=${encodeURIComponent(p.name)}`); } catch { /* file:// */ }
+    $("dots").replaceChildren();
     show("play");
     $("q-text").textContent = "Getting your questions ready…";
     $("q-fig").innerHTML = ""; $("q-after").textContent = ""; $("q-options").innerHTML = "";
@@ -201,7 +201,6 @@ function bigger(container, factor) {
 
 function renderQuestion() {
     const q = session[pos];
-    $("play-part").textContent = q.isWarmup ? "Warm-up" : PART[q.difficulty];
     refillSoon();
     $("q-text").innerHTML = q.text;
     $("q-fig").innerHTML = q.figure || "";
@@ -300,6 +299,7 @@ async function skip() {
     [...$("q-options").children].forEach((b) => { b.disabled = true; });
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     results.push({ q, chosen: SKIPPED, correct: false });
+    dot("skip");
     await adaptLater(q, false, seconds);
     try {
         await store.recordAttempt(profile.id, {
@@ -321,10 +321,11 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     $("check").hidden = true;
     buttons.forEach((b, j) => {
         b.disabled = true;
-        if (j === q.answer) b.classList.add("kt-choice--success");
+        if (j === q.answer && right) b.classList.add("kt-choice--success");   // wrong: the answer stays hidden
         if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-choice--danger"); }
     });
     results.push({ q, chosen, correct });
+    dot(correct ? "right" : right ? "second" : "learn");
     // The same skill later in this session: next level up after a right answer, down after a wrong one.
     await adaptLater(q, correct, seconds);
     let saveNote = "";
@@ -339,8 +340,10 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     const fb = $("feedback-text");
     fb.className = `kt-alert ${right ? "kt-alert--success" : "kt-alert--danger"}`;
     const title = cheer(q, correct, right);
-    const why = !correct && q.mistakes?.[chosen] ? `<div class="kt-mb-2">${"ABCDE"[chosen]} is what you get if you ${q.mistakes[chosen]}.</div>` : "";
-    fb.innerHTML = `<div class="kt-alert__title">${title}</div>${why}${q.solution}${saveNote}`;
+    // Right: just the cheer (the solution was never read). Wrong: no answer and no solution (it would be
+    // memorised), only what the picked option stands for; the same skill comes back later.
+    const why = !right && q.mistakes?.[picked] ? `<div>${"ABCDE"[picked]} is what you get if you ${q.mistakes[picked]}.</div>` : "";
+    fb.innerHTML = `<div class="mk-cheer">${title}</div>${why}${saveNote}`;
     $("next").textContent = "Next question";
     $("teach-btn").hidden = correct || !q.teach;
     // A soft break hint every BREAK_EVERY questions or BREAK_MINUTES minutes; they can just go on.
@@ -368,8 +371,8 @@ async function adaptLater(q, correct, seconds) {
 // a comeback after misses, a skill that was tricky before. Warm-ups only get a plain "Right!".
 const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
 function cheer(q, correct, right) {
-    if (!right) return `Not this time. The answer is ${"ABCDE"[q.answer]}. ${pick(["Mistakes help you learn!",
-        "Now you know the trick for next time.", "Read the solution - it is worth it."])}`;
+    if (!right) return pick(["Not this time - a learning opportunity!", "Not this one - you'll meet it again and get it!",
+        "Mistakes help you learn!"]);
     if (!correct) return pick(["Right, on the second try - good comeback!", "Right, on the second try! You didn't give up."]);
     if (q.isWarmup) return "Right!";
     const real = results.filter((r) => !r.q.isWarmup);
@@ -432,7 +435,7 @@ function finish() {
         if (r.q.after) { const a = el("div", "mk-rich"); a.innerHTML = r.q.after; c.append(a); }
         const s = el("div", "kt-mt-2 kt-text-secondary");
         s.innerHTML = r.chosen === SKIPPED ? "You skipped this one. Try it again another time!"
-            : `You chose ${"ABCDE"[r.chosen]}, the answer is ${"ABCDE"[r.q.answer]}. ${r.q.solution}`;
+            : "A learning opportunity - one like it will come back, so you can try again!";
         if (!c.contains(t)) c.append(t);
         c.append(s);
         box.append(c);
@@ -482,9 +485,12 @@ $("next").onclick = next;
 $("break-stop").onclick = finish;
 $("skip").onclick = skip;
 $("check").onclick = check;
-$("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles()));
+$("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles(), clearProfileUrl()));
 $("again").onclick = () => start(profile);
-$("switch").onclick = () => { show("who"); renderProfiles(); };
+$("switch").onclick = () => { show("who"); renderProfiles(); clearProfileUrl(); };
+function clearProfileUrl() { try { history.replaceState(null, "", location.pathname); } catch { /* file:// */ } }
+/** One circle per answer in the top row (no numbers): right, second, learn (wrong), skip. */
+function dot(kind) { $("dots").append(el("span", `mk-dot mk-dot--${kind}`)); }
 document.addEventListener("keydown", (e) => {
     if ($("play").hidden || $("teach").classList.contains("is-open")) return;
     const k = e.key.toUpperCase();
@@ -501,6 +507,10 @@ function connect(secrets) {
     store = new DbStore(secrets.db);
     $("lock").hidden = true;
     $("who").hidden = false;
+    // ?profile=Deniz opens that child's practice straight away
+    const wanted = new URLSearchParams(location.search).get("profile")?.toLowerCase();
+    const p = PROFILES.find((x) => x.name.toLowerCase() === wanted || x.id === wanted);
+    if (p && index) { start(p); return; }
     renderProfiles().catch((e) => {
         $("profiles").innerHTML = "";
         const a = el("div", "kt-alert kt-alert--danger", `Could not reach the database: ${e.message}`);
