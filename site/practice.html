@@ -26,8 +26,9 @@
         .mk-dot--second { background: var(--kt-success-soft); border: 3px solid var(--kt-success); }
         .mk-dot--learn { border: 2px solid var(--kt-border-strong); }
         .mk-dot--skip { background: var(--kt-border); }
-        .mk-cheer { font-size: var(--kt-fs-2xl); font-weight: 700; line-height: 1.3; }
-        .mk-cheer + div { margin-top: var(--kt-space-2); font-size: var(--kt-fs-lg); }
+        /* feedback: the same size as the question text; only the cheer is semibold */
+        #feedback-text { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
+        .mk-cheer { font-weight: 600; }
     </style>
 </head>
 <body>
