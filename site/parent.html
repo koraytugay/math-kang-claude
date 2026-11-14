@@ -10,7 +10,15 @@
         /* layout glue only */
         .mk-page { max-width: 1200px; }
         .mk-lock { max-width: 420px; margin: var(--kt-space-8) auto 0; }
-        .mk-q { max-width: 560px; }
+        .mk-study { max-width: 900px; }
+        .mk-rich p { margin: 0 0 0.6em; }
+        .mk-rich ul { margin: 0 0 0.6em; padding-left: 1.4em; }
+        .mk-rich li { margin: 0.15em 0; }
+        .mk-rich > :last-child { margin-bottom: 0; }
+        .mk-qtext { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
+        .mk-fig { margin: var(--kt-space-4) 0; }
+        .mk-fig svg, .kt-choice svg { max-width: 100%; height: auto; }
+        .mk-fig svg { display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -46,11 +54,14 @@
                 <tbody id="skills"></tbody>
             </table></div>
 
-            <h2 class="kt-section-title kt-mt-6">Recent mistakes and skips</h2>
-            <div class="kt-table-wrap kt-mt-2"><table class="kt-table">
-                <thead><tr><th>When</th><th>Skill</th><th>Question</th><th>Picked</th><th>Answer</th><th>Second try</th><th>Seconds</th></tr></thead>
-                <tbody id="mistakes"></tbody>
-            </table></div>
+            <h2 class="kt-section-title kt-mt-6" id="study-title">To study together</h2>
+            <p class="kt-text-secondary kt-mt-1">The exact questions answered wrong on the first try or skipped, newest first.
+                Mark one as studied when you have gone through it together.</p>
+            <div class="kt-stack kt-mt-3 mk-study" id="study"></div>
+            <details class="kt-mt-6" id="studied-box">
+                <summary class="kt-section-title" id="studied-title">Studied together</summary>
+                <div class="kt-stack kt-mt-3 mk-study" id="studied"></div>
+            </details>
         </div>
     </section>
 </div>

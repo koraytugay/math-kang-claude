@@ -1,5 +1,5 @@
 // Parent view (parent.html, not linked anywhere): per child, the skill states from smart.js, what the next
-// session focuses on, and the recent mistakes with the option that was picked.
+// session focuses on, and the exact questions to study together (wrong first try or skipped).
 "use strict";
 
 const $ = (id) => document.getElementById(id);
@@ -95,35 +95,122 @@ async function show(k) {
         body.append(tr);
     }
 
-    // recent mistakes (first try wrong) and skips ("I'm not sure"), newest first
-    const skippedCell = () => {
-        const td = el("td");
-        td.append(el("span", "kt-badge kt-badge--orange", "Skipped - not sure"));
-        return td;
-    };
-    const mb = $("mistakes");
-    mb.innerHTML = "";
-    const wrong = real.filter((a) => !a.correct).slice(-20).reverse();
-    if (!wrong.length) { const tr = el("tr"); const td = el("td", "kt-text-secondary", "No mistakes yet."); td.colSpan = 7; tr.append(td); mb.append(tr); }
+    // the exact questions to study together: first try wrong or skipped, not yet marked as studied
+    const done = await studiedSet(k.id);
+    if (ticket !== showing) return;
+    const once = new Set();                     // the same exact question missed twice: one card (the newest)
+    const wrong = real.filter((a) => !a.correct).reverse().filter((a) => !once.has(a.id) && once.add(a.id));
+    const cards = [];
     for (const a of wrong) {
         const g = gens.find((x) => x.key === a.gen);
         const q = g ? (await bankFor(g)).find((x) => x.id === a.id) : null;
         if (ticket !== showing) return;
-        const opt = (i) => q ? `${LETTER[i]} (${q.choice_figures ? "picture" : plain(q.choices[i])})` : LETTER[i] ?? "";
-        const tr = el("tr");
-        tr.append(
-            el("td", null, day(a.at)), el("td", null, g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen),
-            el("td", "mk-q", q ? plain(q.text).slice(0, 160) + (plain(q.text).length > 160 ? "…" : "") : ""),
-            a.chosen < 0 ? skippedCell()
-                : el("td", null, opt(a.chosen) + (q?.mistakes?.[a.chosen] ? ` - ${q.mistakes[a.chosen]}` : "")),
-            el("td", null, q ? opt(q.answer) : ""),
-            el("td", null, a.second_try == null ? "" : a.second_try ? "right" : "wrong"),
-            el("td", "kt-num", String(a.seconds ?? "")),
-        );
-        mb.append(tr);
+        cards.push(studyCard(k, a, g, q, done.has(a.id)));
     }
+    $("study").replaceChildren(...cards.filter((c) => !c.dataset.studied));
+    $("studied").replaceChildren(...cards.filter((c) => c.dataset.studied));
+    if (!$("study").children.length) $("study").append(el("div", "kt-text-secondary", "Nothing to study right now."));
+    countStudy();
     $("loading").hidden = true;
     $("content").hidden = false;
+}
+
+// ------------------------------------------------------------------ studying together
+// "Studied together" is saved in the achievements table (unused since badges were dropped; the site may
+// insert and update there, not delete): code "studied:<question id>". Undo renames the row to
+// "unstudied:<question id>:<time>", so it can be marked again later.
+let sqlFn = null;
+async function sql() {
+    if (!sqlFn) {
+        const m = await import("https://cdn.jsdelivr.net/npm/@neondatabase/serverless@1.2.0/+esm");
+        sqlFn = m.neon(secrets.db, { disableWarningInBrowsers: true });
+    }
+    return sqlFn;
+}
+async function studiedSet(profileId) {
+    const db = await sql();
+    const rows = await db`select code from achievements where profile_id = ${profileId} and code like 'studied:%'`;
+    return new Set(rows.map((r) => r.code.slice("studied:".length)));
+}
+async function markStudied(profileId, qid, on) {
+    const db = await sql();
+    if (on) await db`insert into achievements (profile_id, code) values (${profileId}, ${"studied:" + qid})
+                     on conflict (profile_id, code) do nothing`;
+    else await db`update achievements set code = ${`unstudied:${qid}:${Date.now()}`}
+                  where profile_id = ${profileId} and code = ${"studied:" + qid}`;
+}
+function countStudy() {
+    const open = $("study").querySelectorAll(".mk-card").length, closed = $("studied").children.length;
+    $("study-title").textContent = `To study together (${open})`;
+    $("studied-title").textContent = `Studied together (${closed})`;
+    $("studied-box").hidden = !closed;
+}
+
+function bigger(container, factor) {
+    container.querySelectorAll("svg").forEach((s) => {
+        const w = parseFloat(s.getAttribute("width")), h = parseFloat(s.getAttribute("height"));
+        if (w && h) { s.setAttribute("width", w * factor); s.setAttribute("height", h * factor); }
+    });
+}
+
+/** One question as the child saw it: text, figure, options (picked red, answer green), why, solution. */
+function studyCard(k, a, g, q, studied) {
+    const card = el("div", "kt-card kt-card--padded kt-stack mk-card");
+    if (studied) card.dataset.studied = "1";
+    const head = el("div", "kt-cluster");
+    head.append(el("span", "kt-fw-bold", `${day(a.at)} · ${g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen}`),
+        el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[[1, 2, 3].indexOf(a.difficulty) + (a.harder ? 1 : 0)] || ""));
+    if (a.chosen < 0) head.append(el("span", "kt-badge kt-badge--orange", "Skipped - not sure"));
+    else head.append(el("span", a.second_try ? "kt-badge kt-badge--soft-warning" : "kt-badge kt-badge--soft-danger",
+        a.second_try ? "Wrong, then right on the second try" : a.second_try === false ? "Wrong twice" : "Wrong"));
+    if (a.variant?.startsWith("warmup:")) head.append(el("span", "kt-badge", "Warm-up"));
+    if (a.seconds != null) head.append(el("span", "kt-text-secondary", `${a.seconds} s`));
+    card.append(head);
+    if (!q) {
+        card.append(el("div", "kt-text-secondary", "This question is no longer in the question bank (the generator changed)."));
+    } else {
+        const t = el("div", "mk-qtext mk-rich"); t.innerHTML = q.text; card.append(t);
+        if (q.figure) { const f = el("div", "mk-fig"); f.innerHTML = q.figure; bigger(f, 1.6); card.append(f); }
+        if (q.after) { const t2 = el("div", "mk-qtext mk-rich"); t2.innerHTML = q.after; card.append(t2); }
+        const row = q.choice_figures || Math.max(...q.choices.map((c) => plain(c).length)) <= 14;
+        const opts = el("div", `kt-choices${row ? " kt-choices--row" : ""}`);
+        q.choices.forEach((c, i) => {
+            const b = el("button", `kt-choice${q.choice_figures ? " kt-choice--stacked" : ""}`);
+            b.type = "button"; b.disabled = true;
+            if (i === q.answer) b.classList.add("kt-choice--success");
+            if (i === a.chosen && i !== q.answer) { b.classList.add("kt-choice--danger"); b.setAttribute("aria-pressed", "true"); }
+            b.append(el("span", "kt-choice__key", LETTER[i]));
+            const lab = el("span", "kt-choice__label");
+            if (q.choice_figures) { lab.innerHTML = q.choice_figures[i]; bigger(lab, 1.3); } else lab.innerHTML = c;
+            b.append(lab);
+            opts.append(b);
+        });
+        card.append(opts);
+        const facts = el("div", "mk-rich");
+        const why = a.chosen >= 0 && q.mistakes?.[a.chosen] ? `<p>${LETTER[a.chosen]} is what you get if you ${q.mistakes[a.chosen]}.</p>` : "";
+        facts.innerHTML = (a.chosen >= 0 ? `<p>Picked <b>${LETTER[a.chosen]}</b>, the answer is <b>${LETTER[q.answer]}</b>.</p>` : `<p>The answer is <b>${LETTER[q.answer]}</b>.</p>`)
+            + why + (g?.skill ? `<p class="kt-text-secondary">Skill: ${g.skill}.</p>` : "");
+        card.append(facts);
+        const sol = el("details");
+        sol.append(el("summary", null, "Solution"));
+        const st = el("div", "mk-rich kt-mt-2"); st.innerHTML = q.solution; sol.append(st);
+        card.append(sol);
+    }
+    const btn = el("button", studied ? "kt-btn" : "kt-btn kt-btn--primary", studied ? "Undo - study again" : "Studied together");
+    btn.type = "button";
+    btn.onclick = async () => {
+        btn.disabled = true;
+        try {
+            await markStudied(k.id, a.id, !card.dataset.studied);
+            if (card.dataset.studied) { delete card.dataset.studied; btn.className = "kt-btn kt-btn--primary"; btn.textContent = "Studied together"; $("study").querySelector(":scope > .kt-text-secondary")?.remove(); $("study").prepend(card); }
+            else { card.dataset.studied = "1"; btn.className = "kt-btn"; btn.textContent = "Undo - study again"; $("studied").prepend(card); }
+            if (!$("study").children.length) $("study").append(el("div", "kt-text-secondary", "Nothing to study right now."));
+            countStudy();
+        } catch (e) { alert(`Could not save: ${e.message}`); }
+        btn.disabled = false;
+    };
+    const foot = el("div"); foot.append(btn); card.append(foot);
+    return card;
 }
 
 function start(s) {
