@@ -487,7 +487,8 @@ $("skip").onclick = skip;
 $("check").onclick = check;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles(), clearProfileUrl()));
 $("again").onclick = () => start(profile);
-$("switch").onclick = () => { show("who"); renderProfiles(); clearProfileUrl(); };
+// Keep practising: back to the same session (its circles too), at the next question if this one was answered.
+$("keep").onclick = () => { show("play"); if (!$("feedback").hidden) next(); };
 function clearProfileUrl() { try { history.replaceState(null, "", location.pathname); } catch { /* file:// */ } }
 /** One circle per answer in the top row (no numbers): right, second, learn (wrong), skip. */
 function dot(kind) { $("dots").append(el("span", `mk-dot mk-dot--${kind}`)); }
