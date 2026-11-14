@@ -44,6 +44,16 @@
         <div id="content" hidden>
             <div class="kt-stat-row" id="summary"></div>
 
+            <h2 class="kt-section-title kt-mt-6">Sessions</h2>
+            <p class="kt-text-secondary kt-mt-1">Answers with less than 30 minutes between them count as one session.
+                Updates every minute.</p>
+            <div class="kt-table-wrap kt-mt-2"><table class="kt-table kt-table--compact">
+                <thead><tr><th>When</th><th class="kt-num">Minutes</th><th class="kt-num">Questions</th>
+                    <th class="kt-num">Right first try</th><th class="kt-num">Right second try</th><th class="kt-num">Wrong</th>
+                    <th class="kt-num">Skipped</th><th>Skills</th></tr></thead>
+                <tbody id="sessions"></tbody>
+            </table></div>
+
             <h2 class="kt-section-title kt-mt-6">Next session focuses on</h2>
             <div class="kt-cluster kt-mt-2" id="focus"></div>
 

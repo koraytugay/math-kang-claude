@@ -42,6 +42,7 @@ async function show(k) {
     const real = attempts.filter((a) => !a.variant?.startsWith("warmup:"));
     const states = skillStates(attempts);
     const gens = index.generators;
+    renderSessions(real);
 
     // summary (for the parent only)
     const counts = { "Needs work": 0, "Getting there": 0, Solid: 0, "Not tried yet": 0 };
@@ -117,6 +118,56 @@ async function show(k) {
     $("loading").hidden = true;
     $("content").hidden = false;
 }
+
+// ------------------------------------------------------------------ sessions
+// The attempts table has no session column: answers less than SESSION_GAP apart are one session. A session
+// whose last answer is under LIVE_GAP old is shown as "now" (the child may still be practising).
+const SESSION_GAP = 30 * 60e3, LIVE_GAP = 10 * 60e3, SHOW_SESSIONS = 10;
+const clock = (t) => new Date(t).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+
+function renderSessions(real) {
+    const sessions = [];
+    for (const a of real) {
+        const last = sessions.at(-1);
+        if (last && new Date(a.at) - new Date(last.at(-1).at) < SESSION_GAP) last.push(a);
+        else sessions.push([a]);
+    }
+    const body = $("sessions");
+    body.innerHTML = "";
+    for (const s of sessions.slice(-SHOW_SESSIONS).reverse()) {
+        const first = new Date(s[0].at), end = new Date(s.at(-1).at);
+        const live = Date.now() - end < LIVE_GAP;
+        const n = (f) => String(s.filter(f).length);
+        const skills = [...new Set(s.map((a) => index.generators.find((g) => g.key === a.gen)?.label ?? a.gen))];
+        const when = el("td", null, `${day(first)}, ${clock(first)} - ${clock(end)} `);
+        if (live) when.append(el("span", "kt-badge kt-badge--soft-success", "now"));
+        const tr = el("tr");
+        tr.append(when,
+            el("td", "kt-num", String(Math.max(1, Math.round((end - first) / 60e3)))),
+            el("td", "kt-num", String(s.length)),
+            el("td", "kt-num", n((a) => a.correct)),
+            el("td", "kt-num", n((a) => !a.correct && a.second_try)),
+            el("td", "kt-num", n((a) => !a.correct && !a.second_try && a.chosen >= 0)),
+            el("td", "kt-num", n((a) => a.chosen < 0)),
+            el("td", "kt-text-secondary", skills.join(", ")));
+        body.append(tr);
+    }
+    if (!sessions.length) {
+        const tr = el("tr"), td = el("td", "kt-text-secondary", "No answers yet.");
+        td.colSpan = 8; tr.append(td); body.append(tr);
+    }
+}
+
+/** Reload only the sessions table (the rest of the page may be in use: study cards). */
+async function refreshSessions() {
+    if (!secrets || document.hidden || $("content").hidden) return;
+    const k = kid, ticket = showing;
+    const attempts = await fetchAttempts(secrets.db, k.id);
+    if (k !== kid || ticket !== showing) return;
+    renderSessions(attempts.filter((a) => !a.variant?.startsWith("warmup:")));
+}
+setInterval(() => refreshSessions().catch((e) => console.error(e)), 60e3);
+document.addEventListener("visibilitychange", () => refreshSessions().catch((e) => console.error(e)));
 
 // ------------------------------------------------------------------ studying together
 // "Studied together" is saved in the achievements table (unused since badges were dropped; the site may
