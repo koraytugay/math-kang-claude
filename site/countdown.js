@@ -12,7 +12,7 @@ const el = (tag, cls, text) => {
 
 const CONTEST = new Date(2027, 2, 21);              // Sunday, March 21, 2027 (local time)
 const KIDS = ["deniz", "toprak"];                   // the parent's test profile does not count
-// Goals (parent, 2026-11-14), counting answers right on the first try: ultimate goal 1,000, then a Pokémon
+// Goals (parent, 2026-11-14), counting right answers (first or second try): ultimate goal 1,000, then a Pokémon
 // booster pack at 1,250 (the kids agreed, hyped); a McDonald's treat every 200. Flags count answers right on the
 // first try (not a quick guess).
 const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];
@@ -75,8 +75,9 @@ function numbers(byKid, gens) {
     for (const attempts of byKid) {
         const real = attempts.filter((a) => !a.variant?.startsWith("warmup:"));
         n.answered += real.filter((a) => a.chosen >= 0).length;
-        // right on the first try, not a quick guess: what the goal flags count (answers alone filled them too fast)
-        n.right += real.filter((a) => a.correct && !isGuess(a.difficulty, a.seconds)).length;
+        // right answers: on the first try (not a quick guess) or on the second try - what the goal flags count
+        // (all answers filled them too fast; a son: "a right second try is right too")
+        n.right += real.filter((a) => (a.correct && !isGuess(a.difficulty, a.seconds)) || (!a.correct && a.second_try)).length;
         n.partC += real.filter((a) => a.correct && a.difficulty === 3).length;
         // learned: a question first got wrong (or skipped), and later a question of the same skill right
         // on the first try (not a quick guess) - the same rule as the parent page
@@ -113,16 +114,16 @@ const STICKERS = [
     ["💯", "Hundred club", "Answer 100 questions", (n) => n.answered >= 100],
     ["🚀", "Rocket", "Answer 250 questions", (n) => n.answered >= 250],
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
-    ["👑", "Kangaroo royalty", "1000 right on the first try: the ultimate goal", (n) => n.right >= 1000],
-    ["🎴", "Booster pack!", "1250 right on the first try", (n) => n.right >= 1250],
+    ["👑", "Kangaroo royalty", "1000 right answers: the ultimate goal", (n) => n.right >= 1000],
+    ["🎴", "Booster pack!", "1250 right answers", (n) => n.right >= 1250],
     ["🏕️", "Weekend warrior", `${WEEKEND_GOAL} questions in one weekend`, (n) => n.bestWeekend >= WEEKEND_GOAL],
     ["🎢", "Super weekend", "100 questions in one weekend", (n) => n.bestWeekend >= 100],
     ["🗓️", "Five great weekends", `Reach the weekend goal on 5 weekends`, (n) => n.weekends75 >= 5],
     ["🌱", "Brain sprout", "Learn from 5 mistakes", (n) => n.learned >= 5],
     ["🌳", "Brain tree", "Learn from 25 mistakes", (n) => n.learned >= 25],
     ["🧠", "Mega brain", "Learn from 100 mistakes", (n) => n.learned >= 100],
-    ["🎯", "Bullseye", "50 right on the first try", (n) => n.right >= 50],
-    ["🏹", "Sharpshooter", "250 right on the first try", (n) => n.right >= 250],
+    ["🎯", "Bullseye", "50 right answers", (n) => n.right >= 50],
+    ["🏹", "Sharpshooter", "250 right answers", (n) => n.right >= 250],
     ["🧗", "Part C climber", "10 hard Part C questions right", (n) => n.partC >= 10],
     ["🦅", "Part C eagle", "50 hard Part C questions right", (n) => n.partC >= 50],
     ["🔥", "On fire", "Practise 3 days in a row", (n) => n.streak >= 3],
@@ -184,7 +185,7 @@ function render(n, daysLeft) {
     stats.innerHTML = "";
     for (const [icon, value, label, cls] of [
         ["✏️", n.answered, "questions answered", "mk-c1"],
-        ["🎯", n.right, "right on the first try", "mk-c2"],
+        ["🎯", n.right, "right answers", "mk-c2"],
         ["🧠", n.learned, "mistakes turned into learning", "mk-c3"],
         ["📅", n.days, n.days === 1 ? "day of practice" : "days of practice", "mk-c4"],
     ]) {
@@ -216,7 +217,7 @@ function render(n, daysLeft) {
     const togo = next - n.right;
     $("goal-note").textContent = togo <= 0 ? "Every goal reached, even the ultimate one. WOW!"
         : n.right >= 1000 ? `Ultimate goal reached! Only ${(BOOSTER - n.right).toLocaleString()} more to the booster pack! 🎴`
-            : `Only ${togo.toLocaleString()} more right on the first try to the next flag! Ultimate goal: 1,000 · then the Pokémon booster pack at 1,250! 🎴`;
+            : `Only ${togo.toLocaleString()} more right answers to the next flag! Ultimate goal: 1,000 · then the Pokémon booster pack at 1,250! 🎴`;
     const flags = $("flags");
     flags.innerHTML = "";
     for (const g of GOALS.filter((x) => x !== BOOSTER)) {
@@ -227,14 +228,10 @@ function render(n, daysLeft) {
         flags.append(f);
     }
 
-    // the ultimate goal gets its own big, shiny pill
+    // the booster pack: the last pill of the row, filling the rest of it, shiny
     const got = n.right >= BOOSTER;
-    const boost = el("div", `mk-booster${got ? " mk-booster--got" : ""}`);
-    boost.append(el("span", "mk-booster__num", got ? `✅ ${BOOSTER.toLocaleString()}` : BOOSTER.toLocaleString()),
-        el("span", "mk-booster__text", got ? "⚡ POKÉMON BOOSTER PACK! YOU DID IT! ⚡" : "⚡ POKÉMON BOOSTER PACK! ⚡"),
-        el("span", "mk-booster__sub", got ? "Go get it!" : `${(BOOSTER - n.right).toLocaleString()} to go`));
-    flags.after(boost);
-    document.querySelectorAll(".mk-booster").forEach((b) => { if (b !== boost) b.remove(); });
+    flags.append(el("span", `mk-flag mk-flag--booster${got ? " mk-flag--done" : ""}`,
+        `${got ? "✅" : "⚡"} ${BOOSTER.toLocaleString()} POKÉMON PACK! ${got ? "YOU DID IT! 🎉" : "⚡"}`));
 
     if (stickerBook(n)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;
