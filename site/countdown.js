@@ -13,10 +13,12 @@ const el = (tag, cls, text) => {
 const CONTEST = new Date(2027, 2, 21);              // Sunday, March 21, 2027 (local time)
 const KIDS = ["deniz", "toprak"];                   // the parent's test profile does not count
 // The plan (parent, 2026-11-14): ~12 study weekends x ~75 questions together + the first 100 = 1,000 on contest
-// day; 1,250 is the ultimate goal. Many small flags on the way, so a new one comes every weekend.
-const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];   // one row of flags
+// day. Ultimate goal 1,500 (the kids agreed, hyped): a Pokémon booster pack. Flags count answers right on the
+// first try (not a quick guess).
+const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500];
 const TREATS = [300, 600, 900, 1250];          // a McDonald's treat when this flag is reached
-const BIG_GOALS = { 1000: "🎯 Contest goal", 1250: "🌈 Ultimate goal" };
+const BOOSTER = 1500;                          // a Pokémon booster pack when this flag is reached
+const BIG_GOALS = { 1000: "🎯 Contest goal", 1500: "🌈 Ultimate goal" };
 const WEEKEND_GOAL = 75;
 const CHEERS = [
     "Every question makes your brain a little stronger.",
@@ -112,7 +114,7 @@ const STICKERS = [
     ["🚀", "Rocket", "Answer 250 questions", (n) => n.answered >= 250],
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
     ["👑", "Kangaroo royalty", "1000 right on the first try: the contest goal", (n) => n.right >= 1000],
-    ["🌈", "Ultimate kangaroo", "1250 right on the first try: the ultimate goal", (n) => n.right >= 1250],
+    ["🎴", "Booster pack!", "1500 right on the first try: the ultimate goal", (n) => n.right >= 1500],
     ["🏕️", "Weekend warrior", `${WEEKEND_GOAL} questions in one weekend`, (n) => n.bestWeekend >= WEEKEND_GOAL],
     ["🎢", "Super weekend", "100 questions in one weekend", (n) => n.bestWeekend >= 100],
     ["🗓️", "Five great weekends", `Reach the weekend goal on 5 weekends`, (n) => n.weekends75 >= 5],
@@ -214,14 +216,15 @@ function render(n, daysLeft) {
     requestAnimationFrame(() => requestAnimationFrame(() => { $("goal-bar").style.width = `${Math.max(2, share * 100)}%`; }));
     const togo = next - n.right;
     $("goal-note").textContent = togo <= 0 ? "Every goal reached, even the ultimate one. WOW!"
-        : n.right >= 1000 ? `Contest goal reached! Only ${togo.toLocaleString()} more to the ultimate goal!`
-            : `Only ${togo.toLocaleString()} more right on the first try to the next flag! Contest goal: 1,000 · Ultimate goal: 1,250.`;
+        : n.right >= 1000 ? `Contest goal reached! Only ${(BOOSTER - n.right).toLocaleString()} more to the booster pack! 🎴`
+            : `Only ${togo.toLocaleString()} more right on the first try to the next flag! Contest goal: 1,000 · Ultimate goal: 1,500 = a Pokémon booster pack! 🎴`;
     const flags = $("flags");
     flags.innerHTML = "";
     for (const g of GOALS) {
         const f = el("span", `mk-flag${n.right >= g ? " mk-flag--done" : ""}`,
-            `${n.right >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}`);
-        if (BIG_GOALS[g]) f.title = BIG_GOALS[g].slice(3);
+            `${n.right >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}${g === BOOSTER ? " 🎴" : ""}`);
+        f.title = [BIG_GOALS[g]?.slice(3), TREATS.includes(g) && "McDonald's treat", g === BOOSTER && "Pokémon booster pack"]
+            .filter(Boolean).join(" · ");
         flags.append(f);
     }
 
