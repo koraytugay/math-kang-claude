@@ -76,6 +76,10 @@
         @media (prefers-reduced-motion: reduce) { .mk-flag--booster::after { animation: none; } }
 
         .mk-stickers { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--kt-space-4); }
+        .mk-sticker-group { grid-column: 1 / -1; font-size: var(--kt-fs-xl); font-weight: var(--kt-weight-bold);
+                            margin-top: var(--kt-space-4); display: flex; align-items: baseline; gap: var(--kt-space-3); }
+        .mk-sticker-group:first-child { margin-top: 0; }
+        .mk-sticker-group__count { font-size: var(--kt-fs-md); font-weight: var(--kt-weight-regular); color: var(--kt-text-secondary); }
         .mk-sticker {
             text-align: center; padding: var(--kt-space-4) var(--kt-space-2); border-radius: var(--kt-radius-xl);
             background: var(--kt-surface); border: 3px dashed var(--kt-border-strong);
