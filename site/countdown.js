@@ -85,7 +85,7 @@ const STICKERS = [
     ["🚀", "Rocket", "Answer 250 questions", (n) => n.answered >= 250],
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
     ["👑", "Kangaroo royalty", "1000 right answers: the ultimate goal", (n) => n.right >= 1000],
-    ["🎴", "Booster pack!", "1250 right answers", (n) => n.right >= 1250],
+    ["🎴", "4 Pokémon packs!", "1250 right answers", (n) => n.right >= 1250],
     ["🌱", "Brain sprout", "Learn from 5 mistakes", (n) => n.learned >= 5],
     ["🌳", "Brain tree", "Learn from 25 mistakes", (n) => n.learned >= 25],
     ["🧠", "Mega brain", "Learn from 100 mistakes", (n) => n.learned >= 100],
@@ -171,8 +171,8 @@ function render(n, daysLeft) {
     requestAnimationFrame(() => requestAnimationFrame(() => { $("goal-bar").style.width = `${Math.max(2, share * 100)}%`; }));
     const togo = next - n.right;
     $("goal-note").textContent = togo <= 0 ? "Every goal reached, even the ultimate one. WOW!"
-        : n.right >= 1000 ? `Ultimate goal reached! Only ${(BOOSTER - n.right).toLocaleString()} more to the booster pack! 🎴`
-            : `Only ${togo.toLocaleString()} more right answers to the next flag! Ultimate goal: 1,000 · then the Pokémon booster pack at 1,250! 🎴`;
+        : n.right >= 1000 ? `Ultimate goal reached! Only ${(BOOSTER - n.right).toLocaleString()} more to the 4 Pokémon packs!`
+            : `Only ${togo.toLocaleString()} more right answers to the next flag! Ultimate goal: 1,000 · then 4 Pokémon packs at 1,250!`;
     const flags = $("flags");
     flags.innerHTML = "";
     for (const g of GOALS.filter((x) => x !== BOOSTER)) {
@@ -186,7 +186,7 @@ function render(n, daysLeft) {
     // the booster pack: the last pill of the row, filling the rest of it, shiny
     const got = n.right >= BOOSTER;
     flags.append(el("span", `mk-flag mk-flag--booster${got ? " mk-flag--done" : ""}`,
-        `${got ? "✅" : "⚡"} ${BOOSTER.toLocaleString()} POKÉMON PACK! ${got ? "YOU DID IT! 🎉" : "⚡"}`));
+        `${BOOSTER.toLocaleString()} 4 Pokémon Packs!${got ? " You did it!" : ""}`));
 
     if (stickerBook(n)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;
