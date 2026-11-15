@@ -21,6 +21,18 @@
         /* one text size for everything the kids read (question, messages, summary); bold only for headings */
         #play, #done { font-size: var(--kt-fs-lg); line-height: var(--kt-leading-normal); }
         #play .kt-alert__title, #done .kt-alert__title { font-weight: 400; }
+        /* a sticker unlocked while practising: big, gold, bouncing in */
+        .mk-sticker-pop { text-align: center; padding: var(--kt-space-8) var(--kt-space-6); border: 4px solid var(--kt-gold);
+                          animation: mk-pop-in .5s cubic-bezier(.2, 1.6, .4, 1); }
+        .mk-sticker-pop__title { font-size: 2.4rem; font-weight: var(--kt-weight-heavy); margin: 0 0 var(--kt-space-5); }
+        .mk-sticker-pop__list { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--kt-space-6); margin-bottom: var(--kt-space-6); }
+        .mk-new-sticker { min-width: 180px; }
+        .mk-new-sticker__emoji { font-size: 6rem; line-height: 1.1; animation: mk-wiggle 1s ease-in-out 2; }
+        .mk-new-sticker__name { font-size: var(--kt-fs-2xl); font-weight: var(--kt-weight-bold); margin-top: var(--kt-space-2); }
+        .mk-new-sticker__how { font-size: var(--kt-fs-lg); color: var(--kt-text-secondary); }
+        @keyframes mk-pop-in { from { transform: scale(.3); opacity: 0; } }
+        @keyframes mk-wiggle { 25% { transform: rotate(-12deg) scale(1.15); } 75% { transform: rotate(12deg) scale(1.15); } }
+        @media (prefers-reduced-motion: reduce) { .mk-sticker-pop, .mk-new-sticker__emoji { animation: none; } }
     </style>
 </head>
 <body>
@@ -106,8 +118,18 @@
     </div>
 </div>
 
+<!-- a sticker unlocked while practising -->
+<div class="kt-modal" id="sticker" role="dialog" aria-modal="true" aria-labelledby="sticker-title">
+    <div class="kt-modal__dialog mk-sticker-pop">
+        <h2 class="mk-sticker-pop__title" id="sticker-title">You unlocked a sticker!!!</h2>
+        <div class="mk-sticker-pop__list" id="sticker-list"></div>
+        <button type="button" class="kt-btn kt-btn--primary kt-btn--lg kt-modal__close" id="sticker-ok">Awesome!</button>
+    </div>
+</div>
+
 <script src="secrets.js"></script>
 <script src="smart.js"></script>
+<script src="stickers.js"></script>
 <script src="practice.js"></script>
 </body>
 </html>

@@ -87,7 +87,11 @@ async function bankFor(gen) {
 async function buildSession(profile, exclude = [], first = true) {
     const attempts = await store.attempts(profile.id);
     const states = skillStates(attempts);
-    if (first) sessionStates = states;
+    if (first) {
+        sessionStates = states;
+        myAttempts = [...attempts];
+        myStickers = earnedStickers(numbers([myAttempts], index.generators));
+    }
     const seen = new Set([...attempts.map((a) => a.id), ...exclude]);
 
     const qs = [];
@@ -144,6 +148,7 @@ async function renderProfiles() {
 }
 
 let profile = null, session = [], pos = 0, shownAt = 0, results = [], sessionStates = new Map();
+let myAttempts = [], myStickers = new Set();      // this child's answers and stickers (stickers.js)
 
 async function start(p) {
     profile = p;
@@ -298,15 +303,17 @@ async function skip() {
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     results.push({ q, chosen: SKIPPED, correct: false });
     await adaptLater(q, false, seconds);
+    const attempt = {
+        id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
+        chosen: SKIPPED, correct: false, second_try: null, seconds, at: new Date().toISOString(),
+    };
     try {
-        await store.recordAttempt(profile.id, {
-            id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
-            chosen: SKIPPED, correct: false, second_try: null, seconds, at: new Date().toISOString(),
-        });
+        await store.recordAttempt(profile.id, attempt);
     } catch { /* kept in this browser, saved next time */ }
     skipping = false;
     $("skip").disabled = false;
     next();
+    stickerCheck(attempt);
 }
 
 /** Show the answer, save the attempt and the feedback. picked: the option clicked last. */
@@ -324,11 +331,12 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     // The same skill later in this session: next level up after a right answer, down after a wrong one.
     await adaptLater(q, correct, seconds);
     let saveNote = "";
+    const attempt = {
+        id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
+        chosen, correct, second_try: secondTry, seconds, at: new Date().toISOString(),
+    };
     try {
-        await store.recordAttempt(profile.id, {
-            id: q.id, gen: q.gen, variant: q.variant, difficulty: q.difficulty, harder: q.harder,
-            chosen, correct, second_try: secondTry, seconds, at: new Date().toISOString(),
-        });
+        await store.recordAttempt(profile.id, attempt);
     } catch {
         saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
     }
@@ -347,7 +355,48 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     if (breakTime) lastBreak = { at: Date.now(), n: results.length };
     $("feedback").hidden = false;
     $("next").focus();
+    stickerCheck(attempt);
 }
+
+// ------------------------------------------------------------------ stickers (stickers.js)
+// A sticker this child just unlocked is celebrated here, even if the brother unlocked it before (the countdown
+// page is the team's book). Nothing is saved: stickers are always worked out from the answers. The test profile
+// also sees a random sticker after 25% of the answers, to see what it looks like.
+function stickerCheck(attempt) {
+    const who = profile;
+    myAttempts.push(attempt);
+    const now = earnedStickers(numbers([myAttempts], index.generators));
+    const fresh = STICKERS.filter(([, name]) => now.has(name) && !myStickers.has(name));
+    myStickers = now;
+    if (!fresh.length && who.id === TEST_PROFILE && Math.random() < 0.25) fresh.push(pick(STICKERS));
+    if (fresh.length) showStickers(fresh);
+}
+function showStickers(list) {
+    $("sticker-title").textContent = list.length === 1 ? "You unlocked a sticker!!!" : `You unlocked ${list.length} stickers!!!`;
+    const box = $("sticker-list");
+    box.innerHTML = "";
+    for (const [emoji, name, how] of list) {
+        const card = el("div", "mk-new-sticker");
+        card.append(el("div", "mk-new-sticker__emoji", emoji), el("div", "mk-new-sticker__name", name),
+            el("div", "mk-new-sticker__how", how));
+        box.append(card);
+    }
+    $("sticker").classList.add("is-open");
+    $("sticker-ok").focus();
+    confetti();
+}
+function closeStickers() {
+    $("sticker").classList.remove("is-open");
+    if (!$("play").hidden && !$("feedback").hidden) $("next").focus();
+}
+$("sticker").addEventListener("click", (e) => { if (e.target === $("sticker") || e.target.closest(".kt-modal__close")) closeStickers(); });
+// While it is open, Enter / Escape / Space only close it (they must not also go to the next question).
+window.addEventListener("keydown", (e) => {
+    if (!$("sticker").classList.contains("is-open")) return;
+    if (["Enter", "Escape", " "].includes(e.key)) closeStickers();
+    e.preventDefault();
+    e.stopPropagation();
+}, true);
 
 async function adaptLater(q, correct, seconds) {
     if (q.isWarmup) return;

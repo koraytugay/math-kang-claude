@@ -94,9 +94,6 @@
         .mk-sticker--new { animation: mk-pop 1s ease-out 3; }
         @keyframes mk-pop { 50% { transform: scale(1.15) rotate(4deg); } }
 
-        .mk-confetti { position: fixed; top: -20px; width: 10px; height: 16px; z-index: 50; pointer-events: none;
-                       animation: mk-fall linear forwards; }
-        @keyframes mk-fall { to { transform: translateY(110vh) rotate(720deg); } }
         @media (prefers-reduced-motion: reduce) {
             .mk-roo, .mk-sticker--new, .mk-confetti { animation: none; }
             .mk-confetti { display: none; }
@@ -142,6 +139,7 @@
 </div>
 <script src="secrets.js"></script>
 <script src="smart.js"></script>
+<script src="stickers.js"></script>
 <script src="countdown.js"></script>
 </body>
 </html>
