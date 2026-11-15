@@ -18,7 +18,7 @@ const KIDS = ["deniz", "toprak"];                   // the parent's test profile
 const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];
 const TREATS = [200, 400, 600, 800, 1000];          // a McDonald's treat when this flag is reached
 const BOOSTER = 1250;                          // a Pokémon booster pack when this flag is reached
-const BIG_GOALS = { 1000: "🌈 Ultimate goal", 1250: "🎴 Booster pack" };
+const BIG_GOALS = { 1000: "🌈 Ultimate goal", 1250: "🎴 4 Pokémon packs" };
 const CHEERS = [
     "Every question makes your brain a little stronger.",
     "Mistakes are how you learn. Keep hopping!",
