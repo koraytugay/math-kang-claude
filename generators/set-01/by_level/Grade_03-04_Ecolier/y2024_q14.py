@@ -26,6 +26,7 @@ META = {
     "skill": "Counting chains systematically: list what fits after what, then branch like a tree",
     "topics": ["counting", "logic"],
     "keywords": ["puzzle-piece chains", "counting with a tree"],
+    "sticker": ("⛓️", "Chain builder"),   # earned when this skill is solid (website)
     "version": 4,
 }
 

@@ -18,6 +18,7 @@ META = {
     "skill": "Counting the digits in 1..N: split into one-, two- and three-digit numbers",
     "topics": ["counting", "arithmetic", "patterns"],
     "keywords": ["page numbers", "counting digits"],
+    "sticker": ("📖", "Page counter"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

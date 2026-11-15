@@ -27,6 +27,7 @@ META = {
              "then colour step by step to show that many is enough",
     "topics": ["logic", "spatial", "counting"],
     "keywords": ["colouring circles", "fewest colours", "neighbours different"],
+    "sticker": ("🎨", "Colour wizard"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

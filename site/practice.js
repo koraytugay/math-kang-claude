@@ -90,7 +90,7 @@ async function buildSession(profile, exclude = [], first = true) {
     if (first) {
         sessionStates = states;
         myAttempts = [...attempts];
-        myStickers = earnedStickers(numbers([myAttempts], index.generators));
+        myStickers = earnedStickers(numbers([myAttempts], index.generators), index.generators);
     }
     const seen = new Set([...attempts.map((a) => a.id), ...exclude]);
 
@@ -365,10 +365,10 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
 function stickerCheck(attempt) {
     const who = profile;
     myAttempts.push(attempt);
-    const now = earnedStickers(numbers([myAttempts], index.generators));
-    const fresh = STICKERS.filter(([, name]) => now.has(name) && !myStickers.has(name));
+    const now = earnedStickers(numbers([myAttempts], index.generators), index.generators);
+    const fresh = allStickers(index.generators).filter(([, name]) => now.has(name) && !myStickers.has(name));
     myStickers = now;
-    if (!fresh.length && who.id === TEST_PROFILE && Math.random() < 0.25) fresh.push(pick(STICKERS));
+    if (!fresh.length && who.id === TEST_PROFILE && Math.random() < 0.25) fresh.push(pick(allStickers(index.generators)));
     if (fresh.length) showStickers(fresh);
 }
 function showStickers(list) {

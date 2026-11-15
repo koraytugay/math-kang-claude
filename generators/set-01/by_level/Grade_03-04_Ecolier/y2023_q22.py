@@ -26,6 +26,7 @@ META = {
              "only the turns after it was printed",
     "topics": ["spatial", "logic"],
     "keywords": ["turning machine", "quarter turns", "machine order"],
+    "sticker": ("⚙️", "Machine master"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

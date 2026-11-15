@@ -20,6 +20,7 @@ META = {
              "and cross out the ones that break a rule",
     "topics": ["logic", "counting"],
     "keywords": ["counting orders", "list them all", "not first rules"],
+    "sticker": ("📋", "List maker"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

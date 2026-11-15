@@ -14,6 +14,7 @@ META = {
     "skill": "Comparing sets of letters: each different letter counts once; check them all",
     "topics": ["logic", "counting"],
     "keywords": ["common letters", "words"],
+    "sticker": ("🔤", "Letter detective"),   # earned when this skill is solid (website)
     "version": 5,
 }
 

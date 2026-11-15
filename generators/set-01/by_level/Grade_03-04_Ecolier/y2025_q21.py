@@ -27,6 +27,7 @@ META = {
     "skill": "Closed loops: groups of neighbours can wrap around the start; recognise the same bracelet turned",
     "topics": ["patterns", "spatial", "logic"],
     "keywords": ["bracelet", "loops and neighbours"],
+    "sticker": ("📿", "Bracelet maker"),   # earned when this skill is solid (website)
     "version": 4,
 }
 

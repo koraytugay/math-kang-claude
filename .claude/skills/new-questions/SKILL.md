@@ -32,6 +32,9 @@ difficulty 1/2/3, `harder`, answers computed, independent `check`, Fig drawings,
 written to the kids). In addition, because the practice website uses them:
 - `META["skill"]`: the **method**, never the answer - it is shown as the hint after a wrong first click.
 - `META["keywords"]`: 2-3 plain words; the first one is shown to the kids ("You're getting stronger at: ...").
+- `META["sticker"] = ("<emoji>", "<name>")`: the skill's own sticker (unlocked on the practice page when
+  the skill is solid; grouped by exam in the sticker book). Fun name, emoji and name not used by another
+  generator or in `site/stickers.js`. `check.py` fails without it.
 - **Mistake labels**: give wrong options as `(value, "what you did")` pairs in `numeric_choices` /
   `text_choices` - a verb phrase to the child that fits "Did you ...?" and "This is what you get if you ...",
   e.g. `(front, "count only the cubes you can see")`. Label every deliberate mistake.

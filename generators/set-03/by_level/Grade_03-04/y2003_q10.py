@@ -16,6 +16,7 @@ META = {
     "skill": "Lengths in m, dm, cm, mm: convert to one unit before adding or comparing",
     "topics": ["arithmetic", "measurement"],
     "keywords": ["length units", "m dm cm mm"],
+    "sticker": ("📏", "Ruler ranger"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

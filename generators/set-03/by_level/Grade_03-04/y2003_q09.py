@@ -19,6 +19,7 @@ META = {
     "skill": "Inside of a box of cubes: every length drops by 2; outside = total − inside",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["cube counting", "hidden cubes inside"],
+    "sticker": ("🎁", "Hidden cube hunter"),   # earned when this skill is solid (website)
     "version": 4,
 }
 

@@ -20,6 +20,7 @@ META = {
     "skill": "Covering a shape with pieces of squares: count the squares, then turn the pieces",
     "topics": ["spatial", "geometry", "counting"],
     "keywords": ["covering shapes", "pieces that fit"],
+    "sticker": ("🟩", "Tile layer"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

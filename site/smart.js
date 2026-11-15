@@ -47,6 +47,10 @@ function skillStates(attempts, now = Date.now()) {
             s.stuck++;                                       // wrong in a row: 2+ means warm-ups first
         }
         s.score = Math.max(0, Math.min(100, s.score));
+        // history for the stickers (they stay earned even when the score fades later):
+        // everSolid = was solid once; turned = was "needs work" once and became solid later
+        if (s.score < NEEDS_WORK && s.wrongs > 0) s.wasWeak = true;
+        if (s.score >= SOLID && s.rights >= SOLID_RIGHTS) { s.everSolid = true; if (s.wasWeak) s.turned = true; }
         states.set(a.gen, s);
     }
     for (const s of states.values()) {

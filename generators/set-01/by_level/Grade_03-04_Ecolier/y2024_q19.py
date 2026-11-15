@@ -28,6 +28,7 @@ META = {
     "skill": "Two repeating patterns together: find the block where both start again, count in it, multiply",
     "topics": ["patterns", "counting", "arithmetic"],
     "keywords": ["two repeating patterns", "shirts and cards"],
+    "sticker": ("👕", "Pattern mixer"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

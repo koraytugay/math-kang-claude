@@ -25,6 +25,7 @@ META = {
     "skill": "Taking turns: what is still left depends on who went first - try the orders and keep track",
     "topics": ["logic", "counting"],
     "keywords": ["cookies on a tray", "who went first"],
+    "sticker": ("🍪", "Cookie counter"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

@@ -20,6 +20,7 @@ META = {
     "skill": "Perimeter of rectangles cut from a square or rectangle",
     "topics": ["geometry", "perimeter"],
     "keywords": ["perimeter", "cutting rectangles"],
+    "sticker": ("✂️", "Perimeter pro"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

@@ -26,6 +26,7 @@ META = {
              "and check that it closes",
     "topics": ["arithmetic", "logic", "patterns"],
     "keywords": ["sums in a ring", "guess and check", "neighbour sums"],
+    "sticker": ("💍", "Ring master"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

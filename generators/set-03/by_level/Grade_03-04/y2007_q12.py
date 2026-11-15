@@ -19,6 +19,7 @@ META = {
     "skill": "Dates: older = born earlier; adding days across month and year ends",
     "topics": ["time", "logic"],
     "keywords": ["dates", "birthdays"],
+    "sticker": ("🎂", "Date keeper"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

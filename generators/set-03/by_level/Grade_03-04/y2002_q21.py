@@ -23,6 +23,7 @@ META = {
     "skill": "Reach a target with + − × ÷ using each card once; know when it is impossible",
     "topics": ["arithmetic", "logic"],
     "keywords": ["make a target number", "card calculations"],
+    "sticker": ("🎲", "Number maker"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

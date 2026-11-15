@@ -22,6 +22,7 @@ META = {
     "skill": "Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric)",
     "topics": ["spatial", "geometry"],
     "keywords": ["paper folding", "fold and cut"],
+    "sticker": ("❄️", "Snowflake cutter"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

@@ -26,6 +26,7 @@ META = {
              "all the others and count what they have in common",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["one guess is right", "compare patterns", "cells in common"],
+    "sticker": ("🔮", "Mind reader"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

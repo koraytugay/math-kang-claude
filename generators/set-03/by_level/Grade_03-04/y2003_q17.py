@@ -22,6 +22,7 @@ META = {
     "skill": "Alternating rows: starts and ends the same, so one more of that kind; then split a group",
     "topics": ["counting", "logic", "patterns"],
     "keywords": ["bar code", "alternating rows"],
+    "sticker": ("🦓", "Bar code reader"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

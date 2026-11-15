@@ -18,6 +18,7 @@ META = {
     "skill": "Next number with a digit property: change the rightmost digits as little as possible",
     "topics": ["arithmetic", "patterns", "logic"],
     "keywords": ["odometer", "different digits"],
+    "sticker": ("🚗", "Odometer ace"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

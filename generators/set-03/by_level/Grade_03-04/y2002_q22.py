@@ -20,6 +20,7 @@ META = {
     "skill": "Counting arrangements: fill places one by one and multiply the choices",
     "topics": ["counting", "logic"],
     "keywords": ["seating arrangements", "counting orders"],
+    "sticker": ("💺", "Seat shuffler"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

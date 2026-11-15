@@ -18,6 +18,7 @@ META = {
     "skill": "Space in a box = length × width × height; count hidden cubes; subtract",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["cube counting", "box volume"],
+    "sticker": ("📦", "Box filler"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

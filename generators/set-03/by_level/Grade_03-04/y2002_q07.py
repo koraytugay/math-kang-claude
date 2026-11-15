@@ -21,6 +21,7 @@ META = {
     "skill": "Visual matching: find which piece of a line drawing fits / does not fit",
     "topics": ["spatial", "visual"],
     "keywords": ["matching pieces", "skyline"],
+    "sticker": ("🏙️", "Skyline spotter"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

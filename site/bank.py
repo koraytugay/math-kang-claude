@@ -144,6 +144,7 @@ def main() -> None:
                           "contest": f"{cname} {year}", "pill": f"Set {set_.split('-')[-1]} · {year}",
                           "level": _level(level), "keywords": g.meta.get("keywords", []),
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
+                          "sticker": list(g.meta["sticker"]) if g.meta.get("sticker") else None,
                           "file": f"bank/{name}", "count": len(qs), "added": added_ms(g),
                           "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None,
                           "warmup": f"bank/{name.replace('.json', '.warmup.json')}" if warm else None})

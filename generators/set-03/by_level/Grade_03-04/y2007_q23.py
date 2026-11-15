@@ -16,6 +16,7 @@ META = {
     "skill": "Counting digits by groups (1-, 2-, 3-digit numbers); how many numbers are in a range",
     "topics": ["counting", "arithmetic", "patterns"],
     "keywords": ["counting digits", "writing numbers"],
+    "sticker": ("✏️", "Number writer"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

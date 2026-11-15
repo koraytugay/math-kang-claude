@@ -13,9 +13,10 @@ function numbers(byKid, gens) {
     const byKey = new Map(gens.map((g) => [g.key, g]));
     const n = { answered: 0, right: 0, learned: 0, partB: 0, partC: 0, harder: 0, second: 0, days: 0, streak: 0,
                 solid: 0, skills: gens.length, tried: 0, bestRun: 0, seconds: 0, patient: 0, bestDay: 0, warmups: 0,
-                early: 0, holiday: false, newYear: false, last: 0, exams: 0, examsTotal: 0, topics: {} };
+                early: 0, holiday: false, newYear: false, last: 0, exams: 0, examsTotal: 0, topics: {},
+                solidKeys: new Set(), partCSkills: 0, topSkills: 0, turned: 0 };
     const dates = new Map();                        // day -> answers that day (both kids)
-    const solid = new Set(), tried = new Set();
+    const solid = n.solidKeys, tried = new Set(), partC = new Set(), top = new Set(), turned = new Set();
     for (const attempts of byKid) {
         const real = attempts.filter((a) => !a.variant?.startsWith("warmup:"))
             .sort((a, b) => new Date(a.at) - new Date(b.at));
@@ -37,6 +38,10 @@ function numbers(byKid, gens) {
             run = a.correct ? run + 1 : 0;                       // right on the first try in a row (one child)
             n.bestRun = Math.max(n.bestRun, run);
             tried.add(a.gen);
+            if (a.correct && a.difficulty === 3 && !isGuess(a.difficulty, a.seconds)) {   // level up: Part C right
+                partC.add(a.gen);
+                if (a.harder) top.add(a.gen);
+            }
             n.seconds += a.seconds || 0;
             if (rightAnswer(a)) for (const t of byKey.get(a.gen)?.topics || []) n.topics[t] = (n.topics[t] || 0) + 1;
             if (a.correct || counted.has(a.id)) continue;
@@ -52,12 +57,19 @@ function numbers(byKid, gens) {
             if (day === new Date(2027, 0, 1).getTime()) n.newYear = true;
             n.last = Math.max(n.last, t.getTime());
         }
-        for (const [key, s] of skillStates(attempts)) if (s.status === "solid") solid.add(key);
+        // solid once = solid for the stickers (a skill sticker never goes away when the score fades)
+        for (const [key, s] of skillStates(attempts)) {
+            if (s.everSolid) solid.add(key);
+            if (s.turned) turned.add(key);
+        }
     }
     n.days = dates.size;
     n.bestDay = Math.max(0, ...dates.values());
     n.solid = solid.size;
     n.tried = tried.size;
+    n.partCSkills = partC.size;
+    n.topSkills = top.size;
+    n.turned = turned.size;
     // a "gym badge": every question from one past exam is solid
     const exams = new Map();
     for (const g of gens) exams.set(g.contest, [...(exams.get(g.contest) || []), g.key]);
@@ -113,6 +125,21 @@ const STICKER_GROUPS = [
         ["🐢", "Slow and sure", "Get one right after thinking 2+ minutes", (n) => n.patient >= 1],
         ["🧘", "Deep thinker", "Get 10 right after thinking 2+ minutes", (n) => n.patient >= 10],
     ]],
+    ["Level up", [
+        ["🪜", "Ladder", "Get a Part C question right in 1 skill", (n) => n.partCSkills >= 1],
+        ["🎢", "Roller coaster", "Get a Part C question right in 5 different skills", (n) => n.partCSkills >= 5],
+        ["🛗", "Elevator", "Get a Part C question right in 10 different skills", (n) => n.partCSkills >= 10],
+        ["🗼", "Sky tower", "Get a Part C question right in 20 different skills", (n) => n.partCSkills >= 20],
+        ["🌶️", "Spicy", "Get the hardest numbers right in 1 skill", (n) => n.topSkills >= 1],
+        ["🦁", "Lion heart", "Get the hardest numbers right in 5 different skills", (n) => n.topSkills >= 5],
+        ["🦖", "T-rex", "Get the hardest numbers right in 10 different skills", (n) => n.topSkills >= 10],
+    ]],
+    ["Turnarounds", [
+        ["🦋", "Butterfly", "Master a skill that once tricked you", (n) => n.turned >= 1],
+        ["🌈", "Rainbow", "Master 3 skills that once tricked you", (n) => n.turned >= 3],
+        ["🦚", "Peacock", "Master 5 skills that once tricked you", (n) => n.turned >= 5],
+        ["🦄", "Unicorn", "Master 10 skills that once tricked you", (n) => n.turned >= 10],
+    ]],
     ["In a row", [
         ["🖐️", "High five", "5 right on the first try in a row", (n) => n.bestRun >= 5],
         ["🎳", "Strike!", "10 right on the first try in a row", (n) => n.bestRun >= 10],
@@ -164,10 +191,30 @@ const STICKER_GROUPS = [
         ["🦘", "Contest day", "Be ready on March 21!", () => midnight(new Date()) >= CONTEST],
     ]],
 ];
-const STICKERS = STICKER_GROUPS.flatMap(([, list]) => list);
+
+/**
+ * All sticker groups: the ones above, then one sticker per skill (META["sticker"] of each generator, from
+ * bank/index.json), grouped by past exam, right after "Skills". Earned when the skill is solid once.
+ * New pool questions bring their own stickers (check.py makes sure every generator has one).
+ */
+function stickerGroups(gens) {
+    const byContest = new Map();
+    for (const g of gens) {
+        if (!g.sticker) continue;
+        const [emoji, name] = g.sticker;
+        const list = byContest.get(g.contest) || [];
+        list.push([emoji, name, `Master ${g.keywords?.[0] || g.label}`, (n) => n.solidKeys.has(g.key)]);
+        byContest.set(g.contest, list);
+    }
+    const groups = [...STICKER_GROUPS];
+    const at = groups.findIndex(([title]) => title === "Skills") + 1;
+    groups.splice(at, 0, ...[...byContest].map(([contest, list]) => [`Skills from ${contest}`, list]));
+    return groups;
+}
+const allStickers = (gens) => stickerGroups(gens).flatMap(([, list]) => list);
 
 /** The names of the stickers these numbers earn. */
-const earnedStickers = (n) => new Set(STICKERS.filter(([, , , test]) => test(n)).map(([, name]) => name));
+const earnedStickers = (n, gens) => new Set(allStickers(gens).filter(([, , , test]) => test(n)).map(([, name]) => name));
 
 function confetti() {
     if (!document.getElementById("mk-confetti-style")) {

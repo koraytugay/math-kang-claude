@@ -18,6 +18,7 @@ META = {
     "skill": "Painted cube cut up: corners 3 faces, edges 2, face middles 1, inside 0",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["painted cube", "cube counting"],
+    "sticker": ("🖌️", "Cube painter"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

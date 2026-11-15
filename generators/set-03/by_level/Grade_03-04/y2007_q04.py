@@ -19,6 +19,7 @@ META = {
     "skill": "Digit sums: find the next/previous number with the same digit sum",
     "topics": ["arithmetic", "patterns", "logic"],
     "keywords": ["digit sum", "next number"],
+    "sticker": ("🔢", "Digit sum star"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

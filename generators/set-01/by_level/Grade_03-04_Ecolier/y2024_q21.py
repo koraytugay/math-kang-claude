@@ -23,6 +23,7 @@ META = {
     "skill": "Two jumps that keep every row and column count: the second jump must undo the first",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["frogs jumping", "rows and columns"],
+    "sticker": ("🐸", "Frog jumper"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

@@ -23,6 +23,7 @@ META = {
     "skill": "One street splits all the houses into two groups: north + south = all houses = east + west",
     "topics": ["logic", "counting", "spatial"],
     "keywords": ["houses and streets", "north south east west", "two ways to split"],
+    "sticker": ("🏘️", "Street planner"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

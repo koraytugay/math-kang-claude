@@ -24,6 +24,7 @@ META = {
              "match slanted edges, check with the number of squares",
     "topics": ["geometry", "spatial", "area"],
     "keywords": ["fill the shape", "jigsaw pieces", "which piece fits"],
+    "sticker": ("🧱", "Brick layer"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

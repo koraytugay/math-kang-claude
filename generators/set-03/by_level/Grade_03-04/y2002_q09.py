@@ -18,6 +18,7 @@ META = {
     "skill": "Balance scales: remove equal things from both sides, substitute, scale up",
     "topics": ["logic", "arithmetic", "balance"],
     "keywords": ["balance scales", "weights"],
+    "sticker": ("⚖️", "Balance boss"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

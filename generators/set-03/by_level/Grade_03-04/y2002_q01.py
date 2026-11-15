@@ -26,6 +26,7 @@ META = {
     "skill": "Find the missing square by its edges: lines must continue at the same places, not turned",
     "topics": ["spatial", "visual"],
     "keywords": ["missing square", "picture puzzle"],
+    "sticker": ("🖼️", "Picture fixer"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

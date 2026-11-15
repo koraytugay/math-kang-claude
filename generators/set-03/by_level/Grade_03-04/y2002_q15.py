@@ -23,6 +23,7 @@ META = {
     "skill": "What cannot change when a flag or door moves: the fixed edge stays whole, nothing gets wider",
     "topics": ["spatial", "logic", "geometry"],
     "keywords": ["flag silhouettes", "what cannot change"],
+    "sticker": ("🚩", "Flag watcher"),   # earned when this skill is solid (website)
     "version": 4,
 }
 

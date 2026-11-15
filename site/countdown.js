@@ -42,13 +42,14 @@ function tick() {
     return days;
 }
 
-function stickerBook(n) {
+function stickerBook(n, gens) {
     let seen = [];
     try { seen = JSON.parse(localStorage.getItem("mk.stickers")) || []; } catch { /* blocked */ }
     const box = $("stickers");
     box.innerHTML = "";
     const got = [], fresh = [];
-    for (const [group, list] of STICKER_GROUPS) {
+    const groups = stickerGroups(gens);
+    for (const [group, list] of groups) {
         const have = list.filter(([, , , test]) => test(n)).length;
         const h = el("div", "mk-sticker-group", group);
         h.append(el("span", "mk-sticker-group__count", `${have} of ${list.length}`));
@@ -63,7 +64,7 @@ function stickerBook(n) {
             box.append(card);
         }
     }
-    $("sticker-count").textContent = `${got.length} of ${STICKERS.length}`;
+    $("sticker-count").textContent = `${got.length} of ${groups.flatMap(([, list]) => list).length}`;
     try { localStorage.setItem("mk.stickers", JSON.stringify(got)); } catch { /* blocked */ }
     return fresh.length > 0 || (!seen.length && got.length > 0);
 }
@@ -79,7 +80,7 @@ function countUp(node, to) {
     requestAnimationFrame(step);
 }
 
-function render(n, daysLeft) {
+function render(n, daysLeft, gens) {
     const stats = $("stats");
     stats.innerHTML = "";
     for (const [icon, value, label, cls] of [
@@ -120,7 +121,7 @@ function render(n, daysLeft) {
     flags.append(el("span", `mk-flag mk-flag--booster${got ? " mk-flag--done" : ""}`,
         `${BOOSTER.toLocaleString()} 4 Pokémon Packs!${got ? " You did it!" : ""}`));
 
-    if (stickerBook(n)) setTimeout(confetti, 600);
+    if (stickerBook(n, gens)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;
 }
 
@@ -135,7 +136,7 @@ async function start(s) {
             fetch("bank/index.json", { cache: "no-store" }).then((r) => r.json()),
             ...KIDS.map((k) => fetchAttempts(s.db, k)),
         ]);
-        render(numbers(byKid, index.generators), daysLeft);
+        render(numbers(byKid, index.generators), daysLeft, index.generators);
         $("loading").hidden = true;
         $("content").hidden = false;
     } catch (e) {

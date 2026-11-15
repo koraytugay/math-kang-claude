@@ -183,6 +183,19 @@ def main():
         print(f"{key:<45} {'yes':<10} {g.meta.get('version', 1):<4} {len(g.variants):<9} {status}")
         for e in errs:
             print("      " + e)
+    # Every pool question has its own sticker on the website (META["sticker"] = (emoji, name)), names unique.
+    names = {}
+    for key in pool:
+        st = gens[key].meta.get("sticker") if key in gens else None
+        if key in gens and not (isinstance(st, tuple) and len(st) == 2 and all(st)):
+            print(f"NO STICKER: {key} needs META[\"sticker\"] = (\"<emoji>\", \"<name>\")")
+            bad += 1
+        elif st:
+            names.setdefault(st[1], []).append(key)
+    for name, keys in names.items():
+        if len(keys) > 1:
+            print(f"SAME STICKER NAME \"{name}\": {', '.join(keys)}")
+            bad += 1
     extra = [k for k in gens if k not in pool]
     done = sum(k in gens for k in pool)
     print("-" * 85)

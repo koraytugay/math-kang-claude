@@ -25,6 +25,7 @@ META = {
     "skill": "Cards hiding digits: find the forced digit first (two digits add to at most 18), then try and check",
     "topics": ["arithmetic", "logic"],
     "keywords": ["hiding digits", "digit figuring out", "cryptarithm"],
+    "sticker": ("🃏", "Card cracker"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

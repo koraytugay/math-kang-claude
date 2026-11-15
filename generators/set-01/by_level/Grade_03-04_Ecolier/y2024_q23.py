@@ -19,6 +19,7 @@ META = {
     "skill": "Fit given pieces into a shape: start where a piece fits only one way, then look at what is left",
     "topics": ["spatial", "geometry", "logic"],
     "keywords": ["building with parts", "fitting pieces"],
+    "sticker": ("🏗️", "Master builder"),   # earned when this skill is solid (website)
     "version": 1,
 }
 

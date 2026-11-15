@@ -26,6 +26,7 @@ META = {
     "skill": "Logic: match people to things from property clues, find the (not) true statement",
     "topics": ["logic"],
     "keywords": ["logic clues", "who has what"],
+    "sticker": ("🗝️", "Clue cracker"),   # earned when this skill is solid (website)
     "version": 4,
 }
 

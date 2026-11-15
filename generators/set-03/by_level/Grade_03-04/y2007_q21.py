@@ -19,6 +19,7 @@ META = {
     "skill": "Growing patterns: describe how each diagram is built, then count cells = total − black",
     "topics": ["patterns", "counting"],
     "keywords": ["growing patterns", "grid patterns"],
+    "sticker": ("🌻", "Pattern gardener"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

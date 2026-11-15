@@ -22,6 +22,7 @@ META = {
     "skill": "Working backwards: undo each operation, last one first",
     "topics": ["arithmetic", "logic"],
     "keywords": ["working backwards", "chain of calculations"],
+    "sticker": ("⏪", "Rewinder"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

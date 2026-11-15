@@ -26,6 +26,7 @@ META = {
     "skill": "Running towards each other around a circle: between two meetings they cover one whole lap together",
     "topics": ["logic", "arithmetic", "spatial"],
     "keywords": ["runners on a circle", "meeting on a circle"],
+    "sticker": ("👟", "Track star"),   # earned when this skill is solid (website)
     "version": 5,
 }
 

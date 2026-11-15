@@ -20,6 +20,7 @@ META = {
     "skill": "Counting cubes in a 3-D building, hidden ones included (slice x number of slices)",
     "topics": ["counting", "spatial", "geometry"],
     "keywords": ["cube counting", "cube buildings"],
+    "sticker": ("🏢", "Cube builder"),   # earned when this skill is solid (website)
     "version": 3,
 }
 

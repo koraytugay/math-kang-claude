@@ -19,6 +19,7 @@ META = {
     "skill": "Routes through forks: one branch from every fork; number of routes = product of choices",
     "topics": ["logic", "counting"],
     "keywords": ["routes through forks", "counting routes"],
+    "sticker": ("🛤️", "Route finder"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

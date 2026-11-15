@@ -20,6 +20,7 @@ META = {
     "skill": "Completing a rectangle: the missing part has a fixed shape and size; turn pieces in your head",
     "topics": ["spatial", "geometry"],
     "keywords": ["completing a rectangle", "pieces that fit"],
+    "sticker": ("🪟", "Rectangle fixer"),   # earned when this skill is solid (website)
     "version": 2,
 }
 

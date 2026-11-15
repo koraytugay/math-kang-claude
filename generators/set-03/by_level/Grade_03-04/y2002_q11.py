@@ -26,6 +26,7 @@ META = {
     "skill": "Sums of numbers around a circle: use the total, split into equal/consecutive parts",
     "topics": ["arithmetic", "logic", "spatial"],
     "keywords": ["clock sums", "numbers around a circle"],
+    "sticker": ("🕐", "Clock adder"),   # earned when this skill is solid (website)
     "version": 1,
 }
 
