@@ -73,7 +73,8 @@ function numbers(byKid, gens) {
     for (const attempts of byKid) {
         const real = attempts.filter((a) => !a.variant?.startsWith("warmup:"));
         n.answered += real.filter((a) => a.chosen >= 0).length;
-        n.right += real.filter((a) => a.correct).length;
+        // right on the first try, not a quick guess: what the goal flags count (answers alone filled them too fast)
+        n.right += real.filter((a) => a.correct && !isGuess(a.difficulty, a.seconds)).length;
         n.partC += real.filter((a) => a.correct && a.difficulty === 3).length;
         // learned: a question first got wrong (or skipped), and later a question of the same skill right
         // on the first try (not a quick guess) - the same rule as the parent page
@@ -110,8 +111,8 @@ const STICKERS = [
     ["💯", "Hundred club", "Answer 100 questions", (n) => n.answered >= 100],
     ["🚀", "Rocket", "Answer 250 questions", (n) => n.answered >= 250],
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
-    ["👑", "Kangaroo royalty", "Answer 1000 questions: the contest goal", (n) => n.answered >= 1000],
-    ["🌈", "Ultimate kangaroo", "Answer 1250 questions: the ultimate goal", (n) => n.answered >= 1250],
+    ["👑", "Kangaroo royalty", "1000 right on the first try: the contest goal", (n) => n.right >= 1000],
+    ["🌈", "Ultimate kangaroo", "1250 right on the first try: the ultimate goal", (n) => n.right >= 1250],
     ["🏕️", "Weekend warrior", `${WEEKEND_GOAL} questions in one weekend`, (n) => n.bestWeekend >= WEEKEND_GOAL],
     ["🎢", "Super weekend", "100 questions in one weekend", (n) => n.bestWeekend >= 100],
     ["🗓️", "Five great weekends", `Reach the weekend goal on 5 weekends`, (n) => n.weekends75 >= 5],
@@ -205,21 +206,21 @@ function render(n, daysLeft) {
             : `The goal for every weekend: ${WEEKEND_GOAL} questions together.`;
 
     // goals: the next flag, a progress bar, and the two big goals
-    const next = GOALS.find((g) => g > n.answered) ?? GOALS.at(-1);
-    const prev = [...GOALS].reverse().find((g) => g <= n.answered) ?? 0;
-    $("goal-title").textContent = `🏁 ${BIG_GOALS[next] ? BIG_GOALS[next] + ": " : ""}${next.toLocaleString()} questions`;
-    $("goal-count").textContent = `${n.answered.toLocaleString()} / ${next.toLocaleString()}`;
-    const share = Math.min(1, (n.answered - prev) / (next - prev || 1));
+    const next = GOALS.find((g) => g > n.right) ?? GOALS.at(-1);
+    const prev = [...GOALS].reverse().find((g) => g <= n.right) ?? 0;
+    $("goal-title").textContent = `🏁 ${BIG_GOALS[next] ? BIG_GOALS[next] + ": " : ""}${next.toLocaleString()} right answers`;
+    $("goal-count").textContent = `${n.right.toLocaleString()} / ${next.toLocaleString()} right on the first try`;
+    const share = Math.min(1, (n.right - prev) / (next - prev || 1));
     requestAnimationFrame(() => requestAnimationFrame(() => { $("goal-bar").style.width = `${Math.max(2, share * 100)}%`; }));
-    const togo = next - n.answered;
+    const togo = next - n.right;
     $("goal-note").textContent = togo <= 0 ? "Every goal reached, even the ultimate one. WOW!"
-        : n.answered >= 1000 ? `Contest goal reached! Only ${togo.toLocaleString()} more to the ultimate goal!`
-            : `Only ${togo.toLocaleString()} more to the next flag! Contest goal: 1,000 · Ultimate goal: 1,250.`;
+        : n.right >= 1000 ? `Contest goal reached! Only ${togo.toLocaleString()} more to the ultimate goal!`
+            : `Only ${togo.toLocaleString()} more right on the first try to the next flag! Contest goal: 1,000 · Ultimate goal: 1,250.`;
     const flags = $("flags");
     flags.innerHTML = "";
     for (const g of GOALS) {
-        const f = el("span", `mk-flag${n.answered >= g ? " mk-flag--done" : ""}`,
-            `${n.answered >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}`);
+        const f = el("span", `mk-flag${n.right >= g ? " mk-flag--done" : ""}`,
+            `${n.right >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}`);
         if (BIG_GOALS[g]) f.title = BIG_GOALS[g].slice(3);
         flags.append(f);
     }
