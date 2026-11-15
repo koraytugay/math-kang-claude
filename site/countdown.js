@@ -15,6 +15,7 @@ const KIDS = ["deniz", "toprak"];                   // the parent's test profile
 // The plan (parent, 2026-11-14): ~12 study weekends x ~75 questions together + the first 100 = 1,000 on contest
 // day; 1,250 is the ultimate goal. Many small flags on the way, so a new one comes every weekend.
 const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];   // one row of flags
+const TREATS = [300, 600, 900, 1250];          // a McDonald's treat when this flag is reached
 const BIG_GOALS = { 1000: "🎯 Contest goal", 1250: "🌈 Ultimate goal" };
 const WEEKEND_GOAL = 75;
 const CHEERS = [
@@ -218,7 +219,7 @@ function render(n, daysLeft) {
     flags.innerHTML = "";
     for (const g of GOALS) {
         const f = el("span", `mk-flag${n.answered >= g ? " mk-flag--done" : ""}`,
-            `${n.answered >= g ? "✅" : BIG_GOALS[g]?.split(" ")[0] ?? ""} ${g.toLocaleString()}`.trim());
+            `${n.answered >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}`);
         if (BIG_GOALS[g]) f.title = BIG_GOALS[g].slice(3);
         flags.append(f);
     }
