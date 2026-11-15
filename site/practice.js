@@ -148,7 +148,6 @@ let profile = null, session = [], pos = 0, shownAt = 0, results = [], sessionSta
 async function start(p) {
     profile = p;
     try { history.replaceState(null, "", `?profile=${encodeURIComponent(p.name)}`); } catch { /* file:// */ }
-    $("dots").replaceChildren();
     show("play");
     $("q-text").textContent = "Getting your questions ready…";
     $("q-fig").innerHTML = ""; $("q-after").textContent = ""; $("q-options").innerHTML = "";
@@ -298,7 +297,6 @@ async function skip() {
     [...$("q-options").children].forEach((b) => { b.disabled = true; });
     const seconds = Math.round((Date.now() - shownAt) / 1000);
     results.push({ q, chosen: SKIPPED, correct: false });
-    dot("skip");
     await adaptLater(q, false, seconds);
     try {
         await store.recordAttempt(profile.id, {
@@ -323,7 +321,6 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
         if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-choice--danger"); }
     });
     results.push({ q, chosen, correct });
-    dot(correct ? "right" : right ? "second" : "learn");
     // The same skill later in this session: next level up after a right answer, down after a wrong one.
     await adaptLater(q, correct, seconds);
     let saveNote = "";
@@ -485,11 +482,9 @@ $("skip").onclick = skip;
 $("check").onclick = check;
 $("quit").onclick = () => (results.length ? finish() : (show("who"), renderProfiles(), clearProfileUrl()));
 $("again").onclick = () => start(profile);
-// Keep practising: back to the same session (its circles too), at the next question if this one was answered.
+// Keep practising: back to the same session, at the next question if this one was answered.
 $("keep").onclick = () => { show("play"); if (!$("feedback").hidden) next(); };
 function clearProfileUrl() { try { history.replaceState(null, "", location.pathname); } catch { /* file:// */ } }
-/** One circle per answer in the top row (no numbers): right, second, learn (wrong), skip. */
-function dot(kind) { $("dots").append(el("span", `mk-dot mk-dot--${kind}`)); }
 document.addEventListener("keydown", (e) => {
     if ($("play").hidden || $("teach").classList.contains("is-open")) return;
     const k = e.key.toUpperCase();
