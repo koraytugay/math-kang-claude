@@ -19,7 +19,6 @@ const GOALS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1250];
 const TREATS = [200, 400, 600, 800, 1000];          // a McDonald's treat when this flag is reached
 const BOOSTER = 1250;                          // a Pokémon booster pack when this flag is reached
 const BIG_GOALS = { 1000: "🌈 Ultimate goal", 1250: "🎴 Booster pack" };
-const WEEKEND_GOAL = 75;
 const CHEERS = [
     "Every question makes your brain a little stronger.",
     "Mistakes are how you learn. Keep hopping!",
@@ -37,39 +36,17 @@ function tick() {
     if (days > 0) {
         $("days").textContent = days;
         $("days-unit").textContent = days === 1 ? "day to go! Tomorrow is the day!" : "days to go!";
-        const left = new Date(CONTEST - now);
-        const h = Math.floor((CONTEST - now) / 36e5);
-        $("clock").textContent = `${h.toLocaleString()} hours · ${String(left.getUTCMinutes()).padStart(2, "0")} min · ${String(left.getUTCSeconds()).padStart(2, "0")} s`;
     } else if (days === 0) {
-        $("days").textContent = "🎉"; $("days-unit").textContent = "It's contest day! You've got this!"; $("clock").textContent = "";
+        $("days").textContent = "🎉"; $("days-unit").textContent = "It's contest day! You've got this!";
     } else {
-        $("days").textContent = "🏅"; $("days-unit").textContent = "You did the contest! So proud of you."; $("clock").textContent = "";
+        $("days").textContent = "🏅"; $("days-unit").textContent = "You did the contest! So proud of you.";
     }
     return days;
 }
 
-// ------------------------------------------------------------------ weekends
-/** Saturday 00:00 (ms) of the weekend this moment is in, or null on a weekday. */
-function weekendOf(d) {
-    const day = d.getDay();                         // 0 Sunday, 6 Saturday
-    if (day !== 0 && day !== 6) return null;
-    const sat = midnight(d);
-    sat.setDate(sat.getDate() - (day === 0 ? 1 : 0));
-    return sat.getTime();
-}
-/** This weekend on Saturday or Sunday, otherwise the one just before. */
-function lastWeekend() {
-    const d = midnight(new Date());
-    while (weekendOf(d) == null) d.setDate(d.getDate() - 1);
-    return weekendOf(d);
-}
-const isWeekend = () => weekendOf(new Date()) != null;
-
 // ------------------------------------------------------------------ numbers (both kids together)
 function numbers(byKid, gens) {
-    const n = { answered: 0, right: 0, learned: 0, partC: 0, days: 0, streak: 0, solid: 0, skills: gens.length,
-                weekend: 0, bestWeekend: 0, weekends75: 0 };
-    const perWeekend = new Map();
+    const n = { answered: 0, right: 0, learned: 0, partC: 0, days: 0, streak: 0, solid: 0, skills: gens.length };
     const dates = new Set();
     const solid = new Set();
     for (const attempts of byKid) {
@@ -89,16 +66,9 @@ function numbers(byKid, gens) {
             if (later) { counted.add(a.id); n.learned++; }
         }
         for (const a of attempts) dates.add(midnight(new Date(a.at)).getTime());
-        for (const a of real) {
-            const w = weekendOf(new Date(a.at));
-            if (w != null && a.chosen >= 0) perWeekend.set(w, (perWeekend.get(w) || 0) + 1);
-        }
         for (const [key, s] of skillStates(attempts)) if (s.status === "solid") solid.add(key);
     }
     n.days = dates.size;
-    n.weekend = perWeekend.get(lastWeekend()) || 0;
-    n.bestWeekend = Math.max(0, ...perWeekend.values());
-    n.weekends75 = [...perWeekend.values()].filter((x) => x >= WEEKEND_GOAL).length;
     n.solid = solid.size;
     // practice days in a row, up to today (or up to yesterday: today may still come)
     let d = midnight(new Date()).getTime();
@@ -116,9 +86,6 @@ const STICKERS = [
     ["🏔️", "Mountain top", "Answer 500 questions", (n) => n.answered >= 500],
     ["👑", "Kangaroo royalty", "1000 right answers: the ultimate goal", (n) => n.right >= 1000],
     ["🎴", "Booster pack!", "1250 right answers", (n) => n.right >= 1250],
-    ["🏕️", "Weekend warrior", `${WEEKEND_GOAL} questions in one weekend`, (n) => n.bestWeekend >= WEEKEND_GOAL],
-    ["🎢", "Super weekend", "100 questions in one weekend", (n) => n.bestWeekend >= 100],
-    ["🗓️", "Five great weekends", `Reach the weekend goal on 5 weekends`, (n) => n.weekends75 >= 5],
     ["🌱", "Brain sprout", "Learn from 5 mistakes", (n) => n.learned >= 5],
     ["🌳", "Brain tree", "Learn from 25 mistakes", (n) => n.learned >= 25],
     ["🧠", "Mega brain", "Learn from 100 mistakes", (n) => n.learned >= 100],
@@ -196,18 +163,6 @@ function render(n, daysLeft) {
         countUp(v, value);
     }
 
-    // this weekend (or the last one, on a weekday)
-    const wk = isWeekend();
-    $("wk-title").textContent = wk ? "🏕️ This weekend" : "🏕️ Last weekend";
-    $("wk-count").textContent = `${n.weekend} / ${WEEKEND_GOAL}`;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        $("wk-bar").style.width = `${Math.max(2, Math.min(1, n.weekend / WEEKEND_GOAL) * 100)}%`;
-    }));
-    $("wk-note").textContent = n.weekend >= WEEKEND_GOAL
-        ? (wk ? "Weekend goal reached! 🎉 Amazing teamwork!" : "You reached the weekend goal! 🎉 Next weekend, again?")
-        : wk ? `${WEEKEND_GOAL - n.weekend} more this weekend to reach the goal. You can do it!`
-            : `The goal for every weekend: ${WEEKEND_GOAL} questions together.`;
-
     // goals: the next flag, a progress bar, and the two big goals
     const next = GOALS.find((g) => g > n.right) ?? GOALS.at(-1);
     const prev = [...GOALS].reverse().find((g) => g <= n.right) ?? 0;
@@ -242,7 +197,7 @@ async function start(s) {
     $("view").hidden = false;
     $("cheer").textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
     const daysLeft = tick();
-    setInterval(tick, 1000);
+    setInterval(tick, 60e3);
     try {
         const [index, ...byKid] = await Promise.all([
             fetch("bank/index.json", { cache: "no-store" }).then((r) => r.json()),
