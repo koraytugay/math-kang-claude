@@ -220,13 +220,22 @@ function render(n, daysLeft) {
             : `Only ${togo.toLocaleString()} more right on the first try to the next flag! Contest goal: 1,000 · Ultimate goal: 1,500 = a Pokémon booster pack! 🎴`;
     const flags = $("flags");
     flags.innerHTML = "";
-    for (const g of GOALS) {
+    for (const g of GOALS.filter((x) => x !== BOOSTER)) {
         const f = el("span", `mk-flag${n.right >= g ? " mk-flag--done" : ""}`,
-            `${n.right >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}${g === BOOSTER ? " 🎴" : ""}`);
+            `${n.right >= g ? "✅ " : ""}${g.toLocaleString()}${TREATS.includes(g) ? " 🍔" : ""}`);
         f.title = [BIG_GOALS[g]?.slice(3), TREATS.includes(g) && "McDonald's treat", g === BOOSTER && "Pokémon booster pack"]
             .filter(Boolean).join(" · ");
         flags.append(f);
     }
+
+    // the ultimate goal gets its own big, shiny pill
+    const got = n.right >= BOOSTER;
+    const boost = el("div", `mk-booster${got ? " mk-booster--got" : ""}`);
+    boost.append(el("span", "mk-booster__num", got ? "✅ 1,500" : "1,500"),
+        el("span", "mk-booster__text", got ? "⚡ POKÉMON BOOSTER PACK! YOU DID IT! ⚡" : "⚡ POKÉMON BOOSTER PACK! ⚡"),
+        el("span", "mk-booster__sub", got ? "Go get it!" : `${(BOOSTER - n.right).toLocaleString()} to go`));
+    flags.after(boost);
+    document.querySelectorAll(".mk-booster").forEach((b) => { if (b !== boost) b.remove(); });
 
     if (stickerBook(n)) setTimeout(confetti, 600);
     if (n.streak >= 2) $("cheer").textContent = `🔥 ${n.streak} days of practice in a row. Keep the streak going!`;
