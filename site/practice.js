@@ -389,7 +389,7 @@ function closeStickers() {
     $("sticker").classList.remove("is-open");
     if (!$("play").hidden && !$("feedback").hidden) $("next").focus();
 }
-$("sticker").addEventListener("click", (e) => { if (e.target === $("sticker") || e.target.closest(".kt-modal__close")) closeStickers(); });
+$("sticker").addEventListener("click", (e) => { if (e.target === $("sticker") || e.target.closest("#sticker-ok")) closeStickers(); });
 // While it is open, Enter / Escape / Space only close it (they must not also go to the next question).
 window.addEventListener("keydown", (e) => {
     if (!$("sticker").classList.contains("is-open")) return;

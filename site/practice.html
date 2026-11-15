@@ -27,6 +27,7 @@
         .mk-sticker-pop__title { font-size: 2.4rem; font-weight: var(--kt-weight-heavy); margin: 0 0 var(--kt-space-5); }
         .mk-sticker-pop__list { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--kt-space-6); margin-bottom: var(--kt-space-6); }
         .mk-new-sticker { min-width: 180px; }
+        .mk-sticker-pop__foot { display: flex; justify-content: flex-end; }
         .mk-new-sticker__emoji { font-size: 6rem; line-height: 1.1; animation: mk-wiggle 1s ease-in-out 2; }
         .mk-new-sticker__name { font-size: var(--kt-fs-2xl); font-weight: var(--kt-weight-bold); margin-top: var(--kt-space-2); }
         .mk-new-sticker__how { font-size: var(--kt-fs-lg); color: var(--kt-text-secondary); }
@@ -123,7 +124,7 @@
     <div class="kt-modal__dialog mk-sticker-pop">
         <h2 class="mk-sticker-pop__title" id="sticker-title">You unlocked a sticker!!!</h2>
         <div class="mk-sticker-pop__list" id="sticker-list"></div>
-        <button type="button" class="kt-btn kt-btn--primary kt-btn--lg kt-modal__close" id="sticker-ok">Awesome!</button>
+        <div class="mk-sticker-pop__foot"><button type="button" class="kt-btn kt-btn--primary kt-btn--lg" id="sticker-ok">Awesome!</button></div>
     </div>
 </div>
 
