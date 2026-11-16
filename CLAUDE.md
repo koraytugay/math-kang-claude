@@ -33,7 +33,7 @@ Answer with this short list, in plain words:
    ("cube counting", "hiding digits"); the first one is shown in the GitHub Actions form.
    Give `META["sticker"] = ("<emoji>", "<name>")`: the skill's own sticker on the practice website
    (unlocked when the skill is solid), e.g. `("🍕", "Pizza slicer")` - a fun name for a 10-year-old, an emoji
-   and a name no other generator uses (`check.py` fails without one).
+   and a name no other generator or fixed sticker in `site/stickers.js` uses (`check.py` checks).
    Name the **core skill** (why it is hard for an 8–10 year old), put it in `META["skill"]`, and pick `topics` (reuse existing topic words: geometry, perimeter, area, counting, logic, patterns, arithmetic, time, spatial, ...).
 3. Write **4–6 variants** with `@variant(difficulty=1|2|3)` — each a function `(rng, harder) -> Question`:
    - difficulty 1 ≈ Part A (close to the original), 2 ≈ Part B, 3 ≈ Part C (reverse the question, add a twist, combine steps).

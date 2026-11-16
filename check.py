@@ -91,7 +91,7 @@ def _contests(gens, pool):
 
 
 def _level(level: str) -> str:
-    m = re.match(r"Grade_0?(\d+)-0?(\d+)(?:_(\w+))?", level)
+    m = re.match(r"(?:Grade|Class)_0?(\d+)-0?(\d+)(?:_(\w+))?", level)
     if not m:
         return level
     return (f"{m.group(3)} " if m.group(3) else "") + f"Grade {m.group(1)}-{m.group(2)}"
@@ -196,6 +196,30 @@ def main():
         if len(keys) > 1:
             print(f"SAME STICKER NAME \"{name}\": {', '.join(keys)}")
             bad += 1
+    # The website tracks earned stickers by name: a skill sticker must not reuse a fixed one from stickers.js
+    # (it would show as earned at once), and no emoji twice.
+    fixed = re.findall(r'\["([^"]+)", "([^"]+)", "', (ROOT / "site" / "stickers.js").read_text())
+    fixed_names, fixed_emoji = {n for _, n in fixed}, {e for e, _ in fixed}
+    emoji = {}
+    for key in pool:
+        st = gens[key].meta.get("sticker") if key in gens else None
+        if not (isinstance(st, tuple) and len(st) == 2 and all(st)):
+            continue
+        if st[1] in fixed_names or st[0] in fixed_emoji:
+            print(f"STICKER CLASH: {key} {st} is already a sticker in site/stickers.js")
+            bad += 1
+        emoji.setdefault(st[0], []).append(key)
+    for e, keys in emoji.items():
+        if len(keys) > 1:
+            print(f"SAME STICKER EMOJI {e}: {', '.join(keys)}")
+            bad += 1
+    first = {}
+    for key in pool:
+        if key in gens and gens[key].meta.get("keywords"):
+            first.setdefault(gens[key].meta["keywords"][0], []).append(key)
+    for kw, keys in first.items():
+        if len(keys) > 1:
+            print(f"note: same first keyword \"{kw}\" (shown to the kids and in the exam form): {', '.join(keys)}")
     extra = [k for k in gens if k not in pool]
     done = sum(k in gens for k in pool)
     print("-" * 85)

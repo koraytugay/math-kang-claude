@@ -1,6 +1,6 @@
 ---
 name: new-questions
-description: Add the questions the kids got wrong in a past exam to the pool and write their generators, end to end (pool, generators, checks, catalog, commit, push, live site). Use when the parent says the kids solved an exam and struggled with some questions.
+description: Add the questions the kids got wrong in a past exam to the pool and write their generators, end to end (pool, generators, stickers, checks, previews, catalog, website bank, commit, push, live site). Use when the parent says the kids solved an exam and struggled with some questions.
 ---
 
 # New wrong questions from a past exam
@@ -15,26 +15,32 @@ Do everything below without asking again, except step 1. Follow CLAUDE.md for ho
 
 ## 2. Find the exam
 - Exam PDFs: `set-03/by_level/Grade_03-04/` (Canada, CMKC_<year>_...), `set-01/by_level/Grade_03-04_Ecolier/`
-  (Austrian Kangaroo_<year>_...), `set-02/by_level/Class_03-04_Ecolier/` (not used yet).
+  (Austrian Kangaroo_<year>_...), `set-02/by_level/Class_03-04_Ecolier/` (IKMC_<year>_..., not used yet).
 - Answers: `set-03/by_level/Answer_Keys/`, `set-01/by_level/Solutions/`, `set-02/by_level/Answer_Keys/`.
 - Render each asked page to an image and look at the figure; `pdftotext -layout` may be missing - then use
   the Read tool on the PDF or pymupdf from `.venv` (`.venv/bin/python -m pip install pymupdf` if needed).
 - Use the answer key; if there is none, solve it yourself and say so in the generator docstring.
 
-## 3. Pool
+## 3. Pool, and what already exists
 - Add/merge the line in `question-pool.txt` (`<set>/by_level/<level>/<year>: n, n, n`), numbers sorted, no
   duplicates. A question that already has a generator: say so, skip it (maybe improve it instead).
-- A new set (e.g. set-02) also needs an entry in `CONTESTS` in `check.py`.
+- A new set (e.g. set-02) also needs an entry in `CONTESTS` in `check.py` (id, contest name shown on the
+  website: "Skills from <name> <year>" sticker group, "Set NN · year" pill, exam form checkbox).
+- Look at the existing generators (`QUESTIONS.md` lists skills and keywords) for the same skill. If one is close,
+  share code via `kangaroo/` and give the new one a different angle, a first keyword and a sticker of its own.
+- Read `feedback.md` for open items that apply (same skill, same kind of figure).
 
 ## 4. Write one generator per question (`generators/<path>/y<YEAR>_q<NN>.py`)
-Read `feedback.md` first. Everything in CLAUDE.md "How to write a generator" applies (4-6 variants,
-difficulty 1/2/3, `harder`, answers computed, independent `check`, Fig drawings, bold key words, solutions
-written to the kids). In addition, because the practice website uses them:
+Everything in CLAUDE.md "How to write a generator" applies (4-6 variants, difficulty 1/2/3, `harder`, answers
+computed, independent `check`, Fig drawings, bold key words, solutions written to the kids). In addition,
+because the practice website uses them:
 - `META["skill"]`: the **method**, never the answer - it is shown as the hint after a wrong first click.
-- `META["keywords"]`: 2-3 plain words; the first one is shown to the kids ("You're getting stronger at: ...").
-- `META["sticker"] = ("<emoji>", "<name>")`: the skill's own sticker (unlocked on the practice page when
-  the skill is solid; grouped by exam in the sticker book). Fun name, emoji and name not used by another
-  generator or in `site/stickers.js`. `check.py` fails without it.
+- `META["keywords"]`: 2-3 plain words. The first one is shown to the kids ("You're getting stronger at: ..."),
+  in the sticker ("Master <first keyword>") and in the exam form, so make it one no other generator starts with.
+- `META["sticker"] = ("<emoji>", "<name>")`: the skill's own sticker (unlocked on the practice page when the
+  skill is solid; grouped by exam in the sticker book). The site tracks earned stickers by **name**, so name and
+  emoji must not be used by another generator or by the fixed stickers in `site/stickers.js` (`check.py` fails
+  a missing sticker, a reused name or emoji, or a clash with `stickers.js`).
 - **Mistake labels**: give wrong options as `(value, "what you did")` pairs in `numeric_choices` /
   `text_choices` - a verb phrase to the child that fits "Did you ...?" and "This is what you get if you ...",
   e.g. `(front, "count only the cubes you can see")`. Label every deliberate mistake.
@@ -42,22 +48,39 @@ written to the kids). In addition, because the practice website uses them:
   "different" to "How many common letters ...?").
 - For questions the kids found very hard: `teach()` page (written to the kids) and 2-4 `@warmup`s - the
   website shows them after wrong answers and before a skill missed twice.
+- `META["version"] = 1`.
 
 ## 5. Verify (all must pass before committing)
-- `.venv/bin/python check.py` (35+/N ok, stress test ok; takes ~10 min - run it in the background).
+- `.venv/bin/python check.py` - every pool line `ok`, `Failing: 0`, no `note: same first keyword` naming a
+  new generator. It takes ~10 min: run it in the background and do the next steps meanwhile.
 - `.venv/bin/python check.py --preview y<YEAR>_q<NN>` for each new generator and LOOK at every page.
 - Second sweep: generate 40 seeds x every variant x normal/harder of each new generator, assert that
-  `[i for i in range(5) if q.check(i)] == [q.answer]` for all, and read ~2 samples per variant (text,
-  options, answer, solution) for wording that can be read two ways, singular/plural, a/an, units.
-- `.venv/bin/python check.py --catalog` (rewrites QUESTIONS.md and the workflow checkboxes).
+  `[i for i in range(5) if q.check(i)] == [q.answer]` for all, that every wrong option a variant means as a
+  mistake has a label in `q.meta["mistakes"]`, and read ~2 samples per variant (text, options, answer,
+  solution) for wording that can be read two ways, singular/plural, a/an, units.
+- `.venv/bin/python check.py --catalog` (rewrites QUESTIONS.md and the exam form checkboxes in
+  `.github/workflows/generate-exam.yml`); check the diff shows the new questions and a new contest checkbox
+  when the exam is new.
+- Website bank, as the Publish workflow builds it (~10 s): `BANK_SEEDS=2 .venv/bin/python site/bank.py`.
+  In `_site/bank/index.json` each new generator must have its `contest`, `level` (e.g. "Grade 3-4", not a
+  folder name), `keywords`, `skill`, `sticker`, and `teach`/`warmup` files when it has them. `_site/` is not
+  committed.
 
 ## 6. Ship
-- Commit (message lists the new questions) and push to main; pull --rebase first if needed.
-- The website redeploys by itself (`Publish website`, ~2 min). Check that `bank/index.json` on
-  https://koraytugay.github.io/math-kang-claude/ lists the new skills. New skills come up about twice as
-  often for 60 days automatically (from the generator's git date) - nothing to configure.
-- Add a line to the Log in `PLAN.md`.
+- Add a line to the Log in `PLAN.md` (the new questions and their stickers).
+- Commit: the pool, the new generators, any `kangaroo/` or `check.py` change, `QUESTIONS.md`, the workflow,
+  `PLAN.md`, `feedback.md` if items were ticked, and the **preview PDFs of the new generators**
+  (`output/previews/...`, QUESTIONS.md links to them). Leave out other preview PDFs that changed only because
+  they were rebuilt (the PDF date changes every time). The message lists the new questions.
+- Pull --rebase if needed, push to main.
+- Watch the website deploy: `gh run list --workflow pages.yml -L 1`, then `gh run watch <id> --exit-status`
+  (~2 min). If it fails, read `gh run view <id> --log-failed`, fix, push again.
+- Live check: `curl -s https://koraytugay.github.io/math-kang-claude/bank/index.json` lists the new keys with
+  their stickers, and one new bank file loads (`.../bank/<key with __>.json`). New skills come up about twice
+  as often for 60 days automatically (from the generator's git date) - nothing to configure.
 
 ## 7. Report to the parent (short)
-The new skills (question, keywords, what it practises), that they are live in practice and in the PDFs,
-and anything that needs their eyes (e.g. a question solved without an answer key).
+The new skills (question, first keyword, what it practises, its sticker), that they are live in practice and
+in the PDFs, and anything that needs their eyes (e.g. a question solved without an answer key, or a contest
+wording kept on purpose). Offer to make a PDF exam from just this exam's questions
+(`make_exam.py --from <year>`).
