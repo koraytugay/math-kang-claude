@@ -194,3 +194,74 @@ def node_graph(pos, edges, labels=None, r: float = 0.24, max_px: float = 110, fo
         if i in labels:
             f.text(x, y, labels[i], size=font_size)
     return f.drawing()
+
+
+# ------------------------------------------------------------------ picture cards
+# Small black-and-white icons for "which card is whose" puzzles (2022 Q16).
+ICONS = ["sun", "moon", "star", "heart", "flower"]
+
+
+def draw_icon(f: Fig, kind: str, cx: float, cy: float, s: float = 0.8):
+    """Draw icon `kind` centred at (cx, cy), about s units across."""
+    r = s / 2
+    if kind == "sun":
+        for k in range(8):
+            a = math.radians(k * 45 + 22.5)
+            f.line((cx + 0.62 * r * math.cos(a), cy + 0.62 * r * math.sin(a)),
+                   (cx + r * math.cos(a), cy + r * math.sin(a)), width=0.9)
+        f.circle(cx, cy, 0.48 * r, fill=MID, width=0.9)
+    elif kind == "moon":
+        # crescent: left part of a circle, cut by the same circle moved to the right
+        R, d = 0.85 * r, 0.6 * r
+        t0 = math.degrees(math.atan2(math.sqrt(R * R - d * d / 4), d / 2))
+        outer = [(R * math.cos(math.radians(t0 + (360 - 2 * t0) * i / 30)),
+                  R * math.sin(math.radians(t0 + (360 - 2 * t0) * i / 30))) for i in range(31)]
+        inner = [(d + R * math.cos(math.radians(180 + t0 - 2 * t0 * i / 30)),
+                  R * math.sin(math.radians(180 + t0 - 2 * t0 * i / 30))) for i in range(1, 30)]
+        f.poly([(cx - 0.1 * r + x, cy + y) for x, y in outer + inner], fill=DARK, width=0.8)
+    elif kind == "star":
+        pts = []
+        for k in range(10):
+            a = math.radians(90 + k * 36)
+            rr = r if k % 2 == 0 else 0.42 * r
+            pts.append((cx + rr * math.cos(a), cy - 0.05 * r + rr * math.sin(a)))
+        f.poly(pts, fill=colors.white, width=0.9)
+    elif kind == "heart":
+        pts = []
+        for k in range(40):
+            t = 2 * math.pi * k / 40
+            x = 16 * math.sin(t) ** 3
+            y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+            pts.append((cx + x / 17 * r, cy + 0.1 * r + y / 17 * r))
+        f.poly(pts, fill=MID, width=0.9)
+    elif kind == "flower":
+        for k in range(5):
+            a = math.radians(90 + k * 72)
+            f.circle(cx + 0.55 * r * math.cos(a), cy + 0.55 * r * math.sin(a), 0.42 * r,
+                     fill=colors.white, width=0.8)
+        f.circle(cx, cy, 0.3 * r, fill=DARK, width=0.8)
+    else:
+        raise ValueError(kind)
+
+
+def picture_card(items, label: str = "", max_px: float = 64):
+    """A card (3 x 2 units) showing up to 4 icons (see ICONS), with an optional label below."""
+    if label:
+        f = Fig(3, 2.5, max_px=max_px, margin=4, font_size=11)
+        f.text(1.5, 0.2, label)
+        y0 = 0.5
+    else:
+        f = Fig(3, 2, max_px=max_px, margin=4)
+        y0 = 0.0
+    f.rect(0, y0, 3, 2, fill=colors.white, width=1.1)
+    n = len(items)
+    if n <= 3:
+        xs = {1: [1.5], 2: [1.0, 2.0], 3: [0.6, 1.5, 2.4]}[n]
+        pos = [(x, y0 + 1.0) for x in xs]
+        s = 0.8
+    else:
+        pos = [(1.0, y0 + 1.45), (2.0, y0 + 1.45), (1.0, y0 + 0.55), (2.0, y0 + 0.55)]
+        s = 0.72
+    for kind, (x, y) in zip(items, pos):
+        draw_icon(f, kind, x, y, s)
+    return f.drawing()

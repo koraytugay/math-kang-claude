@@ -24,7 +24,7 @@ Answer with this short list, in plain words:
 ## Typical requests
 - **"Sync generators"** → run `python check.py`, pick MISSING entries (a few at a time unless told otherwise), write them.
 - **"We solved an exam" / `/new-questions`** → follow `.claude/skills/new-questions/SKILL.md`: ask only which
-  exam and which questions, then pool, generators (with mistake labels), checks, catalog, push, live check.
+  exam and which questions, then pool, generators (with mistake labels), checks, catalog, push.
 - **"Improve y2002_q06"** / feedback in `feedback.md` → edit that generator, bump `META["version"]`, mark the feedback item done.
 
 ## How to write a generator
@@ -53,11 +53,8 @@ Answer with this short list, in plain words:
      starting `"- "` is a bullet. Put rules/clues the kids must keep in mind (3+ facts) in a bulleted list after
      a lead sentence (never start the text with a bullet). The last question sentence is put on its own line
      automatically.
-   - Optional, for questions the kids find very hard: a `teach()` function returning the items of a
-     "How to think about it" page (paragraphs, `("h", ...)`, `("-", ...)`, `("tip", ...)`, `("table", rows)`,
-     Drawings — see `render._teach`), and a few `@warmup` questions (same signature as a variant) that build
-     up to the skill in small steps. Both appear only in previews, before the real questions.
-     Write the teaching page **to the kids** (10-year-olds study it on their own): say "you", never address a parent (no "your child", "children often miss").
+   - Don't add a `teach()` page or `@warmup` questions to new generators: the kids don't use them (parent,
+     2026-11-16). Older generators still have some; leave them unless asked.
 4. If several generators need the same machinery (e.g. balance scales, cube nets), put it in `kangaroo/` rather than copying it.
 5. Verify: `python check.py` (stress test must be `ok`; it fails a variant with no answer check), then `python check.py --preview y<YEAR>_q<NN>` (or `python check.py --preview-all`) and **look at the rendered pages** — check every figure, the wording, and that exactly one option is correct.
 

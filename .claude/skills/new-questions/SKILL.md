@@ -46,8 +46,7 @@ because the practice website uses them:
   e.g. `(front, "count only the cubes you can see")`. Label every deliberate mistake.
 - Keep the contest's wording when the "unclear" part is the trap the question teaches (do not add
   "different" to "How many common letters ...?").
-- For questions the kids found very hard: `teach()` page (written to the kids) and 2-4 `@warmup`s - the
-  website shows them after wrong answers and before a skill missed twice.
+- No `teach()` page and no `@warmup`s: the kids don't use them (parent, 2026-11-16).
 - `META["version"] = 1`.
 
 ## 5. Verify (all must pass before committing)
@@ -63,7 +62,7 @@ because the practice website uses them:
   when the exam is new.
 - Website bank, as the Publish workflow builds it (~10 s): `BANK_SEEDS=2 .venv/bin/python site/bank.py`.
   In `_site/bank/index.json` each new generator must have its `contest`, `level` (e.g. "Grade 3-4", not a
-  folder name), `keywords`, `skill`, `sticker`, and `teach`/`warmup` files when it has them. `_site/` is not
+  folder name), `keywords`, `skill` and `sticker`. `_site/` is not
   committed.
 
 ## 6. Ship
@@ -73,14 +72,11 @@ because the practice website uses them:
   (`output/previews/...`, QUESTIONS.md links to them). Leave out other preview PDFs that changed only because
   they were rebuilt (the PDF date changes every time). The message lists the new questions.
 - Pull --rebase if needed, push to main.
-- Watch the website deploy: `gh run list --workflow pages.yml -L 1`, then `gh run watch <id> --exit-status`
-  (~2 min). If it fails, read `gh run view <id> --log-failed`, fix, push again.
-- Live check: `curl -s https://koraytugay.github.io/math-kang-claude/bank/index.json` lists the new keys with
-  their stickers, and one new bank file loads (`.../bank/<key with __>.json`). New skills come up about twice
-  as often for 60 days automatically (from the generator's git date) - nothing to configure.
+- Stop after the push: no deploy watch, no live-site check (parent, 2026-11-16). New skills come up about
+  twice as often for 60 days automatically (from the generator's git date) - nothing to configure.
 
 ## 7. Report to the parent (short)
-The new skills (question, first keyword, what it practises, its sticker), that they are live in practice and
+The new skills (question, first keyword, what it practises, its sticker), that they will be in practice (after the ~2 min deploy) and
 in the PDFs, and anything that needs their eyes (e.g. a question solved without an answer key, or a contest
 wording kept on purpose). Offer to make a PDF exam from just this exam's questions
 (`make_exam.py --from <year>`).
