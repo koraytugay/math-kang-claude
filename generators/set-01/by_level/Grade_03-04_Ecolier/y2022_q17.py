@@ -17,6 +17,9 @@ from itertools import combinations
 
 from reportlab.lib import colors
 
+from kangaroo.choices import Choices
+from kangaroo.figures import column, row
+
 from kangaroo import Fig, Question, numeric_choices, text_choices, value_check, variant
 
 META = {
@@ -25,7 +28,7 @@ META = {
     "topics": ["logic", "counting"],
     "keywords": ["fewest shapes", "one shape, two rules", "exactly rules"],
     "sticker": ("🔺", "Shape picker"),   # earned when this skill is solid (website)
-    "version": 2,
+    "version": 3,
 }
 
 GREY = colors.Color(0.55, 0.55, 0.55)
@@ -86,23 +89,50 @@ def name(shape):
 
 
 # ------------------------------------------------------------------ picture
-def draw(shapes):
+def _place(shapes):
     xs, x = [], 0.0
     for c, s, k in shapes:
-        w = 1.0 if s == "big" else 0.38
         xs.append(x)
-        x += w + 0.35
-    f = Fig(x - 0.35, 1.0, max_px=min(330, 58 * (x - 0.35)), margin=6)
+        x += (1.0 if s == "big" else 0.38) + 0.35
+    return xs, x - 0.35
+
+
+def _shapes(f, shapes, xs, dx=0.0, dy=0.0):
     for (c, s, k), x0 in zip(shapes, xs):
         w = 1.0 if s == "big" else 0.38
+        x0 += dx
         fill = GREY if c == "grey" else colors.white
         if k == "square":
-            f.rect(x0 + 0.04 * w, 0, 0.92 * w, 0.92 * w, fill=fill, width=1.0)
+            f.rect(x0 + 0.04 * w, dy, 0.92 * w, 0.92 * w, fill=fill, width=1.0)
         elif k == "triangle":
-            f.poly([(x0, 0), (x0 + w, 0), (x0 + w / 2, w * 0.9)], fill=fill, width=1.0)
+            f.poly([(x0, dy), (x0 + w, dy), (x0 + w / 2, dy + w * 0.9)], fill=fill, width=1.0)
         else:
-            f.circle(x0 + w / 2, w / 2, w / 2, fill=fill, width=1.0)
+            f.circle(x0 + w / 2, dy + w / 2, w / 2, fill=fill, width=1.0)
+
+
+def draw(shapes):
+    xs, width = _place(shapes)
+    f = Fig(width, 1.0, max_px=min(330, 58 * width), margin=6)
+    _shapes(f, shapes, xs)
     return f.drawing()
+
+
+def group_box(group, number, inner_w, scale=26):
+    """One chosen group in a numbered box; every box has the same size and scale."""
+    xs, width = _place(group)
+    pad = 0.3
+    f = Fig(inner_w + 2 * pad, 1.0 + 2 * pad + 0.35, scale=scale, margin=4)
+    f.rect(0, 0, inner_w + 2 * pad, 1.0 + 2 * pad + 0.35, width=0.8)
+    f.text(0.25, 1.0 + 2 * pad + 0.1, str(number), anchor="start", size=11)
+    _shapes(f, group, xs, dx=pad + (inner_w - width) / 2, dy=pad)
+    return f.drawing()
+
+
+def groups_figure(shapes, groups):
+    """The shapes to choose from, then the five groups in numbered boxes (3 + 2)."""
+    inner = max(_place(g)[1] for g in groups)
+    boxes = [group_box(g, i + 1, inner) for i, g in enumerate(groups)]
+    return column([draw(shapes), row(boxes[:3], gap=10), row(boxes[3:], gap=10)], gap=10)
 
 
 # ------------------------------------------------------------------ puzzles
@@ -160,35 +190,6 @@ def word(rule):
     return {"circle": "round", "triangle": "a triangle", "square": "a square"}.get(val, val)
 
 
-def most_solution(pz, free, used):
-    """Why the largest number is what it is, in three steps the kids can follow."""
-    rules = pz["rules"]
-    words = [word(r) for r in rules]
-    either = ", ".join(words[:-1]) + " or " + words[-1]
-    caps = " + ".join(str(r[2]) for r in rules)
-    total = sum(r[2] for r in rules)
-    out = (f"Shapes that are not {either} break no rule, so take them all: "
-           f"{', '.join(name(s) for s in free)} ({len(free)}). "
-           f"Every other shape is {either}, and the rules allow exactly {rules_phrase(rules)}. "
-           f"So at most {caps} = {total} more, and only if each of them is just one of these. ")
-    if len(used) < total:
-        short = [r for r in rules
-                 if sum(1 for s in pz["shapes"] if fits(s, r) and sum(fits(s, q) for q in rules) == 1) < r[2]]
-        r = short[0]
-        only = [x for x in pz["shapes"] if fits(x, r) and sum(fits(x, q) for q in rules) == 1]
-        rest = [w for w in words if w != word(r)]
-        rest = ", ".join(rest[:-1]) + " or " + rest[-1] if len(rest) > 1 else rest[0]
-        if only:
-            out += (f"But only {name(only[0])} is just {word(r)}; every other shape that is {word(r)} "
-                    f"is also {rest}. ")
-        else:
-            out += f"But no shape here is just {word(r)}: every shape that is {word(r)} is also {rest}. "
-    tags = [f"{name(s)} ({' and '.join(word(r) for r in rules if fits(s, r))})" for s in used]
-    out += (f"The best is {len(used)}: {', '.join(tags)}. "
-            f"In all {len(free)} + {len(used)} = {len(free) + len(used)} shapes.")
-    return out
-
-
 # ------------------------------------------------------------------ variants
 @variant(difficulty=1)
 def two_rules(rng, harder):
@@ -216,26 +217,48 @@ def three_rules(rng, harder):
 
 
 @variant(difficulty=2)
-def most_shapes(rng, harder):
-    """Turned around: the largest number. Shapes that fit no rule can always be added."""
+def which_group(rng, harder):
+    """Check every "exactly": which group of shapes is exactly what she says?"""
     attrs = list(ATTR) if harder else rng.sample(list(ATTR), 2)
-    pz = make(rng, attrs, 8 if harder else 7, 2,
-              lambda z: z["max"] < len(z["shapes"]) and z["max"] > sum(r[2] for r in z["rules"])
-              and z["max"] != z["min"])
-    shapes, rules = pz["shapes"], pz["rules"]
+    for _ in range(200):
+        pz = make(rng, attrs, 7 if harder else 6, 2, tricky_min)
+        shapes, rules = pz["shapes"], pz["rules"]
+        useful = [x for x in shapes if any(fits(x, r) for r in rules)]
+        groups = [g for k in range(2, 5) for g in combinations(useful, k)]
+        rights = [g for g in groups if ok(g, rules)]
+
+        def off(g):   # the rules this group gets wrong, with how many it has
+            return [(r, sum(fits(x, r) for x in g)) for r in rules if sum(fits(x, r) for x in g) != r[2]]
+        near = [g for g in groups if len(off(g)) == 1 and abs(off(g)[0][1] - off(g)[0][0][2]) == 1]
+        if rights and len(near) >= 4:
+            break
+    right = rng.choice(rights)
+    rng.shuffle(near)
+    # near misses that share shapes with the right group look the most tempting
+    near.sort(key=lambda g: -len(set(g) & set(right)))
+    wrong = near[:4]
+    options = [right] + wrong
+    rng.shuffle(options)
+    ans = options.index(right)
+    mistakes = {}
+    for i, g in enumerate(options):
+        if g != right:
+            r, n = off(g)[0]
+            mistakes[i] = f"miss that this group has {rule_phrase((r[0], r[1], n))}, not {r[2]}"
     who, text = intro(rng, pz)
-    text += f"\n\nWhat is the <b>largest</b> number of shapes {who} can have chosen?"
-    free = [s for s in shapes if not any(fits(s, r) for r in rules)]
-    group = next(g for g in combinations(shapes, pz["max"]) if ok(g, rules))
-    used = [s for s in group if s not in free]
-    sol = most_solution(pz, free, used)
-    mistakes = [(len(shapes), "choose all the shapes"),
-                (pz["min"], "find the smallest number instead of the largest"),
-                (sum(r[2] for r in rules), "add up the numbers in the rules and forget the other shapes"),
-                (len(free), "forget the shapes the rules talk about")]
-    ch, ans = numeric_choices(pz["max"], mistakes, rng, lo=1)
-    return Question(text=text, figure=draw(shapes), choices=ch, answer=ans, solution=sol,
-                    difficulty=2, check=value_check(ch, max(sizes(shapes, rules))))
+    text += f"\n\nWhich group of shapes can {who} have chosen?"
+    lines = [f"{rule_phrase((r[0], r[1], sum(fits(x, r) for x in right)))} "
+             f"({', '.join(name(x) for x in right if fits(x, r))})" for r in rules]
+    sol = (f"Count every rule for every group - one shape can count for two rules. "
+           f"Group {ans + 1} has {'; '.join(lines)}. "
+           + " ".join(f"Group {i + 1}: {rule_phrase((off(g)[0][0][0], off(g)[0][0][1], off(g)[0][1]))}."
+                      for i, g in enumerate(options) if g != right))
+    ch = Choices([f"group {i + 1}" for i in range(5)], mistakes)
+
+    def check(i):   # count each rule again, shape by shape, for the drawn group
+        return all(sum(1 for x in options[i] if x[ATTR[a]] == v) == n for a, v, n in rules)
+    return Question(text=text, figure=groups_figure(shapes, options), choices=ch, answer=ans,
+                    solution=sol, difficulty=2, check=check)
 
 
 @variant(difficulty=3)
