@@ -80,3 +80,38 @@ def min_colours(n: int, edges) -> int:
     while next(colourings(n, edges, k), None) is None:
         k += 1
     return k
+
+
+# ------------------------------------------------------------------ linear equations (cards hiding numbers)
+def linear_value(eqs, target: dict):
+    """The value of sum(c * x[name]) for `target` = {name: c}, if the equations fix it, else None.
+
+    eqs: [({name: coefficient}, right-hand side), ...]. Exact Gaussian elimination with
+    fractions: the target is fixed exactly when it is a combination of the equations.
+    Raises ValueError if the equations contradict each other.
+    """
+    names = sorted({n for c, _ in eqs for n in c} | set(target))
+    rows = [[Fraction(c.get(n, 0)) for n in names] + [Fraction(r)] for c, r in eqs]
+    pivots, r = [], 0
+    for col in range(len(names)):
+        p = next((i for i in range(r, len(rows)) if rows[i][col] != 0), None)
+        if p is None:
+            continue
+        rows[r], rows[p] = rows[p], rows[r]
+        rows[r] = [v / rows[r][col] for v in rows[r]]
+        for i in range(len(rows)):
+            if i != r and rows[i][col] != 0:
+                f = rows[i][col]
+                rows[i] = [a - f * b for a, b in zip(rows[i], rows[r])]
+        pivots.append(col)
+        r += 1
+    if any(all(v == 0 for v in row[:-1]) and row[-1] != 0 for row in rows):
+        raise ValueError("the equations contradict each other")
+    t = [Fraction(target.get(n, 0)) for n in names]
+    val = Fraction(0)
+    for i, col in enumerate(pivots):
+        f = t[col]
+        if f:
+            t = [a - f * b for a, b in zip(t, rows[i][:-1])]
+            val += f * rows[i][-1]
+    return val if all(v == 0 for v in t) else None
