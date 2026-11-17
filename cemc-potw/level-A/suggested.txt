@@ -1,0 +1,64 @@
+SUGGESTED CEMC PROBLEMS OF THE WEEK (Problem A, Grade 3/4)
+Picked 2026-11-17 to match what Deniz and Toprak got wrong on the Math Kangaroo exams
+(see QUESTIONS.md). Pages are PDF page numbers of the problem; the solution is on the next page(s).
+Files: POTW-A_<year>_problems-and-solutions.pdf in this folder.
+
+The pattern in the Kangaroo mistakes: almost never the arithmetic. They stop at the first answer that
+looks right instead of (1) seeing shapes in their head, (2) listing every case, (3) finding hidden
+numbers step by step, (4) checking every clue. The CEMC problems below train exactly these.
+Most CEMC problems are money, data and measuring - those are skipped (no help for the weak spots).
+
+Suggested order: one problem a day, mixing the four groups; do it on paper, then read the solution.
+* = start with these (closest to Kangaroo questions they missed).
+
+
+1. FINDING HIDDEN NUMBERS STEP BY STEP  (Kangaroo: balance scales, colour cards, hiding digits)
+---------------------------------------------------------------------------------------------
+* 2025-26  p21   Shape Sums             - symbols hide numbers, row/column sums given. Almost the same
+                                          as Kangaroo 2022 Q24 (colour cards).
+* 2022-23  p10   Balancing Act          - heart, moon, sun boxes on balances.
+* 2023-24  p13   Balancing Act          - a new one with the same idea.
+  2024-25  p6    Balancing Act          - a third one.
+  2024-25  p103  Can You Kayak?         - kayaks + rowboats seats: compare two facts.
+  2025-26  p8    Gathering Flowers      - five kinds of flowers, chain of "more than" clues.
+  2022-23  p22   The Pencil Case        - riddle with remainders: guess and check, all clues.
+  2025-26  p128  Sorting Socks          - remainders again, "fewer than 60", find the largest.
+  2023-24  p117  What's in the Pouch?   - $20.30 in exactly 4 coins and 3 bills.
+
+
+2. CHECKING EVERY CLUE  (Kangaroo: rule out cards, logic clues, fewest shapes, one guess is right)
+---------------------------------------------------------------------------------------------
+* 2025-26  p44   Tents Situation        - logic grid: families, sizes, tent colours, "not" clues.
+* 2022-23  p117  Track and Field        - logic grid: who has which nickname.
+  2024-25  p19   Entry Code             - test 8 codes against 4 rules: every rule, every code.
+  2022-23  p18   What Number Am I?      - digit clues (3-digit).
+  2023-24  p21   What Number Am I?      - digit clues (4-digit).
+  2024-25  p17   What Number Am I?      - sum 11, product 16, no repeats.
+  2022-23  p109  Finding Treasure       - rooms, doors and keys: fewest keys to reach the treasure.
+
+
+3. LISTING EVERY CASE IN ORDER  (Kangaroo: seating orders, routes, counting with a tree, two patterns)
+---------------------------------------------------------------------------------------------
+* 2024-25  p37   Summer Selections      - shorts, shirts, hats, all different colours: list them all.
+* 2025-26  p15   Team Tournament        - how many matches when every team plays every team.
+* 2025-26  p41   Park Paths             - trails between two stations: compare routes, find shorter.
+  2023-24  p48   Rearranging Rectangles - draw ALL rectangles from 15, 24, 17 tiles.
+  2023-24  p107  Patterned Savings      - every day / every 2nd / every 5th day: two patterns at once.
+  2025-26  p37   Just Filling In        - arrange 6 digits; how many different solutions?
+  2024-25  p70   Calculator Catastrophe - make 1 to 12 with broken buttons (like "make a target number").
+  2024-25  p51   Fencepost Problem      - posts and gaps: the classic "one more / one less" trap.
+
+
+4. SEEING SHAPES IN YOUR HEAD  (Kangaroo: cube counting, folding, pieces that fit, perimeter, ant path)
+---------------------------------------------------------------------------------------------
+* 2024-25  p15   Stacking Shapes        - shapes on top of each other: in what order were they laid?
+* 2025-26  p80   Paper Folding          - fold a square corner to corner; predict the shapes. Use real paper!
+* 2022-23  p65   What's My Perimeter?   - square cut into rectangles (like Kangaroo 2002 Q6).
+  2024-25  p54   Quilting Puzzle        - squares inside a rectangle: find the missing lengths.
+  2025-26  p10   Puzzling Predicament   - 100-piece puzzle: how many edge pieces? (like hidden cubes inside)
+  2024-25  p22   Amazing Navigation     - maze through every white square exactly once.
+  2022-23  p57   Tracking Triangles     - cut polygons into triangles; find the pattern.
+  2022-23  p54   Star of Lakshmi        - two squares, one turned: sides, corners, symmetry.
+
+Not enough spatial practice here (CEMC Problem A has few 3-D problems): for cube counting and
+folding, also build with snap cubes and fold real paper, and use the website's cube questions.
