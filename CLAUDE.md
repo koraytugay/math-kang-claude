@@ -9,6 +9,7 @@ an exam is just `python make_exam.py`.
 - `question-pool.txt` — `<PATH>/<YEAR>: n, n, n` lines (e.g. `set-03/by_level/Grade_03-04/2002: 1, 6, 7`); the questions the kids got wrong.
 - `generators/<PATH>/y<YEAR>_q<NN>.py` — one generator per pool question (e.g. `generators/set-03/by_level/Grade_03-04/y2002_q06.py`).
 - `kangaroo/` — shared library: `Question`, `numeric_choices`/`text_choices`, `Fig` (drawing), `render.py` (PDF), `registry.py`.
+- `cemc-potw/level-A/` — University of Waterloo (CEMC) Problem of the Week, Grade 3/4 booklets with solutions (see its README).
 - `feedback.md` — the parent's notes on generated questions. **Read it before touching a generator.**
 - `make_exam.py`, `check.py` — the two commands.
 
