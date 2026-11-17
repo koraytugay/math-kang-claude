@@ -25,7 +25,7 @@ META = {
     "topics": ["logic", "counting"],
     "keywords": ["fewest shapes", "one shape, two rules", "exactly rules"],
     "sticker": ("🔺", "Shape picker"),   # earned when this skill is solid (website)
-    "version": 1,
+    "version": 2,
 }
 
 GREY = colors.Color(0.55, 0.55, 0.55)
@@ -154,6 +154,41 @@ def min_mistakes(pz):
     return m
 
 
+def word(rule):
+    """The rule in one word: grey, small, round, triangle ..."""
+    attr, val, _ = rule
+    return {"circle": "round", "triangle": "a triangle", "square": "a square"}.get(val, val)
+
+
+def most_solution(pz, free, used):
+    """Why the largest number is what it is, in three steps the kids can follow."""
+    rules = pz["rules"]
+    words = [word(r) for r in rules]
+    either = ", ".join(words[:-1]) + " or " + words[-1]
+    caps = " + ".join(str(r[2]) for r in rules)
+    total = sum(r[2] for r in rules)
+    out = (f"Shapes that are not {either} break no rule, so take them all: "
+           f"{', '.join(name(s) for s in free)} ({len(free)}). "
+           f"Every other shape is {either}, and the rules allow exactly {rules_phrase(rules)}. "
+           f"So at most {caps} = {total} more, and only if each of them is just one of these. ")
+    if len(used) < total:
+        short = [r for r in rules
+                 if sum(1 for s in pz["shapes"] if fits(s, r) and sum(fits(s, q) for q in rules) == 1) < r[2]]
+        r = short[0]
+        only = [x for x in pz["shapes"] if fits(x, r) and sum(fits(x, q) for q in rules) == 1]
+        rest = [w for w in words if w != word(r)]
+        rest = ", ".join(rest[:-1]) + " or " + rest[-1] if len(rest) > 1 else rest[0]
+        if only:
+            out += (f"But only {name(only[0])} is just {word(r)}; every other shape that is {word(r)} "
+                    f"is also {rest}. ")
+        else:
+            out += f"But no shape here is just {word(r)}: every shape that is {word(r)} is also {rest}. "
+    tags = [f"{name(s)} ({' and '.join(word(r) for r in rules if fits(s, r))})" for s in used]
+    out += (f"The best is {len(used)}: {', '.join(tags)}. "
+            f"In all {len(free)} + {len(used)} = {len(free) + len(used)} shapes.")
+    return out
+
+
 # ------------------------------------------------------------------ variants
 @variant(difficulty=1)
 def two_rules(rng, harder):
@@ -193,9 +228,7 @@ def most_shapes(rng, harder):
     free = [s for s in shapes if not any(fits(s, r) for r in rules)]
     group = next(g for g in combinations(shapes, pz["max"]) if ok(g, rules))
     used = [s for s in group if s not in free]
-    sol = (f"Shapes that fit none of the rules can always be added: {', '.join(name(s) for s in free)} "
-           f"({len(free)}). Then as many others as the \"exactly\" rules allow: "
-           f"{', '.join(name(s) for s in used)} ({len(used)}). In all {pz['max']} shapes.")
+    sol = most_solution(pz, free, used)
     mistakes = [(len(shapes), "choose all the shapes"),
                 (pz["min"], "find the smallest number instead of the largest"),
                 (sum(r[2] for r in rules), "add up the numbers in the rules and forget the other shapes"),
