@@ -42,7 +42,7 @@ on:
         type: boolean
         default: false
       austria_2022:
-        description: 'Austrian Kangaroo 2022, Ecolier Grade 3-4: rule out cards, fewest shapes, colour cards'
+        description: 'Austrian Kangaroo 2022, Ecolier Grade 3-4: rule out cards, fewest shapes, ant path, colour cards'
         type: boolean
         default: false
       austria_2023:

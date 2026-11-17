@@ -54,6 +54,7 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 |---|---|---|---|
 | 2022 Q16 | rule out cards, only one fits, postcard clues | Start with the clue that fits only one card, cross that card out, then check the other clues again | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2022_q16.pdf) |
 | 2022 Q17 | fewest shapes, one shape, two rules, exactly rules | Fewest shapes for several rules: choose shapes that count for two rules at once, then check every "exactly" | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2022_q17.pdf) |
+| 2022 Q19 | ant path, up and across, pyramid of cubes | A path over steps: add all the up pieces, all the down pieces and all the flat pieces separately | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2022_q19.pdf) |
 | 2022 Q24 | colour cards, row sums, same colour same number | Cards hiding numbers: put two rows together or compare two rows, until a row has only one unknown colour | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2022_q24.pdf) |
 
 ## Austrian Kangaroo 2023, Ecolier Grade 3-4
