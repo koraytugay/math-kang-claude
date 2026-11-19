@@ -170,3 +170,30 @@ def makes_rectangle(a, b) -> bool:
                 if covers(box - {(x + dx, y + dy) for x, y in a}, [b]):
                     return True
     return False
+
+
+def place_inside(rng, allowed, pieces, tries: int = 400, compact: bool = False):
+    """Lay the pieces (turned/flipped at random) on cells of `allowed`, no overlap, each piece touching
+    the ones before, so together they make one connected region. Returns the region or None.
+    compact=True picks, for each piece, among the spots touching the region most (a round blob)."""
+    allowed = frozenset(allowed)
+    for _ in range(tries):
+        region = set()
+        for p in pieces:
+            spots = []
+            for o in orientations(p):
+                for ax, ay in allowed:
+                    cells = {(x + ax, y + ay) for x, y in o}
+                    if cells <= allowed and not cells & region and \
+                            (not region or any(nb in region for c in cells for nb in neighbours(c))):
+                        spots.append(cells)
+            if not spots:
+                break
+            if compact and region:
+                touch = [sum(nb in region for c in sp for nb in neighbours(c)) for sp in spots]
+                best = max(touch)
+                spots = [sp for sp, t in zip(spots, touch) if t >= best - 1]
+            region |= rng.choice(spots)
+        else:
+            return frozenset(region)
+    return None

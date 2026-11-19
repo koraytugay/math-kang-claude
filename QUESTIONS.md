@@ -48,6 +48,13 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 | 2007 Q23 | counting digits, writing numbers | Counting digits by groups (1-, 2-, 3-digit numbers); how many numbers are in a range | [PDF](output/previews/set-03/by_level/Grade_03-04/y2007_q23.pdf) |
 | 2007 Q24 | paper folding, fold and cut | Fold twice, cut, unfold: one cut is mirrored over both folds (4 copies, symmetric) | [PDF](output/previews/set-03/by_level/Grade_03-04/y2007_q24.pdf) |
 
+## Canada Math Kangaroo 2026, Grade 3-4
+
+| Question | Keywords | What it practises | Preview |
+|---|---|---|---|
+| 2026 Q7 | cutting a paper stack, squares and rectangles, hidden parts | Cut each sheet on its own, also the hidden part under the sheets on top; then check which pieces have equal sides | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q07.pdf) |
+| 2026 Q9 | piece left over, puzzle pieces, count the squares | Count the squares: all the pieces minus the empty squares is the size of the piece left over; then check that the other pieces really fit | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q09.pdf) |
+
 ## Austrian Kangaroo 2022, Ecolier Grade 3-4
 
 | Question | Keywords | What it practises | Preview |
