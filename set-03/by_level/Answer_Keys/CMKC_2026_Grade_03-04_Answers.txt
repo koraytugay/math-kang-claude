@@ -1,0 +1,37 @@
+Canada Math Kangaroo 2026, Grade 3-4: answer key
+(Solved by us from the contest PDF, NOT an official key. Q20 and Q22 are the least certain.)
+
+ 1 A    7 C   13 C   19 B
+ 2 B    8 E   14 D   20 C
+ 3 D    9 A   15 E   21 E
+ 4 A   10 C   16 B   22 B
+ 5 D   11 D   17 D   23 A
+ 6 C   12 B   18 E   24 C
+
+Answer string: A B D A D C C E A C D B C D E B D E B C E B A C
+
+Short reasons
+ 1 A  The hole is an L-shaped strip; the cat turned 90 degrees clockwise fits it.
+ 2 B  6 pencils, 3 thin orange brushes, 5 wide brown brushes: smallest count is 3.
+ 3 D  Piece starts next to the left end of the path and ends next to the right part.
+ 4 A  Row 2 = black, grey, white; row 3 = white, black, grey. Outlined: white / black, grey.
+ 5 D  Path length 1+1+1+2+1 = 6 to the top of the star line, then 1 down = 7.
+ 6 C  Every row has the cyclic order dots, ring, star, red, diamond; only C has it.
+ 7 C  5 squares (already in the repo).
+ 8 E  Seen from the other side (opposite faces): top-right white, bottom row black, grey.
+ 9 A  14 squares in the pieces, 11 in the hole, so the 3-square piece is left out (already in the repo).
+10 C  Both ? cells are 2, sum 4 (full grid completed and checked).
+11 D  Start D2: D2 D3 C3 B3 A3 A2 A1 B1 B2 C2 C1 D1 = all 12 squares.
+12 B  Row1 = 882, row4 = 872, row2 = 183, row3 = 521, so the last row = 451.
+13 C  3 one-eyed (3 eyes, 12 legs) + 2 three-eyed (6 eyes, 4 legs) = 9 eyes, 16 legs.
+14 D  From the front the columns show 2 + 4 + 3 + 2 = 11 towers.
+15 E  Times: A 18, B 16, C 14, D 16, E 12 seconds.
+16 B  The two foldings force all 8 squares to have the same colour: 1 colour.
+17 D  Karen K, Marieke K+2, Lisa K+4. Buckets hold 2,3,4,6,7 so K=2, Lisa has 6 (D).
+18 E  Circle order: Toa, Chi, Ly, My, Hoa. Ly holds Chi and My.
+19 B  7 -> 4 -> 8 -> 16 (minus 3, double, double) = 3 spells; 2 spells cannot do it.
+20 C  Cards: 16 - 9 = 7, digits 1+6+9+7 = 23. (10 - 3 = 7 would give 11, not an option.)
+21 E  8 full rounds = 48 cm, 2 cm left: the first stick is 2 cm, so first and last are 2 cm.
+22 B  Lily sees the left face (not drawn). With 16 black / 11 white cubes only B is possible.
+23 A  Solving the neighbour sums gives 2,1,1 / 1,1,2 / 4,3,1 = 16.
+24 C  Non-red 12, non-green 15, non-blue 13; total 20, so blue = 20 - 13 = 7.
