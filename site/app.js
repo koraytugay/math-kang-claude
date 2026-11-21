@@ -55,10 +55,21 @@ function pill(label, idx) {
 
 function render() {
     if (!(show >= -1 && show < cfg.contests.length)) show = 0;
-    const nav = $("pills");
-    nav.innerHTML = "";
-    nav.append(pill("All", -1));
-    cfg.contests.forEach((c, i) => nav.append(pill(c.pill, i)));
+    // One row of pills for "All", then one row per set ("Set 01 · 2002", "Set 01 · 2003", ... then "Set 03 · ...").
+    const pills = $("pills");
+    pills.innerHTML = "";
+    const newRow = () => {
+        const row = el("nav", "kt-nav kt-nav--pill kt-nav--left kt-mb-2");
+        pills.append(row);
+        return row;
+    };
+    newRow().append(pill("All", -1));
+    const bySet = {};
+    cfg.contests.forEach((c, i) => (bySet[c.pill.split(" · ")[0]] ??= []).push([c, i]));
+    for (const set of Object.keys(bySet).sort()) {
+        const row = newRow();
+        for (const [c, i] of bySet[set]) row.append(pill(c.pill, i));
+    }
 
     const root = $("contests");
     root.innerHTML = "";
