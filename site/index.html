@@ -12,7 +12,11 @@
         .mk-count { width: 5rem; }
         .mk-card-img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--kt-radius-md); }
         .mk-bar { position: sticky; bottom: var(--kt-space-2); z-index: 5; }
-        .mk-contest + .mk-contest { margin-top: var(--kt-space-6); }
+        /* space only between contests that are really shown (a hidden one must not leave a gap, or the page jumps) */
+        .mk-contest:not([hidden]) ~ .mk-contest:not([hidden]) { margin-top: var(--kt-space-6); }
+        /* one pill row per set, close together (each row is its own .kt-nav, which has its own padding and margin) */
+        #pills .kt-nav { margin: 0 0 var(--kt-space-1); padding: 0; }
+        #pills .kt-nav:last-child { margin-bottom: var(--kt-space-3); }
     </style>
 </head>
 <body>

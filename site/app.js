@@ -59,7 +59,7 @@ function render() {
     const pills = $("pills");
     pills.innerHTML = "";
     const newRow = () => {
-        const row = el("nav", "kt-nav kt-nav--pill kt-nav--left kt-mb-2");
+        const row = el("nav", "kt-nav kt-nav--pill kt-nav--left");
         pills.append(row);
         return row;
     };
