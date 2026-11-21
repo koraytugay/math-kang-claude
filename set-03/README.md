@@ -26,7 +26,7 @@ Downloaded from [mathkangaroo.ca - Samples / Resources](https://mathkangaroo.ca/
   - `Grade_09-10/` (15 papers, 2002–2023)
   - `Grade_11-12/` (15 papers, 2002–2023)
   - `Parents_Questions/` (4 papers, 2014–2021)
-  - `Answer_Keys/` (15 answer key papers)
+  - `Answer_Keys/` (answer keys, one PDF per year and level; see `Answer_Keys/README.txt`)
 
 ## File Naming Convention
 
