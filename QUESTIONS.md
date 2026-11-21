@@ -54,6 +54,7 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 |---|---|---|---|
 | 2026 Q7 | cutting a paper stack, squares and rectangles, hidden parts | Cut each sheet on its own, also the hidden part under the sheets on top; then check which pieces have equal sides | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q07.pdf) |
 | 2026 Q9 | piece left over, puzzle pieces, count the squares | Count the squares: all the pieces minus the empty squares is the size of the piece left over; then check that the other pieces really fit | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q09.pdf) |
+| 2026 Q14 | hidden towers, view from the front, taller ones | Look along one line of towers at a time, starting at your end: remember the tallest tower so far; a tower is seen only if it is taller than that | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q14.pdf) |
 
 ## Austrian Kangaroo 2022, Ecolier Grade 3-4
 
