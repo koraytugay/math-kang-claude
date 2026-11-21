@@ -25,7 +25,7 @@ META = {
     "topics": ["logic", "patterns", "spatial"],
     "keywords": ["folded strip", "matching squares", "colour groups"],
     "sticker": ("🎀", "Ribbon folder"),   # earned when this skill is solid (website)
-    "version": 1,
+    "version": 2,
 }
 
 PEOPLE = ["Maya", "Mia", "Lena", "Nora", "Sara", "Ella", "Zoe", "Ivy"]  # all "she" in the texts
@@ -175,6 +175,59 @@ def original(rng, harder):
             "still line up in the same colour.\n\nWhat is the greatest number of different colours the strip could have?")
     sol = _explain(n, cuts) + (f" Here {name} cut off squares 1 and 2 (the other end works the same way): "
                                f"at most {ans} colour{'s' if ans != 1 else ''}.")
+    choices, ai = numeric_choices(ans, _colour_mistakes(n, cuts), rng, lo=1, order="asc")
+    return Question(text=text, figure=strip_pic(n), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, check_colours(n, cuts)))
+
+
+@variant(difficulty=1)
+def one_fold(rng, harder):
+    """Easiest: only one fold. Which squares match, and how many colours at most?"""
+    n = rng.choice([10, 12] if harder else [6, 8])
+    name = rng.choice(PEOPLE)
+    ans = len(groups(n, []))
+    text = (f"{name} has a paper strip of {n} squares, numbered 1 to {n}, which she colours. "
+            "When she folds it in half, the matching squares line up in the same colour."
+            "\n\nWhat is the greatest number of different colours the strip could have?")
+    sol = (f"Folding the strip in half matches {_pairs_text(1, n)}. "
+           f"Each pair has to be one colour, and different pairs can have different colours: {ans} colours.")
+    mistakes = [(n, "give every square its own colour"), (n - 1, "forget that squares in a pair match"),
+                (ans + 1, "count one pair too many"), (ans - 1, "count one pair too few")]
+    choices, ai = numeric_choices(ans, mistakes, rng, lo=1, order="asc")
+    return Question(text=text, figure=strip_pic(n), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, check_colours(n, [])))
+
+
+@variant(difficulty=1)
+def which_square(rng, harder):
+    """Easiest: after one fold, which square lands on square k (so has its colour)?"""
+    n = rng.choice([10, 12] if harder else [6, 8])
+    k = rng.choice([x for x in range(1, n + 1) if x != n + 1 - x and x not in (1, n)])
+    name = rng.choice(PEOPLE)
+    ans = n + 1 - k
+    text = (f"{name} has a paper strip of {n} squares, numbered 1 to {n}, which she colours. "
+            "When she folds it in half, the matching squares line up in the same colour."
+            f"\n\nWhich square must have the same colour as square {k}?")
+    sol = (f"When you fold the strip in half, square 1 lands on square {n}, square 2 on square {n - 1}, and so on. "
+           f"Square {k} lands on square {ans}. The two squares add up to {n + 1}.")
+    mistakes = [(k + 1, "pick the next square"), (k - 1, "pick the square before"),
+                (n - k, "count from the wrong end"), (n + 2 - k, "count from the wrong end")]
+    choices, ai = numeric_choices(ans, mistakes, rng, lo=1, order="asc")
+    pairs = _landing_pairs(n, [])
+    return Question(text=text, figure=strip_pic(n), choices=choices, answer=ai, solution=sol,
+                    check=lambda i: tuple(sorted((k - 1, int(choices[i]) - 1))) in {tuple(sorted(p)) for p in pairs})
+
+
+@variant(difficulty=1)
+def short_strip(rng, harder):
+    """The original idea with a short strip, so every pair is easy to follow."""
+    n, k = rng.choice([(6, 2), (6, 4), (8, 4)] if harder else [(4, 2), (6, 2), (6, 4)])
+    name = rng.choice(PEOPLE)
+    cuts = [k]
+    ans = len(groups(n, cuts))
+    text = (_intro(name, n) + f" After she {_cut_text(name, k)} and folds the rest in half, the matching squares "
+            "still line up in the same colour.\n\nWhat is the greatest number of different colours the strip could have?")
+    sol = _explain(n, cuts) + f" (Here {name} cut off squares 1 to {k}.) At most {ans} colour{'s' if ans != 1 else ''}."
     choices, ai = numeric_choices(ans, _colour_mistakes(n, cuts), rng, lo=1, order="asc")
     return Question(text=text, figure=strip_pic(n), choices=choices, answer=ai, solution=sol,
                     check=value_check(choices, check_colours(n, cuts)))
