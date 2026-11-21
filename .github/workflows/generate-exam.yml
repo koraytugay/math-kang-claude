@@ -42,7 +42,7 @@ on:
         type: boolean
         default: false
       canada_2026:
-        description: 'Canada Math Kangaroo 2026, Grade 3-4: cutting a paper stack, piece left over, hidden towers, folded strip'
+        description: 'Canada Math Kangaroo 2026, Grade 3-4: cutting a paper stack, piece left over, hidden towers, folded strip, hidden cubes'
         type: boolean
         default: false
       austria_2022:
