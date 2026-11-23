@@ -27,6 +27,7 @@ META = {
     "topics": ["geometry", "spatial", "counting"],
     "keywords": ["cutting a paper stack", "squares and rectangles", "hidden parts"],
     "sticker": ("🥞", "Stack slicer"),   # earned when this skill is solid (website)
+    "rungs": ("aligned", "harder", "harder", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

@@ -28,6 +28,7 @@ META = {
     "topics": ["spatial", "counting", "geometry"],
     "keywords": ["piece left over", "puzzle pieces", "count the squares"],
     "sticker": ("💝", "Heart puzzler"),   # earned when this skill is solid (website)
+    "rungs": ("aligned", "aligned", "harder", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

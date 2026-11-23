@@ -24,6 +24,7 @@ META = {
     "topics": ["logic", "arithmetic", "counting"],
     "keywords": ["sums of neighbours", "sweet grid", "working backwards"],
     "sticker": ("🍬", "Sweet solver"),   # earned when this skill is solid (website)
+    "rungs": ("easier", "easier", "aligned", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

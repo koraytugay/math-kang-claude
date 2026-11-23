@@ -25,6 +25,7 @@ META = {
     "topics": ["logic", "patterns", "spatial"],
     "keywords": ["folded strip", "matching squares", "colour groups"],
     "sticker": ("🎀", "Ribbon folder"),   # earned when this skill is solid (website)
+    "rungs": ("aligned", "aligned", "harder", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 2,
 }
 

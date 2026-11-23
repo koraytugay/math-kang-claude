@@ -26,6 +26,7 @@ META = {
     "topics": ["spatial", "counting", "logic"],
     "keywords": ["hidden towers", "view from the front", "taller ones"],
     "sticker": ("🔭", "Tower spotter"),   # earned when this skill is solid (website)
+    "rungs": ("aligned", "aligned", "harder", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

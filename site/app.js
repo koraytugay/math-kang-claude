@@ -344,8 +344,10 @@ async function examFor(id, name) {
     const states = skillStates(attempts);
     const known = new Map((await fetch("bank/index.json").then((r) => r.json())).generators.map((g) => [g.key, g]));
     const gens = allKeys().map((key) => known.get(key) || { key });   // with g.added for the new-in-pool boost
+    setRungs(gens);
+    // the plan works in rungs (easier / aligned / harder); make_exam.py takes one of our four steps per skill
     const items = planSkills(gens, states, count() ?? 20)
-        .map((g) => `${g.key}@${states.get(g.key)?.level ?? 0}`).join(",");
+        .map((g) => `${g.key}@${stepForRung(g.key, states.get(g.key)?.level ?? START_RUNG)}`).join(",");
     makeExam({ name, items });
 }
 document.querySelectorAll("[data-profile]").forEach((b) => {

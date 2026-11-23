@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 
 from check import CONTESTS, _contests, _level  # noqa: E402
 from kangaroo import layout  # noqa: E402
-from kangaroo.registry import load_generators, read_pool  # noqa: E402
+from kangaroo.registry import RUNG_NAMES, load_generators, read_pool  # noqa: E402
 
 OUT = ROOT / "_site" / "bank"
 SEEDS = int(os.environ.get("BANK_SEEDS", "20"))
@@ -145,6 +145,7 @@ def main() -> None:
                           "level": _level(level), "keywords": g.meta.get("keywords", []),
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
                           "sticker": list(g.meta["sticker"]) if g.meta.get("sticker") else None,
+                          "rungs": [RUNG_NAMES.index(r) for r in g.rungs],
                           "file": f"bank/{name}", "count": len(qs), "added": added_ms(g),
                           "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None,
                           "warmup": f"bank/{name.replace('.json', '.warmup.json')}" if warm else None})

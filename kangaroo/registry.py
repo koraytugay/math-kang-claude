@@ -26,6 +26,25 @@ ROOT = Path(__file__).resolve().parent.parent
 WEIGHTS = {False: {1: 3, 2: 2, 3: 1}, True: {1: 1, 2: 2, 3: 4}}
 
 
+# How hard a question is compared with the ORIGINAL contest question it comes from (the practice website
+# picks questions by this, see site/smart.js). Our four steps (variant difficulty 1, 2, 3 and 3 with
+# harder=True) are each rated once per skill with META["rungs"] = (step1, step2, step3, step3_harder).
+RUNG_NAMES = ("easier", "aligned", "harder")
+
+
+def default_rungs(key: str) -> tuple:
+    """Rungs of the four steps when a generator does not rate them itself: from the contest part of the
+    original (Q1-8 = Part A, Q9-16 = Part B, Q17-24 = Part C). Our step 1 stays close to the original, so for
+    a Part C original it is much easier than the contest question; for a Part A original it is the same."""
+    m = re.search(r"_q(\d+)$", key)
+    num = int(m.group(1)) if m else 17
+    if num > 16:
+        return ("easier", "easier", "aligned", "harder")
+    if num > 8:
+        return ("aligned", "aligned", "harder", "harder")
+    return ("aligned", "harder", "harder", "harder")
+
+
 def variant(difficulty: int):
     def deco(fn: Callable):
         fn._variant_difficulty = difficulty
@@ -58,6 +77,24 @@ class Generator:
     def variants(self) -> list[Callable]:
         return [v for v in vars(self.module).values()
                 if callable(v) and hasattr(v, "_variant_difficulty")]
+
+    @property
+    def rungs(self) -> tuple:
+        """(step 1, step 2, step 3, step 3 harder) as 'easier' | 'aligned' | 'harder'. See RUNG_NAMES."""
+        r = tuple(self.meta.get("rungs") or default_rungs(self.key))
+        if len(r) != 4 or any(x not in RUNG_NAMES for x in r):
+            raise ValueError(f'{self.key}: META["rungs"] must be 4 of {RUNG_NAMES}, got {r!r}')
+        return r
+
+    def rung_variants(self) -> dict:
+        """How many variants can produce a question on each rung (a difficulty-3 variant gives one question
+        with normal numbers and one with harder=True)."""
+        r, out = self.rungs, {n: 0 for n in RUNG_NAMES}
+        for v in self.variants:
+            d = v._variant_difficulty
+            for rung in {r[d - 1]} | ({r[3]} if d == 3 else set()):
+                out[rung] += 1
+        return out
 
     @property
     def warmups(self) -> list[Callable]:

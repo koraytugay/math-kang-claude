@@ -13,7 +13,7 @@ class Question:
     choices: list[str]             # exactly 5 options, in display order (A..E)
     answer: int                    # index into choices of the correct option
     solution: str                  # short worked solution for the answer key
-    difficulty: int = 1            # 1 = Part A (3 pts), 2 = Part B (4 pts), 3 = Part C (5 pts)
+    difficulty: int = 1            # step in the skill: 1 close to the original, 2, 3 (see META["rungs"])
     figure: Optional[Any] = None   # a reportlab Drawing, or None
     after_figure: str = ""         # optional text shown below the figure (like "How many ... ?")
     choice_figures: Optional[list] = None  # 5 Drawings shown as the options (choices = short labels)

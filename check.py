@@ -146,6 +146,8 @@ def main():
     ap.add_argument("--preview", metavar="KEY", help="Preview one generator (e.g. y2002_q06)")
     ap.add_argument("--preview-all", action="store_true", help="Re-generate previews for all generators")
     ap.add_argument("--runs", type=int, default=200)
+    ap.add_argument("--rungs", action="store_true",
+                    help="Easier / aligned / harder variants per skill (practice needs 2+ aligned ones)")
     ap.add_argument("--catalog", action="store_true",
                     help="Write QUESTIONS.md and the exam workflow's contest checkboxes from the pool")
     args = ap.parse_args()
@@ -153,6 +155,18 @@ def main():
 
     if args.catalog:
         catalog(gens)
+        return
+
+    if args.rungs:
+        print(f"{'generator':<52} {'rated':<6} {'easier':>6} {'aligned':>8} {'harder':>7}")
+        for key in read_pool():
+            g = gens.get(key)
+            if not g:
+                continue
+            c = g.rung_variants()
+            gap = "  <- needs more aligned variants" if c["aligned"] < 2 else ""
+            print(f"{key:<52} {'yes' if g.meta.get('rungs') else 'by part':<6} {c['easier']:>6} {c['aligned']:>8} "
+                  f"{c['harder']:>7}{gap}")
         return
 
     if args.preview_all:
@@ -213,6 +227,12 @@ def main():
         if len(keys) > 1:
             print(f"SAME STICKER EMOJI {e}: {', '.join(keys)}")
             bad += 1
+    for key in pool:                       # validates META["rungs"] (raises on a wrong word)
+        if key in gens:
+            c = gens[key].rung_variants()
+            if c["aligned"] < 2:
+                print(f"note: {key} has {c['aligned']} aligned variant(s); practice runs out of fresh aligned questions "
+                      "(python check.py --rungs)")
     first = {}
     for key in pool:
         if key in gens and gens[key].meta.get("keywords"):

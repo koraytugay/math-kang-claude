@@ -27,6 +27,7 @@ META = {
     "topics": ["logic", "counting", "arithmetic"],
     "keywords": ["sure to get", "worst luck", "drawing balls"],
     "sticker": ("🎩", "Sure-draw wizard"),   # earned when this skill is solid (website)
+    "rungs": ("easier", "easier", "aligned", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

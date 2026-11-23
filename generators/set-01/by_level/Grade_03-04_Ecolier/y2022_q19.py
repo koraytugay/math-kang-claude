@@ -25,6 +25,7 @@ META = {
     "topics": ["geometry", "spatial"],
     "keywords": ["ant path", "up and across", "pyramid of cubes"],
     "sticker": ("🐜", "Ant trail"),   # earned when this skill is solid (website)
+    "rungs": ("easier", "aligned", "aligned", "harder"),   # vs the original contest question: steps 1, 2, 3, 3 harder (2026-11-23)
     "version": 1,
 }
 

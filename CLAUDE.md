@@ -36,8 +36,24 @@ Answer with this short list, in plain words:
    (unlocked when the skill is solid), e.g. `("🍕", "Pizza slicer")` - a fun name for a 10-year-old, an emoji
    and a name no other generator or fixed sticker in `site/stickers.js` uses (`check.py` checks).
    Name the **core skill** (why it is hard for an 8–10 year old), put it in `META["skill"]`, and pick `topics` (reuse existing topic words: geometry, perimeter, area, counting, logic, patterns, arithmetic, time, spatial, ...).
-3. Write **4–6 variants** with `@variant(difficulty=1|2|3)` — each a function `(rng, harder) -> Question`:
-   - difficulty 1 ≈ Part A (close to the original), 2 ≈ Part B, 3 ≈ Part C (reverse the question, add a twist, combine steps).
+3. Write **4–6 variants** with `@variant(difficulty=1|2|3)` — each a function `(rng, harder) -> Question`.
+   `difficulty` is only the order of our steps inside one skill: 1 = closest to the original, 2 = a step on,
+   3 = a twist (reverse the question, add a step, combine steps); `harder=True` on a difficulty-3 variant is
+   the fourth step. **What matters for practice is how hard each step is compared with the ORIGINAL contest
+   question**: `META["rungs"] = (step1, step2, step3, step3_harder)`, each `"easier"`, `"aligned"` or
+   `"harder"`. Rate them honestly, by reading the original and the variant side by side:
+   - **aligned** = the same number of steps, the same kind of numbers and the same trap as the original;
+   - **easier** = fewer steps or a simpler set-up (count what is pictured, one clue instead of three, a smaller grid);
+   - **harder** = an extra step, a twist, bigger numbers, or the question reversed.
+   The practice site starts every skill at *aligned*, moves one rung up after a right answer and one down
+   after a wrong one, and now and then shows a question from another rung. Without `META["rungs"]` the
+   default follows the original's contest part (Q17-24: easier, easier, aligned, harder; Q9-16: aligned,
+   aligned, harder, harder; Q1-8: aligned, harder, harder, harder): fine for a first draft, rate them yourself
+   for new generators. Each rung the skill needs must have **real variants**: aim for **at least 2 aligned
+   variants** (one variant gives only ~20 questions, then practice runs out of fresh aligned ones).
+   `python check.py --rungs` lists the counts and `python check.py` notes skills with fewer than 2 aligned.
+   Part C originals (Q17-24) are hard: their "close to the original" variant is already *easier* - do not call
+   it aligned; add the genuinely aligned variants (the original wording, a different figure or numbers).
    - Be creative: different stories/contexts, asking for a different unknown, a counter-intuitive twist (e.g. "the perimeter doesn't change"). Keep the same underlying skill and grade 3–4 language.
    - `harder=True` → bigger numbers / more steps within the same variant.
    - Compute the answer from the parameters; never hard-code it.

@@ -83,6 +83,26 @@ async function bankFor(gen) {
 }
 
 // ------------------------------------------------------------------ choosing questions: see smart.js
+// Which question of a skill: on the wanted rung (easier / aligned / harder compared with the contest original).
+// If that rung has no fresh question, the nearest rung that has one. Once in a while (REVIEW_RUNG) a skill the
+// child has already tried shows a question from another rung, so no rung is ever gone for good.
+const REVIEW_RUNG = 0.15;
+function withReview(rung) {
+    if (Math.random() >= REVIEW_RUNG) return rung;
+    const others = [0, 1, 2].filter((r) => r !== rung);
+    return others[Math.floor(Math.random() * others.length)];
+}
+function chooseQuestion(bank, gen, rung, free, seen) {
+    const rungOfQ = (q) => rungOf(gen, q.difficulty, q.harder);
+    const fresh = bank.filter((q) => free(q) && !seen.has(q.id));
+    const byDistance = (list) => {
+        const best = Math.min(...list.map((q) => Math.abs(rungOfQ(q) - rung)));
+        return list.filter((q) => Math.abs(rungOfQ(q) - rung) === best);
+    };
+    const list = fresh.length ? byDistance(fresh) : bank.filter(free).length ? byDistance(bank.filter(free)) : bank;
+    return list[Math.floor(Math.random() * list.length)];
+}
+
 // exclude: ids already in this session. The first batch also keeps the states for the summary.
 async function buildSession(profile, exclude = [], first = true) {
     const attempts = await store.attempts(profile.id);
@@ -97,17 +117,10 @@ async function buildSession(profile, exclude = [], first = true) {
     const qs = [];
     for (const g of planSkills(index.generators, states, BATCH)) {
         const bank = await bankFor(g);
-        const [difficulty, harder] = LEVELS[states.get(g.key)?.level ?? 0];
-        const free = (q) => !qs.some((x) => x.id === q.id);
-        const atLevel = (q) => q.difficulty === difficulty && q.harder === harder;
-        const tiers = [
-            bank.filter((q) => free(q) && !seen.has(q.id) && atLevel(q)),      // new question, right level
-            bank.filter((q) => free(q) && !seen.has(q.id) && q.difficulty === difficulty),
-            bank.filter((q) => free(q) && !seen.has(q.id)),
-            bank.filter(free),                                                 // only if the skill ran out
-        ];
-        const list = tiers.find((t) => t.length) || bank;
-        qs.push({ ...list[Math.floor(Math.random() * list.length)], gen: g.key, teach: g.teach });
+        const tried = states.has(g.key);
+        const rung = states.get(g.key)?.level ?? START_RUNG;
+        const q = chooseQuestion(bank, g.key, tried ? withReview(rung) : rung, (x) => !qs.some((y) => y.id === x.id), seen);
+        qs.push({ ...q, gen: g.key, teach: g.teach });
     }
     // Keep the plan's encouraging order (smart.js): a confident start and finish, weak skills spread out.
     // A skill missed twice in a row starts with up to 2 warm-ups (small steps), right before its question.
@@ -328,7 +341,7 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
         if (j === picked) { b.setAttribute("aria-pressed", "true"); if (!right) b.classList.add("kt-choice--danger"); }
     });
     results.push({ q, chosen, correct });
-    // The same skill later in this session: next level up after a right answer, down after a wrong one.
+    // The same skill later in this session: one rung up after a right answer, one down after a wrong one.
     await adaptLater(q, correct, seconds);
     let saveNote = "";
     const attempt = {
@@ -402,13 +415,13 @@ async function adaptLater(q, correct, seconds) {
     if (q.isWarmup) return;
     const k = session.findIndex((x, j) => j > pos && x.gen === q.gen && !x.isWarmup);
     if (k < 0) return;
-    const cur = LEVELS.findIndex(([d, h]) => d === q.difficulty && h === q.harder);
+    const cur = rungOf(q.gen, q.difficulty, q.harder);
     const step = correct ? (isGuess(q.difficulty, seconds) ? 0 : 1) : -1;
-    const [difficulty, harder] = LEVELS[Math.max(0, Math.min(LEVELS.length - 1, (cur < 0 ? 0 : cur) + step))];
+    const rung = Math.max(0, Math.min(TOP_RUNG, cur + step));
     const bank = await bankFor(index.generators.find((g) => g.key === q.gen));
     const used = new Set(session.map((x) => x.id));
-    const list = bank.filter((x) => !used.has(x.id) && x.difficulty === difficulty && x.harder === harder);
-    if (list.length) session[k] = { ...list[Math.floor(Math.random() * list.length)], gen: q.gen, teach: session[k].teach };
+    const pick = chooseQuestion(bank, q.gen, rung, (x) => !used.has(x.id), new Set());
+    if (pick && !used.has(pick.id)) session[k] = { ...pick, gen: q.gen, teach: session[k].teach };
 }
 
 // Encouraging words, never numbers or points (parent, 2026-11-14): streaks of right answers, a hard part,
@@ -429,7 +442,7 @@ function cheer(q, correct, right) {
     if (before.length >= 2 && before.slice(-2).every((r) => !r.correct)) return "Back on track - well done!";
     if ((sessionStates.get(q.gen)?.wrongs ?? 0) > 0 && !before.some((r) => r.q.gen === q.gen))
         return pick(["This one was tricky before - now you've got it!", "You beat a tricky one!"]);
-    if (q.difficulty === 3) return pick(["Part C - the hard one. Brilliant!", "A Part C question - great thinking!"]);
+    if (rungOf(q.gen, q.difficulty, q.harder) === TOP_RUNG) return pick(["A really hard one. Brilliant!", "A tough question - great thinking!"]);
     return pick(["Right!", "Well done!", "Nice!", "Correct - good thinking!"]);
 }
 
@@ -437,7 +450,7 @@ function cheer(q, correct, right) {
 function next() {
     const recentRes = results.filter((r) => !r.q.isWarmup).slice(-2);
     if (recentRes.length === 2 && recentRes.every((r) => !r.correct)) {
-        // a skill the child is good at, or an untried one (those start at Part A, the easy level)
+        // a skill the child is good at, or an untried one (those start at the aligned rung)
         const good = (q) => !q.isWarmup && (!sessionStates.has(q.gen) || sessionStates.get(q.gen).score >= 30);
         const k = session.findIndex((q, j) => j > pos + 1 && good(q));
         if (k > 0 && !good(session[pos + 1] || {})) [session[pos + 1], session[k]] = [session[k], session[pos + 1]];
@@ -460,7 +473,7 @@ function finish() {
     $("done-title").textContent = `Nice work, ${profile.name}!`;
     const box = $("done-mistakes");
     box.innerHTML = "";
-    // The good news first: skills that went up a level today, and skills tried for the first time.
+    // The good news first: skills that went up a rung today, and skills tried for the first time.
     const name = (gen) => index.generators.find((g) => g.key === gen)?.keywords?.[0] || "";
     const real = results.filter((r) => !r.q.isWarmup);
     const stronger = [...new Set(real.filter((r) => r.correct).map((r) => name(r.q.gen)))].filter(Boolean);
@@ -478,7 +491,7 @@ function finish() {
         if (r.q.figure) { const f = el("div", "mk-fig"); f.innerHTML = r.q.figure; c.append(t, f); }
         if (r.q.after) { const a = el("div", "mk-rich"); a.innerHTML = r.q.after; c.append(a); }
         const s = el("div", "kt-mt-2 kt-text-secondary");
-        s.innerHTML = r.chosen === SKIPPED ? "You skipped this one. Try it again another time!"
+        s.innerHTML = r.chosen === SKIPPED ? "You skipped this one. Let's study it with Dad!"
             : "A learning opportunity - one like it will come back, so you can try again!";
         if (!c.contains(t)) c.append(t);
         c.append(s);
@@ -583,6 +596,7 @@ fetch("bank/index.json", { cache: "no-store" })
     .then((r) => r.json())
     .then((j) => {
         index = j;
+        setRungs(index.generators);
         const saved = Secrets.saved();
         if (saved?.db) connect(saved);
         else { $("lock").hidden = false; $("lock-password").focus(); }

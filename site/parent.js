@@ -10,7 +10,7 @@ const el = (tag, cls, text) => {
     return e;
 };
 const KIDS = [{ id: "deniz", name: "Deniz" }, { id: "toprak", name: "Toprak" }, { id: "koray", name: "Koray (test)" }];
-const LEVEL_NAME = ["Part A", "Part B", "Part C", "Part C, harder"];
+const LEVEL_NAME = RUNG_NAMES;   // easier / aligned / harder than the contest original (smart.js)
 const LETTER = "ABCDE";
 
 let secrets = null, index = null, kid = KIDS[0], showing = 0;
@@ -148,8 +148,8 @@ function renderSessions(real) {
             el("td", "kt-num", n((a) => !a.correct && a.second_try)),
             el("td", "kt-num", n((a) => !a.correct && !a.second_try && a.chosen >= 0)),
             el("td", "kt-num", n((a) => a.chosen < 0)));
-        for (let lv = 0; lv < LEVELS.length; lv++) {
-            const at = s.filter((a) => levelOf(a.difficulty, a.harder) === lv);
+        for (let lv = 0; lv < RUNG_NAMES.length; lv++) {
+            const at = s.filter((a) => rungOf(a.gen, a.difficulty, a.harder) === lv);
             const right = at.filter((a) => a.correct).length;
             tr.append(el("td", "kt-num", at.length ? `${at.length} (${right})` : ""));
         }
@@ -157,7 +157,7 @@ function renderSessions(real) {
     }
     if (!sessions.length) {
         const tr = el("tr"), td = el("td", "kt-text-secondary", "No answers yet.");
-        td.colSpan = 11; tr.append(td); body.append(tr);
+        td.colSpan = 10; tr.append(td); body.append(tr);
     }
 }
 
@@ -219,7 +219,7 @@ function studyCard(k, a, g, q, studied, learned) {
     if (studied || learned) card.dataset.studied = "1";
     const head = el("div", "kt-cluster");
     head.append(el("span", "kt-fw-bold", `${day(a.at)} · ${g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen}`),
-        el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[[1, 2, 3].indexOf(a.difficulty) + (a.harder ? 1 : 0)] || ""));
+        el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[rungOf(a.gen, a.difficulty, a.harder)] || ""));
     if (a.chosen < 0) head.append(el("span", "kt-badge kt-badge--orange", "Skipped"));
     else head.append(el("span", a.second_try ? "kt-badge kt-badge--soft-warning" : "kt-badge kt-badge--soft-danger",
         a.second_try ? "Wrong, then right on the second try" : a.second_try === false ? "Wrong twice" : "Wrong"));
@@ -339,6 +339,7 @@ $("lock-form").onsubmit = async (e) => {
 
 fetch("bank/index.json", { cache: "no-store" }).then((r) => r.json()).then((j) => {
     index = j;
+    setRungs(index.generators);
     const s = Secrets.saved();
     if (s?.db) start(s); else { $("lock").hidden = false; $("lock-password").focus(); }
 });

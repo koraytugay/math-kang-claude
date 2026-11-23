@@ -9,15 +9,33 @@
 // After a week without practice the score fades about 10% per week, so forgotten skills come back.
 // STATUS: needs work (< 15 and at least one real mistake) / getting there / solid (>= 60 and 3+ right
 // answers, so one lucky easy answer never makes a skill solid). Only the parent page shows these words.
-// WEIGHT (how often a skill shows up): 1 + (100 - score) / 10, a little more when it has not been seen for
-// a while; untried skills 6. Every right answer lowers it, every wrong one raises it.
-// LEVEL (which questions): right -> one level up next time (Part A -> B -> C -> harder numbers);
-// wrong -> one level down. A quick guess does not raise the level.
+// WEIGHT (how often a skill shows up): MIN_WEIGHT + (100 - score) / 9, a little more when it has not been
+// seen for a while; untried skills 6. Every right answer lowers it, every wrong one raises it. A skill the
+// child has mastered gets ~30 times less often than a weak one, but never zero (and a few "review" places in
+// every session go to solid skills, see planSkills).
+// RUNG (which questions): how hard a question is compared with the ORIGINAL contest question it comes from:
+// easier / aligned / harder (generator META["rungs"] rates our four steps, see kangaroo/registry.py).
+// Every skill starts at ALIGNED; right -> one rung up next time, wrong -> one rung down. A quick guess does
+// not raise it. `s.level` is the rung (0, 1, 2).
 const DAY = 864e5;
 const LEVELS = [[1, false], [2, false], [3, false], [3, true]];     // [difficulty, harder]
 const RIGHT_POINTS = [15, 20, 25, 30];                               // by level of the question answered
 const WRONG_POINTS = -20, SMALL_POINTS = 5, FADE_PER_WEEK = 0.9;
-const NEEDS_WORK = 15, SOLID = 60, SOLID_RIGHTS = 3, NEW_WEIGHT = 6;
+const NEEDS_WORK = 15, SOLID = 60, SOLID_RIGHTS = 3, NEW_WEIGHT = 6, MIN_WEIGHT = 0.4;
+const RUNG_NAMES = ["Easier", "Aligned", "Harder"], START_RUNG = 1, TOP_RUNG = 2;
+const DEFAULT_RUNGS = [1, 1, 2, 2];
+// the rungs of each skill's four steps (from bank/index.json); set once the index is loaded
+const RUNGS = new Map();
+const setRungs = (gens) => gens.forEach((g) => RUNGS.set(g.key, g.rungs || DEFAULT_RUNGS));
+/** Step of a question: 0 = Part A style (difficulty 1) ... 2 = difficulty 3, 3 = difficulty 3 with harder numbers. */
+const stepOf = (difficulty, harder) => (difficulty >= 3 ? (harder ? 3 : 2) : Math.max(0, difficulty - 1));
+const rungOf = (gen, difficulty, harder) => (RUNGS.get(gen) || DEFAULT_RUNGS)[stepOf(difficulty, harder)];
+/** A step (0..3) of this skill on the rung, or the nearest rung that has one. */
+const stepForRung = (gen, rung) => {
+    const rs = RUNGS.get(gen) || DEFAULT_RUNGS;
+    const dist = (i) => Math.abs(rs[i] - rung);
+    return [0, 1, 2, 3].sort((a, b) => dist(a) - dist(b) || Math.random() - 0.5)[0];
+};
 // A right answer faster than this (seconds, by Part A/B/C) is probably a guess.
 const MIN_SECONDS = { 1: 4, 2: 6, 3: 8 };
 const isGuess = (difficulty, seconds) => seconds != null && seconds < (MIN_SECONDS[difficulty] ?? 4);
@@ -31,19 +49,19 @@ function skillStates(attempts, now = Date.now()) {
     for (const a of inTime) {
         if (a.variant?.startsWith("warmup:")) continue;   // warm-ups never change the plan
         const t = new Date(a.at).getTime();
-        const s = states.get(a.gen) || { score: 0, level: 0, last: t, tries: 0, rights: 0, wrongs: 0, stuck: 0 };
+        const s = states.get(a.gen) || { score: 0, level: START_RUNG, last: t, tries: 0, rights: 0, wrongs: 0, stuck: 0 };
         s.score = fade(s.score, s.last, t);
         s.tries++;
         s.last = t;
         if (a.correct) {
             const guess = isGuess(a.difficulty, a.seconds);
             s.score += guess ? SMALL_POINTS : RIGHT_POINTS[levelOf(a.difficulty, a.harder)];
-            if (!guess) { s.level = Math.min(LEVELS.length - 1, s.level + 1); s.rights++; }
+            if (!guess) { s.level = Math.min(TOP_RUNG, s.level + 1); s.rights++; }
             s.stuck = 0;
         } else {
             s.score += a.second_try ? SMALL_POINTS : WRONG_POINTS;
             s.wrongs++;
-            s.level = Math.max(0, s.level - 1);
+            s.level = Math.max(0, s.level - 1);               // one rung easier
             s.stuck++;                                       // wrong in a row: 2+ means warm-ups first
         }
         s.score = Math.max(0, Math.min(100, s.score));
@@ -59,16 +77,19 @@ function skillStates(attempts, now = Date.now()) {
         s.status = s.score < NEEDS_WORK && s.wrongs > 0 ? "needs work"
             : s.score >= SOLID && s.rights >= SOLID_RIGHTS ? "solid" : "getting there";
         const weeksAway = (now - s.last) / (7 * DAY);
-        s.weight = 1 + (100 - s.score) / 10 + Math.min(2, weeksAway);   // long unseen: a little more often
+        s.weight = MIN_WEIGHT + (100 - s.score) / 9 + Math.min(2, weeksAway);   // long unseen: a little more often
     }
     return states;
 }
 
 const shuffle = (xs) => { for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; } return xs; };
-// Questions added to the pool recently are the ones the kids struggled with lately: up to twice as often,
+// Questions added to the pool recently are the ones the kids struggled with lately: up to 3 times as often,
 // fading to normal over NEW_IN_POOL_DAYS days (g.added = when the generator was added, from bank/index.json).
-const NEW_IN_POOL_DAYS = 60;
-const poolBoost = (g, now = Date.now()) => g.added ? 1 + Math.max(0, 1 - (now - g.added) / (NEW_IN_POOL_DAYS * DAY)) : 1;
+// Never below normal: an old skill is still asked now and then. A new skill the child has never tried also
+// gets a place in the next session (NEW_SLOTS), so it is not left to chance.
+const NEW_IN_POOL_DAYS = 21, NEW_BOOST = 3, NEW_SLOTS = 2, REVIEW_EVERY = 8;
+const isNewInPool = (g, now = Date.now()) => g.added && now - g.added < NEW_IN_POOL_DAYS * DAY;
+const poolBoost = (g, now = Date.now()) => g.added ? 1 + (NEW_BOOST - 1) * Math.max(0, 1 - (now - g.added) / (NEW_IN_POOL_DAYS * DAY)) : 1;
 // A skill answered in the last RECENT_MINUTES (the session just before) is left out, so a second session
 // started right after the first one practises other skills; such skills come back only to fill up.
 const RECENT_MINUTES = 30, RECENT_FACTOR = 0.05;
@@ -97,16 +118,25 @@ function weightedSample(items, weight, n) {
  */
 const MAX_WEAK = 3;
 function planSkills(gens, states, n) {
+    // Reserved places: new skills the child has never tried (so a new question is not left to chance) and a
+    // few "review" places for skills the child already knows (so nothing is ever forgotten about).
+    const untriedNew = gens.filter((g) => isNewInPool(g) && !states.has(g.key));
+    const newPicks = weightedSample(untriedNew, (g) => poolBoost(g), Math.min(NEW_SLOTS, Math.floor(n / 4)));
+    const solids = gens.filter((g) => states.get(g.key)?.status === "solid" && !justPractised(states, g));
+    const reviewPicks = shuffle([...solids]).slice(0, Math.floor(n / REVIEW_EVERY));
+    const reserved = [...newPicks, ...reviewPicks];
+    const open = gens.filter((g) => !reserved.includes(g));
+    const room = n - reserved.length;
     // weak skills just practised wait for a later session (they stay in `rest` with a tiny weight)
-    const weak = gens.filter((g) => isWeak(states, g) && !justPractised(states, g));
-    const rest = gens.filter((g) => !weak.includes(g));
-    const pickedWeak = weightedSample(weak, (g) => weightOf(states, g), Math.min(MAX_WEAK, n));
+    const weak = open.filter((g) => isWeak(states, g) && !justPractised(states, g));
+    const rest = open.filter((g) => !weak.includes(g));
+    const pickedWeak = weightedSample(weak, (g) => weightOf(states, g), Math.min(MAX_WEAK, room));
     // skills from the session just before only when there are not enough others
     const restFresh = rest.filter((g) => !justPractised(states, g)), restRecent = rest.filter((g) => justPractised(states, g));
-    const pickedRest = weightedSample(restFresh, (g) => weightOf(states, g), n - pickedWeak.length);
-    pickedRest.push(...weightedSample(restRecent, (g) => weightOf(states, g), n - pickedWeak.length - pickedRest.length));
+    const pickedRest = weightedSample(restFresh, (g) => weightOf(states, g), room - pickedWeak.length);
+    pickedRest.push(...weightedSample(restRecent, (g) => weightOf(states, g), room - pickedWeak.length - pickedRest.length));
     // A weak skill may come twice (a second, different question), if there is room.
-    const plan = [...pickedWeak, ...pickedRest];
+    const plan = [...pickedWeak, ...reserved, ...pickedRest];
     for (const g of pickedWeak) if (plan.length < n && !justPractised(states, g)) plan.push(g);
     while (plan.length < n && gens.length) plan.push(gens[Math.floor(Math.random() * gens.length)]);
 

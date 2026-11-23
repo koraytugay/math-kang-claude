@@ -31,7 +31,7 @@ Do everything below without asking again, except step 1. Follow CLAUDE.md for ho
 - Read `feedback.md` for open items that apply (same skill, same kind of figure).
 
 ## 4. Write one generator per question (`generators/<path>/y<YEAR>_q<NN>.py`)
-Everything in CLAUDE.md "How to write a generator" applies (4-6 variants, difficulty 1/2/3, `harder`, answers
+Everything in CLAUDE.md "How to write a generator" applies (4-6 variants, difficulty 1/2/3, `harder`, `META["rungs"]`, answers
 computed, independent `check`, Fig drawings, bold key words, solutions written to the kids). In addition,
 because the practice website uses them:
 - `META["skill"]`: the **method**, never the answer - it is shown as the hint after a wrong first click.
@@ -47,11 +47,15 @@ because the practice website uses them:
 - Keep the contest's wording when the "unclear" part is the trap the question teaches (do not add
   "different" to "How many common letters ...?").
 - No `teach()` page and no `@warmup`s: the kids don't use them (parent, 2026-11-16).
+- `META["rungs"] = (step1, step2, step3, step3_harder)`: each `"easier"`, `"aligned"` or `"harder"` than the
+  ORIGINAL contest question (CLAUDE.md has the rubric). Rate it by reading the original next to each variant. A Part C
+  original (Q17-24) is hard: its close-to-original variant is *easier*; write at least **2 aligned variants** (the
+  practice site starts every skill at aligned). Check with `python check.py --rungs`.
 - `META["version"] = 1`.
 
 ## 5. Verify (all must pass before committing)
-- `.venv/bin/python check.py` - every pool line `ok`, `Failing: 0`, no `note: same first keyword` naming a
-  new generator. It takes ~10 min: run it in the background and do the next steps meanwhile.
+- `.venv/bin/python check.py` - every pool line `ok`, `Failing: 0`, no `note: same first keyword` and no
+  `note: ... aligned variant(s)` naming a new generator. It takes ~10 min: run it in the background and do the next steps meanwhile.
 - `.venv/bin/python check.py --preview y<YEAR>_q<NN>` for each new generator and LOOK at every page.
 - Second sweep: generate 40 seeds x every variant x normal/harder of each new generator, assert that
   `[i for i in range(5) if q.check(i)] == [q.answer]` for all, that every wrong option a variant means as a
@@ -73,7 +77,8 @@ because the practice website uses them:
   they were rebuilt (the PDF date changes every time). The message lists the new questions.
 - Pull --rebase if needed, push to main.
 - Stop after the push: no deploy watch, no live-site check (parent, 2026-11-16). New skills come up about
-  twice as often for 60 days automatically (from the generator's git date) - nothing to configure.
+  3 times as often for 21 days and get a guaranteed place in each child's next sessions until tried (from the
+  generator's git date) - nothing to configure.
 
 ## 7. Report to the parent (short)
 The new skills (question, first keyword, what it practises, its sticker), that they will be in practice (after the ~2 min deploy) and
