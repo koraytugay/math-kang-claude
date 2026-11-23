@@ -149,7 +149,7 @@ function renderSessions(real) {
             el("td", "kt-num", n((a) => !a.correct && !a.second_try && a.chosen >= 0)),
             el("td", "kt-num", n((a) => a.chosen < 0)));
         for (let lv = 0; lv < RUNG_NAMES.length; lv++) {
-            const at = s.filter((a) => rungOf(a.gen, a.difficulty, a.harder) === lv);
+            const at = s.filter((a) => rungOf(a.gen, a.difficulty, a.harder, a.variant) === lv);
             const right = at.filter((a) => a.correct).length;
             tr.append(el("td", "kt-num", at.length ? `${at.length} (${right})` : ""));
         }
@@ -219,7 +219,7 @@ function studyCard(k, a, g, q, studied, learned) {
     if (studied || learned) card.dataset.studied = "1";
     const head = el("div", "kt-cluster");
     head.append(el("span", "kt-fw-bold", `${day(a.at)} · ${g ? `${g.label} · ${g.keywords[0] || ""}` : a.gen}`),
-        el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[rungOf(a.gen, a.difficulty, a.harder)] || ""));
+        el("span", "kt-badge kt-badge--soft-info", LEVEL_NAME[rungOf(a.gen, a.difficulty, a.harder, a.variant)] || ""));
     if (a.chosen < 0) head.append(el("span", "kt-badge kt-badge--orange", "Skipped"));
     else head.append(el("span", a.second_try ? "kt-badge kt-badge--soft-warning" : "kt-badge kt-badge--soft-danger",
         a.second_try ? "Wrong, then right on the second try" : a.second_try === false ? "Wrong twice" : "Wrong"));

@@ -208,7 +208,7 @@ def digit_choices(ans, mistakes, rng):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def find_digit(rng, harder):
     """Which digit is hidden under one shape?"""
     syms, eqs, a = make_puzzle(rng, 3, 2, ["+"])
@@ -223,7 +223,7 @@ def find_digit(rng, harder):
                     check=value_check(choices, sol_check))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "harder"))
 def product_all(rng, harder):
     """The original: what is shape · shape · shape?"""
     syms, eqs, a = make_puzzle(rng, 3, 2, ["+", "-"] if harder else ["+"])
@@ -242,7 +242,7 @@ def product_all(rng, harder):
                     solution=sol, check=value_check(choices, value(ask, op, b)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def plus_minus(rng, harder):
     """Plus and minus mixed: find a two-digit number made of cards."""
     syms, eqs, a = make_puzzle(rng, 3 if not harder else 4, 2 if not harder else 3, ["+", "-"])
@@ -264,7 +264,7 @@ def plus_minus(rng, harder):
                     check=value_check(choices, number(two, b)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def times(rng, harder):
     """Multiplication cards, e.g. circle · circle = [triangle][circle]."""
     syms, eqs, a = make_puzzle(rng, 3, 2, ["*", "+"] if harder else ["*"])
@@ -281,7 +281,7 @@ def times(rng, harder):
                     solution=sol, check=value_check(choices, sum(b[s] for s in ask)))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def four_cards(rng, harder):
     """Four shapes, three calculations."""
     syms, eqs, a = make_puzzle(rng, 4, 3, ["+", "-"] if not harder else ["+", "-", "*"], tries=300)

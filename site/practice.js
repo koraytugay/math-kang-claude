@@ -93,7 +93,7 @@ function withReview(rung) {
     return others[Math.floor(Math.random() * others.length)];
 }
 function chooseQuestion(bank, gen, rung, free, seen) {
-    const rungOfQ = (q) => rungOf(gen, q.difficulty, q.harder);
+    const rungOfQ = (q) => rungOf(gen, q.difficulty, q.harder, q.variant);
     const fresh = bank.filter((q) => free(q) && !seen.has(q.id));
     const byDistance = (list) => {
         const best = Math.min(...list.map((q) => Math.abs(rungOfQ(q) - rung)));
@@ -415,7 +415,7 @@ async function adaptLater(q, correct, seconds) {
     if (q.isWarmup) return;
     const k = session.findIndex((x, j) => j > pos && x.gen === q.gen && !x.isWarmup);
     if (k < 0) return;
-    const cur = rungOf(q.gen, q.difficulty, q.harder);
+    const cur = rungOf(q.gen, q.difficulty, q.harder, q.variant);
     const step = correct ? (isGuess(q.difficulty, seconds) ? 0 : 1) : -1;
     const rung = Math.max(0, Math.min(TOP_RUNG, cur + step));
     const bank = await bankFor(index.generators.find((g) => g.key === q.gen));
@@ -442,7 +442,7 @@ function cheer(q, correct, right) {
     if (before.length >= 2 && before.slice(-2).every((r) => !r.correct)) return "Back on track - well done!";
     if ((sessionStates.get(q.gen)?.wrongs ?? 0) > 0 && !before.some((r) => r.q.gen === q.gen))
         return pick(["This one was tricky before - now you've got it!", "You beat a tricky one!"]);
-    if (rungOf(q.gen, q.difficulty, q.harder) === TOP_RUNG) return pick(["A really hard one. Brilliant!", "A tough question - great thinking!"]);
+    if (rungOf(q.gen, q.difficulty, q.harder, q.variant) === TOP_RUNG) return pick(["A really hard one. Brilliant!", "A tough question - great thinking!"]);
     return pick(["Right!", "Well done!", "Nice!", "Correct - good thinking!"]);
 }
 

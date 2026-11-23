@@ -43,7 +43,7 @@ def _square_with_cut(s, w, names, shade=None):
     return f.drawing()
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def square_minus_strip(rng, harder):
     """The original question, sometimes asked about the *other* rectangle."""
     s = rng.randint(12, 30) if harder else rng.randint(6, 14)
@@ -93,7 +93,7 @@ CONTEXTS = [
 ]
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def pieces_total(rng, harder):
     """Cutting adds every cut line twice - whatever the widths are."""
     k = rng.choice([3, 4] if harder else [2, 2, 3])
@@ -125,7 +125,7 @@ def pieces_total(rng, harder):
                     check=value_check(choices, total))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def corner_cut(rng, harder):
     """Cutting a square from a corner does not change the perimeter."""
     a = rng.randint(8, 20) if harder else rng.randint(6, 12)
@@ -151,7 +151,7 @@ def corner_cut(rng, harder):
                     choices=choices, answer=ai, solution=sol, check=value_check(choices, perimeter(pts)))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def notch(rng, harder):
     """A notch in the middle of a side DOES increase the perimeter (by 2 × depth)."""
     a = rng.randint(10, 24) if harder else rng.randint(8, 14)
@@ -180,7 +180,7 @@ def notch(rng, harder):
                     choices=choices, answer=ai, solution=sol, check=value_check(choices, perimeter(pts)))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def strips_to_square(rng, harder):
     """Work backwards: from the perimeter of one strip to the square."""
     k = rng.choice([2, 3, 4] if harder else [2, 3])
@@ -214,7 +214,7 @@ def strips_to_square(rng, harder):
                     check=value_check(choices, sides[0] if ask_side else 4 * sides[0]))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def two_perimeters(rng, harder):
     """Square cut into two rectangles: from their perimeters back to the square."""
     s = rng.randint(6, 20) if harder else rng.randint(4, 10)

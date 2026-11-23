@@ -52,6 +52,9 @@ Answer with this short list, in plain words:
    for new generators. Each rung the skill needs must have **real variants**: aim for **at least 2 aligned
    variants** (one variant gives only ~20 questions, then practice runs out of fresh aligned ones).
    `python check.py --rungs` lists the counts and `python check.py` notes skills with fewer than 2 aligned.
+   When the variants of one step differ (one is the contest question itself, the next is much easier), or when
+   `harder=True` lands on the contest's own size, rate the variant itself:
+   `@variant(difficulty=3, rungs=("aligned", "harder"))` = (rung with normal numbers, rung with harder=True).
    Part C originals (Q17-24) are hard: their "close to the original" variant is already *easier* - do not call
    it aligned; add the genuinely aligned variants (the original wording, a different figure or numbers).
    - Be creative: different stories/contexts, asking for a different unknown, a counter-intuitive twist (e.g. "the perimeter doesn't change"). Keep the same underlying skill and grade 3–4 language.

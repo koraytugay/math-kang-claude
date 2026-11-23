@@ -260,7 +260,7 @@ def _distinct_possibles(rng, n):
     return out
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def which_cannot(rng, harder):
     """Four designs can be made, one cannot."""
     goods = _distinct_possibles(rng, 4)
@@ -279,7 +279,7 @@ def which_cannot(rng, harder):
                     check=lambda i: not can_make(pics[i]))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def which_result(rng, harder):
     """The folded square with its cut is shown; which design appears when it is unfolded?"""
     corner = rng.choice(list(CORNERS))
@@ -307,7 +307,7 @@ def which_result(rng, harder):
                     check=lambda i: holes(pics[i]) == cut_through_layers(cut))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "aligned"))
 def which_can(rng, harder):
     """Reverse: four designs are impossible, one can be made."""
     (spec, good), = _distinct_possibles(rng, 1)
@@ -329,7 +329,7 @@ def which_can(rng, harder):
                     check=lambda i: can_make(pics[i]))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def count_pieces(rng, harder):
     """How many separate pieces of paper fall off when unfolded?"""
     corner = rng.choice(list(CORNERS))
@@ -350,7 +350,7 @@ def count_pieces(rng, harder):
                     check=value_check(choices, pieces_cut_off(cut_through_layers(cut))))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def which_corner(rng, harder):
     """An unfolded design is shown; at which corner of the folded square was the cut made?"""
     corner = rng.choice(list(CORNERS))

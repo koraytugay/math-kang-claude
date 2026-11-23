@@ -102,7 +102,7 @@ def gap_after(n, built):
     return min(m for m in built if m > n) - n
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def all_different(rng, harder):
     """The original."""
     digits = 6 if harder else rng.choice([4, 5])
@@ -117,7 +117,7 @@ def all_different(rng, harder):
                     check=value_check(choices, gap_after(n, built_distinct(digits))))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def next_palindrome(rng, harder):
     """Next number that reads the same backwards."""
     digits = 5 if harder else rng.choice([3, 4])
@@ -131,7 +131,7 @@ def next_palindrome(rng, harder):
                     check=value_check(choices, gap_after(n, built_palindromes(digits))))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def last_time(rng, harder):
     """Reverse: how many kilometres ago were all digits different?"""
     digits = 6 if harder else rng.choice([4, 5])
@@ -158,7 +158,7 @@ def last_time(rng, harder):
                     check=value_check(choices, n - max(m for m in built_distinct(digits) if m < n)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def same_digits(rng, harder):
     """Next number with all digits the same - many children change only the last digit."""
     digits = rng.choice([4, 5] if harder else [3, 4])
@@ -179,7 +179,7 @@ def same_digits(rng, harder):
                     check=value_check(choices, gap_after(n, built_same(digits))))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def going_up(rng, harder):
     """Next number whose digits go up from left to right."""
     digits = 4 if harder else 3

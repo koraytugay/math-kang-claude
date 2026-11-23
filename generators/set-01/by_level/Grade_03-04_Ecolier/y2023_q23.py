@@ -105,7 +105,7 @@ def _mistakes(sums, ask, ans):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def odd_ring(rng, harder):
     """The original: numbers 1..n in an odd ring, find the '?'."""
     n = 7 if harder else 5
@@ -128,7 +128,7 @@ def odd_ring(rng, harder):
                     solution=sol, check=value_check(choices, value[0] if len(set(value)) == 1 else -1))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def in_a_row(rng, harder):
     """Warm into it: numbers in a row, the first one is given."""
     n = 6 if harder else 4
@@ -156,7 +156,7 @@ def _chain(first, sums):
     return out
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def all_together(rng, harder):
     """What do all the circles add up to? Every circle is in two sums."""
     n = rng.choice([6, 7, 8]) if harder else rng.choice([4, 5, 6])
@@ -175,7 +175,7 @@ def all_together(rng, harder):
                     solution=sol, check=value_check(choices, sum(nums)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def hidden_sum(rng, harder):
     """Numbers 1..n each once; one sum is hidden. Which number is it?"""
     n = 7 if harder else 5
@@ -199,7 +199,7 @@ def hidden_sum(rng, harder):
                     solution=sol, check=value_check(choices, value.pop() if len(value) == 1 else -1))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("easier", "aligned"))
 def even_ring(rng, harder):
     """Twist: an even ring - going around does not decide; the rule 'each number once' does."""
     n = 6 if harder else 4

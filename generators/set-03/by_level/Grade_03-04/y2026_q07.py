@@ -266,13 +266,13 @@ def _squares_question(rng, harder, n_v, n_h):
                     solution=sol, check=value_check(choices, brute(sheets, xs, ys)[1]))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def stack_cut(rng, harder):
     """The original: three squares, one vertical and one horizontal cut; how many squares?"""
     return _squares_question(rng, harder, 1, 1)
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def all_pieces(rng, harder):
     """How many pieces altogether (hidden pieces count too)?"""
     name, colours, S, sheets, xs, ys, intro = _setup(rng, harder, 1, 1)
@@ -289,7 +289,7 @@ def all_pieces(rng, harder):
                     solution=sol, check=value_check(choices, brute(sheets, xs, ys)[0]))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def not_squares(rng, harder):
     """Reverse: how many pieces are NOT squares?"""
     name, colours, S, sheets, xs, ys, intro = _setup(rng, harder, 1, 1)
@@ -326,7 +326,7 @@ def _hidden_choices(sheets, xs, ys):
             and _seen_squares(sheets, xs, ys, i) != count([sheets[i]], xs, ys)[1]]
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def one_colour(rng, harder):
     """Squares of one colour that lies under another sheet (so part of it is hidden)."""
     n_v, n_h = rng.choice([(1, 1), (2, 1), (1, 2)])
@@ -348,7 +348,7 @@ def one_colour(rng, harder):
                     solution=sol, check=value_check(choices, brute(sheets, xs, ys, which=i)[1]))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def three_cuts(rng, harder):
     """Three cut lines (two in one direction): more pieces to keep track of."""
     two_v = rng.random() < 0.5

@@ -78,7 +78,7 @@ def _numbered_check(region, shown, labels):
     return lambda i: covers(region, [shown[int(k) - 1] for k in labels[i].split("+")])
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def one_piece(rng, harder):
     """Which single piece fits the hole exactly?"""
     n = rng.randint(6, 7) if harder else rng.randint(5, 6)
@@ -119,7 +119,7 @@ def _connected(cells):
     return seen == cells
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def two_pieces(rng, harder):
     """The original: four pieces, which two cover the hole?"""
     for _ in range(300):
@@ -158,7 +158,7 @@ def two_pieces(rng, harder):
                     solution=sol, check=_numbered_check(region, shown, labels))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def two_copies(rng, harder):
     """Two copies of the same piece cover the hole - which piece?"""
     n = rng.randint(5, 6) if harder else rng.randint(4, 5)   # 3 squares: only 2 shapes exist
@@ -191,7 +191,7 @@ def two_copies(rng, harder):
                     solution=sol, check=lambda i: covers(region, [shown[i], shown[i]]))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def three_pieces(rng, harder):
     """Five pieces; which three cover the hole?"""
     for _ in range(300):
@@ -220,4 +220,41 @@ def three_pieces(rng, harder):
            f"Only {' + '.join(str(i + 1) for i in good)} also fit together in the right shape.")
     shown = [_show(p, rng) for p in pieces]
     return Question(text=text, figure=_pieces_fig(region, shown), choices=labels, answer=opts.index(good),
+                    solution=sol, check=_numbered_check(region, shown, labels))
+
+
+@variant(difficulty=3, rungs=("aligned", "harder"))
+def two_of_five(rng, harder):
+    """Like the contest question, but five pieces: which two cover the empty area?"""
+    for _ in range(400):
+        sa, sb = (rng.randint(4, 6), rng.randint(4, 6)) if harder else (rng.randint(3, 5), rng.randint(3, 5))
+        a, b = random_shape(rng, sa), random_shape(rng, sb)
+        region = _build(rng, [a, b])
+        if region is None:
+            continue
+        try:
+            c = _distractor(rng, sa, [a, b])
+            d = _distractor(rng, sb, [a, b, c])
+            e = _distractor(rng, rng.choice([sa, sb, sa + sb - 3]), [a, b, c, d])
+        except RuntimeError:
+            continue
+        pieces = [a, b, c, d, e]
+        rng.shuffle(pieces)
+        pairs = list(combinations(range(5), 2))
+        good = [pq for pq in pairs if can_tile(region, [pieces[pq[0]], pieces[pq[1]]])]
+        if len(good) == 1:
+            break
+    else:
+        raise RuntimeError("no puzzle found")
+    good = good[0]
+    opts = rng.sample([pq for pq in pairs if pq != good], 4) + [good]
+    opts.sort()
+    labels = [f"{i + 1}+{j + 1}" for i, j in opts]
+    k = opts.index(good)
+    sizes = ", ".join(f"piece {i + 1} has {len(p)}" for i, p in enumerate(pieces))
+    text = f"Which two of these five pieces can be used to cover the empty area exactly? {NOTE}"
+    sol = (f"The empty area has {len(region)} squares. Counting squares: {sizes}. Several pairs have the right total, "
+           f"but only pieces {good[0] + 1} and {good[1] + 1} also fit together in the right shape.")
+    shown = [_show(p, rng) for p in pieces]
+    return Question(text=text, figure=_pieces_fig(region, shown), choices=labels, answer=k,
                     solution=sol, check=_numbered_check(region, shown, labels))

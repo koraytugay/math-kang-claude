@@ -48,7 +48,7 @@ def _formula(n, k):
             0: f"{n - 2} × {n - 2} × {n - 2} = {(n - 2) ** 3}"}[k]
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "harder"))
 def two_faces(rng, harder):
     """The original."""
     n = rng.choice([4, 5]) if harder else 3
@@ -65,7 +65,7 @@ def two_faces(rng, harder):
                     check=value_check(choices, with_paint(block(n, n, n), 2)))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def always_eight(rng, harder):
     """Three painted faces: always the 8 corners, whatever the size."""
     n = rng.choice([5, 6, 8, 10]) if harder else rng.choice([3, 4, 5])
@@ -80,7 +80,7 @@ def always_eight(rng, harder):
                     check=value_check(choices, with_paint(block(n, n, n), 3)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def painted_brick(rng, harder):
     """A brick (not a cube): edges have different lengths."""
     a, b, c = sorted((rng.randint(2, 4), rng.randint(3, 5), rng.randint(2, 4)) if not harder
@@ -116,7 +116,7 @@ def _no_bottom_counts(n):
     return out
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("harder", "harder"))
 def not_underneath(rng, harder):
     """Painted while standing on the table - the bottom stays unpainted."""
     n = rng.choice([4, 5]) if harder else 3
@@ -141,7 +141,7 @@ def not_underneath(rng, harder):
                     check=value_check(choices, with_paint(block(n, n, n), k, skip=[(0, 0, -1)])))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def how_big(rng, harder):
     """Reverse: from the number of 2-face cubes back to the size of the cube."""
     n = rng.randint(4, 7) if harder else rng.randint(3, 5)

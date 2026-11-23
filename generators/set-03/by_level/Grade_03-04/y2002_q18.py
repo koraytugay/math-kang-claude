@@ -199,7 +199,7 @@ def _solution(th, truth):
     return "The only possible matching: " + "; ".join(f"{p} – {it}" for p, it in truth.items()) + "."
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def who_has(rng, harder):
     """Find who has one particular thing (or say it can't be determined - but it always can)."""
     th, people, items, truth, clues, facts = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
@@ -232,7 +232,7 @@ def who_has(rng, harder):
                     answer=ans, solution=sol, check=check)
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def which_true(rng, harder):
     """Exactly one of five statements is true."""
     th, people, items, truth, clues, facts = build_puzzle(rng, 5 if harder else 4, allow_direct=False)
@@ -245,7 +245,7 @@ def which_true(rng, harder):
                     check=statement_check(th, people, items, clues, choices, want_true=True))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def which_not_true(rng, harder):
     """The original: four true statements and one false one."""
     n = 5 if harder else 4

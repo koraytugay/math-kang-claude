@@ -26,7 +26,7 @@ def _groups(a, b):
     return " + ".join(f"{c} × {d}" for c, d in parts)
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def one_to_round(rng, harder):
     """The original, and its big brothers 1-200, 1-1000."""
     n = rng.choice([200, 300, 1000]) if harder else rng.choice([100, 100, 110, 120])
@@ -43,7 +43,7 @@ def one_to_round(rng, harder):
                     check=value_check(choices, len(written(1, n))))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def across_hundred(rng, harder):
     """A short range that crosses 100 (or 1000)."""
     if harder:
@@ -62,7 +62,7 @@ def across_hundred(rng, harder):
                     check=value_check(choices, len(written(a, b))))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def count_zeros(rng, harder):
     """How many zeros are written from 1 to N?"""
     n = rng.choice([200, 300, 500]) if harder else rng.choice([60, 80, 100, 100])
@@ -81,7 +81,7 @@ def count_zeros(rng, harder):
                     check=value_check(choices, written(1, n).count("0")))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def even_only(rng, harder):
     """Only the even numbers from 2 to N."""
     n = rng.choice([120, 150, 200]) if harder else rng.choice([40, 60, 100])
@@ -100,7 +100,7 @@ def even_only(rng, harder):
                     check=value_check(choices, len("".join(str(k) for k in range(2, n + 1, 2)))))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def with_commas(rng, harder):
     """Typing 1, 2, 3, ..., N with commas: digits plus commas."""
     n = rng.choice([100, 120, 150]) if harder else rng.choice([20, 30, 50])

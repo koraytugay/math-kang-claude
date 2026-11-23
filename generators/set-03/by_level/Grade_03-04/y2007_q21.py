@@ -91,7 +91,7 @@ def _show(fam, ks, captions=True):
     return row(pics, gap=14)
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "harder"))
 def next_white(rng, harder):
     """The original."""
     s = rng.choice([1, 2]) if harder else 1
@@ -111,7 +111,7 @@ def next_white(rng, harder):
                     check=value_check(choices, extend(counts("dots", ks), k - ks[-1])))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def border_next(rng, harder):
     """A white border around a black square."""
     s = rng.choice([1, 2, 3]) if harder else 1
@@ -131,7 +131,7 @@ def border_next(rng, harder):
                     check=value_check(choices, extend(counts("framed", ks), k - ks[-1])))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("harder", "harder"))
 def far_diagram(rng, harder):
     """Jump further ahead: the 5th or 6th diagram."""
     m = rng.choice([6, 7]) if harder else rng.choice([5, 6])
@@ -149,7 +149,7 @@ def far_diagram(rng, harder):
                     check=value_check(choices, extend(counts("dots", [1, 2, 3]), m - 3)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def black_and_total(rng, harder):
     """How many black cells / cells in all in a later diagram?"""
     m = rng.choice([5, 6, 8]) if harder else rng.choice([4, 5])
@@ -166,7 +166,7 @@ def black_and_total(rng, harder):
                     check=value_check(choices, extend(counts("dots", [1, 2, 3], "all" if ask_total else "black"), m - 3)))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def which_diagram(rng, harder):
     """Reverse: which diagram has W white cells?"""
     fam = rng.choice(["dots", "framed"]) if harder else "dots"

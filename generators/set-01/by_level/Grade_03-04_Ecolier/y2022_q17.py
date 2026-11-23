@@ -192,7 +192,7 @@ def word(rule):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def two_rules(rng, harder):
     """Two rules only: one shape can do both."""
     pz = make(rng, rng.sample(list(ATTR), 2), 7 if harder else 6, 3 if harder else 2, tricky_min)
@@ -204,7 +204,7 @@ def two_rules(rng, harder):
                     check=value_check(ch, min(sizes(pz["shapes"], pz["rules"]))))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "aligned"))
 def three_rules(rng, harder):
     """The original: colour, size and kind, each with an "exactly"."""
     pz = make(rng, list(ATTR), 8 if harder else 6, 3 if harder else 2,
@@ -217,7 +217,7 @@ def three_rules(rng, harder):
                     check=value_check(ch, min(sizes(pz["shapes"], pz["rules"]))))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def which_group(rng, harder):
     """Check every "exactly": which group of shapes is exactly what she says?"""
     attrs = list(ATTR) if harder else rng.sample(list(ATTR), 2)
@@ -262,7 +262,7 @@ def which_group(rng, harder):
                     solution=sol, difficulty=2, check=check)
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def must_choose(rng, harder):
     """Which shape is in every smallest choice? (It counts for two rules at once.)"""
     def accept(z):

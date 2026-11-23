@@ -79,7 +79,7 @@ def _make(rng, n, k, tries=2000):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def which_pattern(rng, harder):
     """The original: which pattern did she paint?"""
     n, k = (4, 5) if harder else (3, 3)
@@ -98,7 +98,7 @@ def which_pattern(rng, harder):
                     check=lambda i: fits(opts, i, k))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def lock_code(rng, harder):
     """Same logic with a number lock: one guess is right, the others have all but one digit right."""
     k = 5 if harder else 4
@@ -129,7 +129,7 @@ def lock_code(rng, harder):
     return Question(text=text, choices=choices, answer=ai, solution=sol, check=check)
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def how_many_right(rng, harder):
     """Warm into it: how many cells did this guess get right?"""
     n, k = (4, 6) if harder else (3, 4)
@@ -149,7 +149,7 @@ def how_many_right(rng, harder):
                     choices=choices, answer=ai, solution=sol, check=value_check(choices, value))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def not_a_guess(rng, harder):
     """Reverse: nobody was right. Each guess has exactly k-1 right - which pattern fits all the clues?"""
     n, k = (4, 4) if harder else (3, 3)

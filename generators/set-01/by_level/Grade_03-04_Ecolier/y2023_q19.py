@@ -127,7 +127,7 @@ def _fmt(order):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "aligned"))
 def not_rules(rng, harder):
     """The original: each child has a place they are not in; how many orders?"""
     n = 4 if harder else 3
@@ -155,7 +155,7 @@ def not_rules(rng, harder):
                     check=value_check(choices, count_orders(names, rules)))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def which_order(rng, harder):
     """Which of these orders keeps all the rules?"""
     n = 4 if harder else 3
@@ -185,7 +185,7 @@ def which_order(rng, harder):
                     check=lambda i: all(keeps(tuple(choices[i].split(", ")), r) for r in rules))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("harder", "harder"))
 def four_children(rng, harder):
     """Four (or five) children with mixed rules: how many orders?"""
     n = 5 if harder else 4
@@ -216,7 +216,7 @@ def four_children(rng, harder):
                     check=value_check(choices, count_orders(names, rules)))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "aligned"))
 def who_is(rng, harder):
     """The rules allow only one order: who is in a given place?"""
     n = 4 if harder else 3
@@ -246,7 +246,7 @@ def who_is(rng, harder):
     return Question(text=text, choices=choices, answer=ai, solution=sol, check=check)
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def one_more_rule(rng, harder):
     """Reverse: which extra rule leaves exactly one order?"""
     n = 4 if harder else 3

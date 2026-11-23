@@ -26,16 +26,13 @@ const RUNG_NAMES = ["Easier", "Aligned", "Harder"], START_RUNG = 1, TOP_RUNG = 2
 const DEFAULT_RUNGS = [1, 1, 2, 2];
 // the rungs of each skill's four steps (from bank/index.json); set once the index is loaded
 const RUNGS = new Map();
-const setRungs = (gens) => gens.forEach((g) => RUNGS.set(g.key, g.rungs || DEFAULT_RUNGS));
+const VRUNGS = new Map();                     // skill -> { variant: [rung with normal numbers, rung with harder numbers] }
+const setRungs = (gens) => gens.forEach((g) => { RUNGS.set(g.key, g.rungs || DEFAULT_RUNGS); VRUNGS.set(g.key, g.vr || {}); });
 /** Step of a question: 0 = Part A style (difficulty 1) ... 2 = difficulty 3, 3 = difficulty 3 with harder numbers. */
 const stepOf = (difficulty, harder) => (difficulty >= 3 ? (harder ? 3 : 2) : Math.max(0, difficulty - 1));
-const rungOf = (gen, difficulty, harder) => (RUNGS.get(gen) || DEFAULT_RUNGS)[stepOf(difficulty, harder)];
-/** A step (0..3) of this skill on the rung, or the nearest rung that has one. */
-const stepForRung = (gen, rung) => {
-    const rs = RUNGS.get(gen) || DEFAULT_RUNGS;
-    const dist = (i) => Math.abs(rs[i] - rung);
-    return [0, 1, 2, 3].sort((a, b) => dist(a) - dist(b) || Math.random() - 0.5)[0];
-};
+const rungOf = (gen, difficulty, harder, variant) =>
+    VRUNGS.get(gen)?.[variant]?.[harder ? 1 : 0] ?? (RUNGS.get(gen) || DEFAULT_RUNGS)[stepOf(difficulty, harder)];
+
 // A right answer faster than this (seconds, by Part A/B/C) is probably a guess.
 const MIN_SECONDS = { 1: 4, 2: 6, 3: 8 };
 const isGuess = (difficulty, seconds) => seconds != null && seconds < (MIN_SECONDS[difficulty] ?? 4);

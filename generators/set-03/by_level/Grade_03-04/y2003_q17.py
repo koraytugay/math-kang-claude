@@ -65,7 +65,7 @@ def _code(rng, harder, lo, hi):
     return n, black, white, d
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def narrow_bars(rng, harder):
     """The original."""
     n, black, white, d = _code(rng, harder, 9, 21)
@@ -86,7 +86,7 @@ def narrow_bars(rng, harder):
                     check=value_check(choices, wide_narrow(n, d)[1]))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def fence(rng, harder):
     """Posts and boards: one more post than boards."""
     n = rng.choice(range(11, 41, 2) if harder else range(7, 25, 2))
@@ -105,7 +105,7 @@ def fence(rng, harder):
                     check=value_check(choices, lay_out(n)[0] if ask == "posts" else lay_out(n)[1]))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def wide_bars(rng, harder):
     """Ask for the wide bars instead - now the length really matters."""
     n, black, white, d = _code(rng, harder, 11, 25)
@@ -121,7 +121,7 @@ def wide_bars(rng, harder):
                     check=value_check(choices, wide_narrow(n, d)[0]))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "aligned"))
 def necklace(rng, harder):
     """Same structure, different story: beads on a string."""
     n, red, blue, d = _code(rng, harder, 11, 25)
@@ -142,7 +142,7 @@ def necklace(rng, harder):
                     check=value_check(choices, wide_narrow(n, d)[1 if ask_small else 0]))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def ends_differ(rng, harder):
     """Twist: starts black but ends white - now there are as many black bars as white."""
     n = rng.choice(range(14, 32, 2) if harder else range(10, 22, 2))

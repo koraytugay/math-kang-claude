@@ -50,7 +50,8 @@ because the practice website uses them:
 - `META["rungs"] = (step1, step2, step3, step3_harder)`: each `"easier"`, `"aligned"` or `"harder"` than the
   ORIGINAL contest question (CLAUDE.md has the rubric). Rate it by reading the original next to each variant. A Part C
   original (Q17-24) is hard: its close-to-original variant is *easier*; write at least **2 aligned variants** (the
-  practice site starts every skill at aligned). Check with `python check.py --rungs`.
+  practice site starts every skill at aligned). Rate single variants with `@variant(difficulty=N, rungs=(normal, harder))` when they differ from their step.
+  Check with `python check.py --rungs`.
 - `META["version"] = 1`.
 
 ## 5. Verify (all must pass before committing)

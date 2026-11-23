@@ -182,10 +182,19 @@ def make_plan_exam(args, seed, rng) -> None:
         if not g:
             print(f"Note: unknown generator {key!r}, skipped.")
             continue
-        difficulty, harder = LEVELS[min(max(int(lv or 0), 0), 3)]
-        vs = [v for v in g.variants if v._variant_difficulty == difficulty] or g.variants
+        if lv.startswith("r"):                    # a rung: easier / aligned / harder than the contest original
+            from kangaroo.registry import RUNG_NAMES
+            want = min(max(int(lv[1:] or 1), 0), 2)
+            combos = [(v, h) for v in g.variants for h in (False, True)]
+            best = min(abs(RUNG_NAMES.index(g.question_rung(v, h)) - want) for v, h in combos)
+            combos = [(v, h) for v, h in combos if abs(RUNG_NAMES.index(g.question_rung(v, h)) - want) == best]
+        else:                                     # older plans: one of our four steps
+            difficulty, harder = LEVELS[min(max(int(lv or 0), 0), 3)]
+            combos = [(v, harder) for v in g.variants if v._variant_difficulty == difficulty] or \
+                     [(v, harder) for v in g.variants]
         for _ in range(20):                       # a different question if the same one came out
-            q = g.generate(rng, harder=harder, only_variant=rng.choice(vs).__name__, used=used)
+            v, harder = rng.choice(combos)
+            q = g.generate(rng, harder=harder, only_variant=v.__name__, used=used)
             if (q.text, q.after_figure) not in seen:
                 break
         seen.add((q.text, q.after_figure))

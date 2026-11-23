@@ -279,19 +279,19 @@ def _letters_question(rng, harder, want_real):
                     check=lambda i: drawn_fits(items[i][0], sky) == want_real)
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "harder"))
 def cannot_belong(rng, harder):
     """The original: four real pieces, one fake."""
     return _letters_question(rng, harder, want_real=False)
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def can_belong(rng, harder):
     """Reversed: four clever fakes, only one real piece."""
     return _letters_question(rng, harder, want_real=True)
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def how_many_fit(rng, harder):
     """Five numbered pieces - how many of them belong? Every piece must be checked."""
     n_real = rng.randint(1, 4)

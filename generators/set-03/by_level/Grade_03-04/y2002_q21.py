@@ -128,7 +128,7 @@ def _sorted_choices(correct, wrong, rng):
     return [str(v) for v in vals], vals.index(correct)
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("aligned", "harder"))
 def who_cannot(rng, harder):
     """The original: three children share the cards 1-9; who cannot reach the target?"""
     for _ in range(500):
@@ -169,7 +169,7 @@ def _hand(rng, harder):
     return sorted(rng.sample(range(1, 10), n))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "aligned"))
 def which_can(rng, harder):
     """Which of these numbers can she make? (Only one can be made.)"""
     for _ in range(500):
@@ -195,7 +195,7 @@ def which_can(rng, harder):
                     check=lambda i: number_in(choices[i]) in expression_values(cards))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("aligned", "harder"))
 def which_cannot(rng, harder):
     """Four of the numbers can be made, one cannot."""
     for _ in range(500):
@@ -222,7 +222,7 @@ def which_cannot(rng, harder):
                     check=lambda i: number_in(choices[i]) not in expression_values(cards))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("harder", "harder"))
 def hidden_card(rng, harder):
     """Two cards are known; which card must the third one be to reach the target?"""
     for _ in range(500):
@@ -248,7 +248,7 @@ def hidden_card(rng, harder):
                     check=lambda i: t in expression_values([a, b, number_in(choices[i])]))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("harder", "harder"))
 def biggest(rng, harder):
     """Largest result - the twist: with a 1, adding it beats multiplying by it."""
     n = 4 if harder else 3

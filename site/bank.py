@@ -146,6 +146,8 @@ def main() -> None:
                           "skill": g.meta.get("skill", ""), "topics": g.meta.get("topics", []),
                           "sticker": list(g.meta["sticker"]) if g.meta.get("sticker") else None,
                           "rungs": [RUNG_NAMES.index(r) for r in g.rungs],
+                          "vr": {v.__name__: [RUNG_NAMES.index(g.question_rung(v, h)) for h in (False, True)]
+                                 for v in g.variants},
                           "file": f"bank/{name}", "count": len(qs), "added": added_ms(g),
                           "teach": f"bank/{name.replace('.json', '.teach.json')}" if page else None,
                           "warmup": f"bank/{name.replace('.json', '.warmup.json')}" if warm else None})

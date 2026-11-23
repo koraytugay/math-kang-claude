@@ -45,9 +45,17 @@ def default_rungs(key: str) -> tuple:
     return ("aligned", "harder", "harder", "harder")
 
 
-def variant(difficulty: int):
+def variant(difficulty: int, rungs: tuple | None = None):
+    """`rungs=(normal, harder)` rates this one variant against the original contest question (words from
+    RUNG_NAMES), for the numbers you get with harder=False and with harder=True. Without it the variant takes
+    the rung of its step from META["rungs"]. Use it when variants of one step differ (one is the contest
+    question itself, the next is much easier) or when harder=True lands on the contest's own size."""
     def deco(fn: Callable):
         fn._variant_difficulty = difficulty
+        if rungs is not None:
+            if len(rungs) != 2 or any(r not in RUNG_NAMES for r in rungs):
+                raise ValueError(f"@variant rungs must be (normal, harder) of {RUNG_NAMES}, got {rungs!r}")
+            fn._variant_rungs = tuple(rungs)
         return fn
     return deco
 
@@ -86,13 +94,19 @@ class Generator:
             raise ValueError(f'{self.key}: META["rungs"] must be 4 of {RUNG_NAMES}, got {r!r}')
         return r
 
+    def question_rung(self, fn, harder: bool) -> str:
+        """The rung of a question made by variant `fn` (harder = harder numbers), see RUNG_NAMES."""
+        own = getattr(fn, "_variant_rungs", None)
+        if own:
+            return own[1 if harder else 0]
+        d, r = fn._variant_difficulty, self.rungs
+        return r[3] if d == 3 and harder else r[d - 1]
+
     def rung_variants(self) -> dict:
-        """How many variants can produce a question on each rung (a difficulty-3 variant gives one question
-        with normal numbers and one with harder=True)."""
-        r, out = self.rungs, {n: 0 for n in RUNG_NAMES}
+        """How many variants can produce a question on each rung."""
+        out = {n: 0 for n in RUNG_NAMES}
         for v in self.variants:
-            d = v._variant_difficulty
-            for rung in {r[d - 1]} | ({r[3]} if d == 3 else set()):
+            for rung in {self.question_rung(v, False), self.question_rung(v, True)}:
                 out[rung] += 1
         return out
 

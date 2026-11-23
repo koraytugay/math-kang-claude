@@ -132,7 +132,7 @@ def _unique(rng, shape, top, tries=4000, want=None):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def forward_sum(rng, harder):
     """Easiest: the sweets are shown; add up the sweets of the neighbours of one square."""
     shape = (3, 3)
@@ -155,7 +155,7 @@ def forward_sum(rng, harder):
                     solution=sol, check=value_check(choices, check_val))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def row_total(rng, harder):
     """A row of 3 or 4 squares: the number at the end is simply the sweets of its one neighbour."""
     n = rng.choice([4, 5] if harder else [3, 4])
@@ -178,7 +178,7 @@ def row_total(rng, harder):
                     check=value_check(choices, sum(sols[0].values())))
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def small_grid(rng, harder):
     """A 2 x 3 grid: how many sweets in all six squares?"""
     shape = (2, 3)
@@ -204,7 +204,7 @@ def star_values(shape, shown, star):
     return {s_[star] for s_ in sols}
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def one_square(rng, harder):
     """3 x 3: how many sweets in the square with the question mark (its own number is hidden)?"""
     shape = (3, 3)
@@ -226,7 +226,7 @@ def one_square(rng, harder):
                     check=lambda i: values == {int(choices[i])})
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def grid_total(rng, harder):
     """The original: 3 x 3 grid, how many sweets in all nine squares?"""
     shape = (3, 3)
@@ -245,3 +245,28 @@ def grid_total(rng, harder):
     sols = solve(shape, shown)
     return Question(text=text, figure=grid_pic(shape, shown), choices=choices, answer=ai, solution=sol,
                     check=value_check(choices, sum(sols[0].values())))
+
+
+@variant(difficulty=3, rungs=("aligned", "harder"))
+def one_row(rng, harder):
+    """Same 3 x 3 puzzle as the contest, but ask for one row: how many sweets in the top / middle / bottom row?"""
+    shape = (3, 3)
+    sw, shown = _unique(rng, shape, 5 if harder else 4)
+    rows = {"top": 0, "middle": 1, "bottom": 2}
+    cand = [name for name, r in rows.items() if sum(sw[(r, c)] for c in range(3)) >= 4]   # not a row of three 1s
+    name = rng.choice(cand or list(rows))
+    r = rows[name]
+    ans = sum(sw[(r, c)] for c in range(3))
+    text = (f"Each square in a grid has at least one sweet. The numbers show how many sweets are in the "
+            f"neighbouring squares. {NEIGHBOUR_RULE}\n\nHow many sweets are in the {name} row?")
+    corner = min(((0, 0), (0, 2), (2, 0), (2, 2)), key=lambda c: shown[c])
+    sol = (f"You have to find the sweets square by square. Start with a corner: the corner with the number "
+           f"{shown[corner]} has two neighbours, so those two squares add up to {shown[corner]}. Go on and check every "
+           f"number. The sweets are {_rows_text(shape, sw)}. The {name} row has {ans}.")
+    mistakes = [(sum(shown[(r, c)] for c in range(3)), f"add the numbers of the {name} row in the picture"),
+                (sum(sw.values()), "give the sweets in all nine squares"),
+                (ans + 1, "count one too many"), (ans - 1, "count one too few")]
+    choices, ai = numeric_choices(ans, mistakes, rng, lo=3, order="asc")
+    sols = solve(shape, shown)
+    return Question(text=text, figure=grid_pic(shape, shown), choices=choices, answer=ai, solution=sol,
+                    check=value_check(choices, sum(sols[0][(r, c)] for c in range(3))))

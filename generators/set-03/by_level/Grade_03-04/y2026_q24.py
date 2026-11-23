@@ -92,7 +92,7 @@ def _list(counts):
 
 
 # ------------------------------------------------------------------ variants
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def pictured_two(rng, harder):
     """Easiest: two colours, all balls drawn. How many must she draw to be sure of one blue ball?"""
     name = rng.choice(PEOPLE)
@@ -113,7 +113,7 @@ def pictured_two(rng, harder):
                     check=value_check(choices, draws_needed(counts, want)))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def pictured_three(rng, harder):
     """Three colours, all balls drawn: how many to be sure of one of a colour?"""
     name = rng.choice(PEOPLE)
@@ -134,7 +134,7 @@ def pictured_three(rng, harder):
                     check=value_check(choices, draws_needed(counts, want)))
 
 
-@variant(difficulty=1)
+@variant(difficulty=1, rungs=("easier", "easier"))
 def first_ball_sure(rng, harder):
     """Easy reverse: the box has only one colour of balls apart from the asked one; how many other balls?"""
     name = rng.choice(PEOPLE)
@@ -161,7 +161,7 @@ def _consistent(counts, colour, needed):
     return draws_needed(counts, colour) == needed
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def two_clues(rng, harder):
     """Two clues and the number of blue balls: how many balls are in the box?"""
     name = rng.choice(PEOPLE)
@@ -193,7 +193,7 @@ def two_clues(rng, harder):
                     check=lambda i: fits == {int(choices[i])})
 
 
-@variant(difficulty=2)
+@variant(difficulty=2, rungs=("easier", "easier"))
 def all_colours(rng, harder):
     """Twist: how many to be sure of getting every colour? (the two biggest groups come out first)"""
     name = rng.choice(PEOPLE)
@@ -216,7 +216,7 @@ def all_colours(rng, harder):
                     check=value_check(choices, draws_all_colours(counts)))
 
 
-@variant(difficulty=3)
+@variant(difficulty=3, rungs=("aligned", "harder"))
 def three_clues(rng, harder):
     """The original: three clues, how many balls of one colour?"""
     name = rng.choice(PEOPLE)
@@ -244,5 +244,35 @@ def three_clues(rng, harder):
         box = {"red": x, "green": y, "blue": z}
         if all(draws_needed(box, c) == need[c] for c in NAMES):
             fits.add(box[ask])
+    return Question(text=text, choices=choices, answer=ai, solution=sol,
+                    check=lambda i: fits == {int(choices[i])})
+
+
+@variant(difficulty=3, rungs=("aligned", "harder"))
+def three_clues_total(rng, harder):
+    """The contest clues, asking for all the balls (the middle step of the contest question)."""
+    name = rng.choice(PEOPLE)
+    r, g, b = (rng.randint(3, 9 if not harder else 12) for _ in range(3))
+    counts = {"red": r, "green": g, "blue": b}
+    need = {c: draws_needed(counts, c) for c in NAMES}
+    notsum = sum(need.values()) - 3
+    total = notsum // 2
+    text = (f"{name} has red, green and blue balls in a box. She must draw {need['red']} balls to be <b>sure</b> she "
+            f"gets a red one, {need['green']} to be sure she gets a green one, and {need['blue']} to be sure she gets "
+            f"a blue one.\n\nHow many balls are in the box?")
+    sol = (f"To be sure of a colour she must draw all the balls of the other colours and one more. So "
+           f"{need['red'] - 1} balls are not red, {need['green'] - 1} are not green and {need['blue'] - 1} are not blue. "
+           f"Every ball is 'not' two of the colours, so these add up to twice the number of balls: "
+           f"{need['red'] - 1} + {need['green'] - 1} + {need['blue'] - 1} = {notsum}. The box has {notsum} / 2 = {total} balls.")
+    mistakes = [(notsum, "forget to halve"),
+                (sum(need.values()), "add the three numbers of draws"),
+                (max(need.values()), "take the biggest number of draws"),
+                (total - 1, "stop one short of the last ball")]
+    choices, ai = numeric_choices(total, mistakes, rng, lo=1, order="asc")
+    fits = set()
+    for x, y, z in product(range(1, 22), repeat=3):          # every box that fits the three clues
+        box = {"red": x, "green": y, "blue": z}
+        if all(draws_needed(box, c) == need[c] for c in NAMES):
+            fits.add(sum(box.values()))
     return Question(text=text, choices=choices, answer=ai, solution=sol,
                     check=lambda i: fits == {int(choices[i])})
