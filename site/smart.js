@@ -158,7 +158,7 @@ function planSkills(gens, states, n, retries = []) {
     }
     // Skills the parent has just studied with the child come back early, always inside the first 3 questions:
     // places 2 and 3 (the first place stays a skill the child is good at); with 3 or more owed, from place 1.
-    const forced = retries.filter((g) => gens.includes(g)).slice(0, 4);
+    const forced = retries.filter((g) => gens.includes(g)).slice(0, 3);   // more wait for the next session
     if (forced.length) {
         const others = order.filter((g) => !forced.includes(g));
         others.splice(forced.length >= 3 ? 0 : Math.min(1, others.length), 0, ...forced);
