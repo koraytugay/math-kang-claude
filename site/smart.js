@@ -114,7 +114,7 @@ function weightedSample(items, weight, n) {
  * skill the child is good at (when there is one), and a weak skill may come back once in the same session.
  */
 const MAX_WEAK = 3;
-function planSkills(gens, states, n) {
+function planSkills(gens, states, n, retries = []) {
     // Reserved places: new skills the child has never tried (so a new question is not left to chance) and a
     // few "review" places for skills the child already knows (so nothing is ever forgotten about).
     const untriedNew = gens.filter((g) => isNewInPool(g) && !states.has(g.key));
@@ -155,6 +155,14 @@ function planSkills(gens, states, n) {
             const m = order.findIndex((g, j) => j > k + 1 && g !== order[k] && order[j - 1] !== order[k]);
             if (m > 0) [order[k], order[m]] = [order[m], order[k]];
         }
+    }
+    // Skills the parent has just studied with the child come back early, always inside the first 3 questions:
+    // places 2 and 3 (the first place stays a skill the child is good at); with 3 or more owed, from place 1.
+    const forced = retries.filter((g) => gens.includes(g)).slice(0, 4);
+    if (forced.length) {
+        const others = order.filter((g) => !forced.includes(g));
+        others.splice(forced.length >= 3 ? 0 : Math.min(1, others.length), 0, ...forced);
+        return others.slice(0, n);
     }
     return order.slice(0, n);
 }

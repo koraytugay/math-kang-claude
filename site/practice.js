@@ -29,6 +29,8 @@ class LocalStore {
         catch { return { attempts: [] }; }
     }
     async attempts(p) { return this.read(p).attempts; }
+    async retries() { return []; }
+    async finishRetry() { /* nothing is saved in this browser */ }
     async recordAttempt(p, a) {
         const d = this.read(p);
         d.attempts.push(a);
@@ -48,6 +50,18 @@ class DbStore {
         return this.sql`select question_id as id, gen, variant, difficulty, harder, chosen, correct, second_try,
                                seconds, created_at as at
                         from attempts where profile_id = ${p} order by created_at, id`;
+    }
+    /** Skills the parent studied with this child: they come back in the first questions (study_notes, parent.js). */
+    async retries(p) {
+        await this.ready;
+        const rows = await this.sql`select distinct ref from study_notes
+                                     where profile_id = ${p} and kind = 'retry' and done_at is null`;
+        return rows.map((r) => r.ref);
+    }
+    async finishRetry(p, gen) {
+        await this.ready;
+        await this.sql`update study_notes set done_at = now()
+                       where profile_id = ${p} and kind = 'retry' and ref = ${gen} and done_at is null`;
     }
     async insert(p, a) {
         await this.sql`insert into attempts (profile_id, question_id, gen, variant, difficulty, harder, chosen,
@@ -71,6 +85,7 @@ let store = null;
 
 // ------------------------------------------------------------------ bank
 let index = null;
+let retryGens = new Set();       // skills studied with a parent that the child has not answered yet
 const files = new Map();
 async function bankFor(gen) {
     if (!files.has(gen.key)) {
@@ -114,13 +129,23 @@ async function buildSession(profile, exclude = [], first = true) {
     }
     const seen = new Set([...attempts.map((a) => a.id), ...exclude]);
 
+    // Skills studied together with a parent come back early (places 2 and 3) until the child has answered one.
+    if (first) {
+        let owed = [];
+        try { owed = await store.retries(profile.id); } catch { /* no database: nothing owed */ }
+        retryGens = new Set(owed.filter((k) => index.generators.some((g) => g.key === k)));
+    }
+    const owedGens = first ? index.generators.filter((g) => retryGens.has(g.key)) : [];
     const qs = [];
-    for (const g of planSkills(index.generators, states, BATCH)) {
+    for (const g of planSkills(index.generators, states, BATCH, owedGens)) {
         const bank = await bankFor(g);
         const tried = states.has(g.key);
-        const rung = states.get(g.key)?.level ?? START_RUNG;
-        const q = chooseQuestion(bank, g.key, tried ? withReview(rung) : rung, (x) => !qs.some((y) => y.id === x.id), seen);
-        qs.push({ ...q, gen: g.key, teach: g.teach });
+        const owedNow = owedGens.includes(g);
+        let rung = states.get(g.key)?.level ?? START_RUNG;
+        if (owedNow) rung = Math.min(rung, START_RUNG);            // a check that it stuck, not a trap: aligned at most
+        const q = chooseQuestion(bank, g.key, tried && !owedNow ? withReview(rung) : rung,
+            (x) => !qs.some((y) => y.id === x.id), seen);
+        qs.push({ ...q, gen: g.key, teach: g.teach, retry: owedNow });
     }
     // Keep the plan's encouraging order (smart.js): a confident start and finish, weak skills spread out.
     // A skill missed twice in a row starts with up to 2 warm-ups (small steps), right before its question.
@@ -350,6 +375,7 @@ async function settle(q, chosen, correct, secondTry, picked, right) {
     };
     try {
         await store.recordAttempt(profile.id, attempt);
+        if (!q.isWarmup && retryGens.delete(q.gen)) store.finishRetry(profile.id, q.gen).catch(() => {});   // owed, now answered
     } catch {
         saveNote = '<div class="kt-mt-2 kt-fs-xs">(Could not save this answer right now; it will be saved next time.)</div>';
     }
@@ -453,7 +479,7 @@ function next() {
         // a skill the child is good at, or an untried one (those start at the aligned rung)
         const good = (q) => !q.isWarmup && (!sessionStates.has(q.gen) || sessionStates.get(q.gen).score >= 30);
         const k = session.findIndex((q, j) => j > pos + 1 && good(q));
-        if (k > 0 && !good(session[pos + 1] || {})) [session[pos + 1], session[k]] = [session[k], session[pos + 1]];
+        if (k > 0 && !session[pos + 1]?.retry && !good(session[pos + 1] || {})) [session[pos + 1], session[k]] = [session[k], session[pos + 1]];
     }
     pos++;
     if (pos < session.length) { renderQuestion(); return; }

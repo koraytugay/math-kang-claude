@@ -173,9 +173,9 @@ setInterval(() => refreshSessions().catch((e) => console.error(e)), 60e3);
 document.addEventListener("visibilitychange", () => refreshSessions().catch((e) => console.error(e)));
 
 // ------------------------------------------------------------------ studying together
-// "Studied together" is saved in the achievements table (unused since badges were dropped; the site may
-// insert and update there, not delete): code "studied:<question id>". Undo renames the row to
-// "unstudied:<question id>:<time>", so it can be marked again later.
+// "Studied together" is saved in the study_notes table (db/003_study_notes.sql): kind 'studied', ref = question id.
+// It also leaves a 'retry' note for the skill: the child's next session asks that skill in its first 3
+// questions, until the child has answered one (site/practice.js, smart.js planSkills). Undo sets done_at.
 let sqlFn = null;
 async function sql() {
     if (!sqlFn) {
@@ -186,15 +186,30 @@ async function sql() {
 }
 async function studiedSet(profileId) {
     const db = await sql();
-    const rows = await db`select code from achievements where profile_id = ${profileId} and code like 'studied:%'`;
-    return new Set(rows.map((r) => r.code.slice("studied:".length)));
+    const rows = await db`select ref from study_notes where profile_id = ${profileId} and kind = 'studied' and done_at is null`;
+    return new Set(rows.map((r) => r.ref));
 }
 async function markStudied(profileId, qid, on) {
     const db = await sql();
-    if (on) await db`insert into achievements (profile_id, code) values (${profileId}, ${"studied:" + qid})
-                     on conflict (profile_id, code) do nothing`;
-    else await db`update achievements set code = ${`unstudied:${qid}:${Date.now()}`}
-                  where profile_id = ${profileId} and code = ${"studied:" + qid}`;
+    const gen = qid.split("|")[0];
+    if (on) {
+        await db`insert into study_notes (profile_id, kind, ref)
+                 select ${profileId}, 'studied', ${qid}
+                 where not exists (select 1 from study_notes where profile_id = ${profileId} and kind = 'studied'
+                                   and ref = ${qid} and done_at is null)`;
+        await db`insert into study_notes (profile_id, kind, ref)
+                 select ${profileId}, 'retry', ${gen}
+                 where not exists (select 1 from study_notes where profile_id = ${profileId} and kind = 'retry'
+                                   and ref = ${gen} and done_at is null)`;
+    } else {
+        await db`update study_notes set done_at = now()
+                 where profile_id = ${profileId} and kind = 'studied' and ref = ${qid} and done_at is null`;
+        // no other question of this skill still marked as studied: nothing to retry any more
+        await db`update study_notes set done_at = now()
+                 where profile_id = ${profileId} and kind = 'retry' and ref = ${gen} and done_at is null
+                   and not exists (select 1 from study_notes s where s.profile_id = ${profileId} and s.kind = 'studied'
+                                   and s.done_at is null and split_part(s.ref, '|', 1) = ${gen})`;
+    }
 }
 function countStudy() {
     const open = $("study").querySelectorAll(".mk-card").length, closed = $("studied").children.length;
