@@ -20,6 +20,8 @@ const PROFILES = [
 const TEST_PROFILE = "koray";    // the parent's test profile opens each question with the right answer picked
 const BATCH = 10;                // sessions are endless: the next BATCH questions are picked as they run out
 const BREAK_EVERY = 15, BREAK_MINUTES = 25;   // then a soft "want a break?" (they can just go on)
+const MAX_SECONDS = 300;         // a question left open longer (idle tab, a snack) is saved as 5 minutes, not 404 seconds
+const secondsSince = (t) => Math.min(MAX_SECONDS, Math.round((Date.now() - t) / 1000));
 
 // ------------------------------------------------------------------ store
 class LocalStore {
@@ -338,7 +340,7 @@ async function skip() {
     $("check").disabled = true;
     selected = null;
     [...$("q-options").children].forEach((b) => { b.disabled = true; });
-    const seconds = Math.round((Date.now() - shownAt) / 1000);
+    const seconds = secondsSince(shownAt);
     results.push({ q, chosen: SKIPPED, correct: false });
     await adaptLater(q, false, seconds);
     const attempt = {
@@ -357,7 +359,7 @@ async function skip() {
 /** Show the answer, save the attempt and the feedback. picked: the option clicked last. */
 async function settle(q, chosen, correct, secondTry, picked, right) {
     const buttons = [...$("q-options").children];
-    const seconds = Math.round((Date.now() - shownAt) / 1000);
+    const seconds = secondsSince(shownAt);
     $("retry").hidden = true;
     $("skip-row").hidden = true;          // the empty row's margin would double the gap above the feedback
     buttons.forEach((b, j) => {
