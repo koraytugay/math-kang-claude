@@ -60,6 +60,12 @@ A part of a keyword is enough (`cube` finds every cube question). Topics like `p
 | 2026 Q23 | sums of neighbours, sweet grid, working backwards | A number is the sum of the neighbours' sweets, not its own square: start where there is the least choice (an end or a corner has the fewest neighbours), then use every square you find in the next number | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q23.pdf) |
 | 2026 Q24 | sure to get, worst luck, drawing balls | To be sure you get a colour, imagine the worst luck: all the balls of the other colours come out first, then one more. So the number of draws minus 1 is the number of balls that are not that colour | [PDF](output/previews/set-03/by_level/Grade_03-04/y2026_q24.pdf) |
 
+## Austrian Kangaroo 2021, Ecolier Grade 3-4
+
+| Question | Keywords | What it practises | Preview |
+|---|---|---|---|
+| 2021 Q21 | fair sharing, common multiples, more needed | List the numbers that fit the 'divides evenly' clues (multiples), then test each one against the last clue | [PDF](output/previews/set-01/by_level/Grade_03-04_Ecolier/y2021_q21.pdf) |
+
 ## Austrian Kangaroo 2022, Ecolier Grade 3-4
 
 | Question | Keywords | What it practises | Preview |

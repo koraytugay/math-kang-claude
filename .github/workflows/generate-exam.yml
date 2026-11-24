@@ -45,6 +45,10 @@ on:
         description: 'Canada Math Kangaroo 2026, Grade 3-4: cutting a paper stack, piece left over, hidden towers, folded strip, hidden cubes, sums of neighbours, sure to get'
         type: boolean
         default: false
+      austria_2021:
+        description: 'Austrian Kangaroo 2021, Ecolier Grade 3-4: fair sharing'
+        type: boolean
+        default: false
       austria_2022:
         description: 'Austrian Kangaroo 2022, Ecolier Grade 3-4: rule out cards, fewest shapes, ant path, road tiles, colour cards'
         type: boolean
@@ -115,6 +119,7 @@ jobs:
           if [ "${{ inputs.canada_2003 }}" = "true" ]; then SOURCES+=("set-03/2003"); fi
           if [ "${{ inputs.canada_2007 }}" = "true" ]; then SOURCES+=("set-03/2007"); fi
           if [ "${{ inputs.canada_2026 }}" = "true" ]; then SOURCES+=("set-03/2026"); fi
+          if [ "${{ inputs.austria_2021 }}" = "true" ]; then SOURCES+=("set-01/2021"); fi
           if [ "${{ inputs.austria_2022 }}" = "true" ]; then SOURCES+=("set-01/2022"); fi
           if [ "${{ inputs.austria_2023 }}" = "true" ]; then SOURCES+=("set-01/2023"); fi
           if [ "${{ inputs.austria_2024 }}" = "true" ]; then SOURCES+=("set-01/2024"); fi
